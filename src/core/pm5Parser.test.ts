@@ -153,6 +153,57 @@ describe('parsePm5Text', () => {
     ]);
   });
 
+  it('turns a cumulative time column into per-split durations', () => {
+    const scan = parsePm5Text(
+      [
+        'time meter /500m s/m',
+        '30:10.2 6518 2:18.8 20',
+        '5:00.0 1056 2:22.0 20',
+        '10:00.0 1073 2:19.7 20',
+        '15:00.0 1069 2:20.3 20',
+        '20:00.0 1068 2:20.4 20',
+        '>c.00.0 1069 2:20.3 21',
+        '30:00.0 1144 2:11.1 25',
+        '30:10.2 40 2:07.5 18',
+      ].join('\n'),
+    );
+    expect(scan!.summary.durationDs).toBe(18102);
+    expect(scan!.rows.map((r) => r.durationDs)).toEqual([3000, 3000, 3000, 3000, 3000, 3000, 102]);
+    expect(scan!.rows.map((r) => r.distanceM)).toEqual([1056, 1073, 1069, 1068, 1069, 1144, 40]);
+  });
+
+  it('keeps a row whose time is unreadable instead of shifting every row up', () => {
+    const scan = parsePm5Text(
+      ['Nov 10 2026  41:434 la', 'time meter /500m s/m', '| 2%:15.2 6012 2:59 23 [A', '5:00.0 1012 2:28.2 19', '10:00.0 1040 2:24.2 23'].join('\n'),
+    );
+    expect(scan!.summary).toMatchObject({ durationDs: null, distanceM: 6012, rate: 23 });
+    expect(scan!.rows).toHaveLength(2);
+  });
+
+  it('turns a cumulative meter column into per-split distances, including a short last split', () => {
+    const scan = parsePm5Text(
+      [
+        'time meter /500m s/m',
+        '1:33:46.6 21100 2:13.3 20',
+        '18:36.5 4300 2:09.8 21',
+        '19:04.8 8600 2:13.1 20',
+        '19:43.8 12900 2:17.6 20',
+        '19:35.0 17200 2:16.6 19',
+        '16:46.6 21100 2:09.0 22',
+      ].join('\n'),
+    );
+    expect(scan!.rows.map((r) => r.distanceM)).toEqual([4300, 4300, 4300, 4300, 3900]);
+    expect(scan!.rows.map((r) => r.durationDs)).toEqual([11165, 11448, 11838, 11750, 10066]);
+  });
+
+  it('leaves interval rows with equal distances alone', () => {
+    const scan = parsePm5Text('time meter /500m s/m\n3:28.7 1000 1:44.3 33\n1:44.7 500 1:44.7 32\n1:44.0 500 1:44.0 34');
+    expect(scan!.rows.map((r) => [r.durationDs, r.distanceM])).toEqual([
+      [1047, 500],
+      [1040, 500],
+    ]);
+  });
+
   it('reads meters with thousands separators', () => {
     const scan = parsePm5Text('time meter /500m s/m\n1:50:43.0 25,000 2:12.8 21 120\n33:34.6 7.500 2:14.3 27 126');
     expect(scan!.summary.distanceM).toBe(25000);

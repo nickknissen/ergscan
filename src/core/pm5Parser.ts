@@ -29,6 +29,7 @@ export function parsePm5Text(text: string): ParsedScan | null {
       headerSeen = true;
       splitDistance = header.splitDistance;
       extraColumn = header.extraColumn;
+      parsed.length = 0;
       continue;
     }
     const result = readRow(tokenize(line));
@@ -41,18 +42,46 @@ export function parsePm5Text(text: string): ParsedScan | null {
   if (!extraColumn && parsed.some((p) => p.extra !== null)) extraColumn = 'heartRate';
   for (const p of parsed) {
     if (p.extra !== null && extraColumn) p.row[extraColumn] = p.extra;
-    fillSplit(p.row, splitDistance);
   }
 
   const all = parsed.map((p) => p.row);
   const [first, ...rest] = all as [WorkoutRow, ...WorkoutRow[]];
-  if (rest.length === 0) {
-    return { splitDistance, extraColumn, summary: first, summaryFromScreen: true, rows: [] };
+  const finish = (summary: WorkoutRow, rows: WorkoutRow[], summaryFromScreen: boolean): ParsedScan => {
+    decumulate(rows, 'durationDs', 10);
+    decumulate(rows, 'distanceM', 5);
+    for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
+    return { splitDistance, extraColumn, summary, summaryFromScreen, rows };
+  };
+  if (rest.length === 0) return finish(first, [], true);
+  if (headerSeen || isSummaryOf(first, rest)) return finish(first, rest, true);
+  return finish(sumRows(all, splitDistance), all, false);
+}
+
+function decumulate(rows: WorkoutRow[], key: 'durationDs' | 'distanceM', minTolerance: number): void {
+  const work = rows.filter((r) => !r.isRest);
+  const known = work.map((r, i) => ({ i, v: r[key] })).filter((k): k is { i: number; v: number } => k.v !== null);
+  if (known.length < 2 || known[0]!.i !== 0) return;
+  const step = known[0]!.v;
+  if (step <= 0) return;
+  const tolerance = Math.max(minTolerance, step * 0.02);
+  const lastIndex = work.length - 1;
+
+  let consistent = 0;
+  for (let k = 1; k < known.length; k++) {
+    const { i, v } = known[k]!;
+    const gap = i - known[k - 1]!.i;
+    const diff = v - known[k - 1]!.v;
+    const ok = i === lastIndex ? diff > step * (gap - 1) && diff <= step * gap + tolerance : Math.abs(diff - step * gap) <= tolerance * gap;
+    if (ok) consistent++;
   }
-  if (headerSeen || isSummaryOf(first, rest)) {
-    return { splitDistance, extraColumn, summary: first, summaryFromScreen: true, rows: rest };
-  }
-  return { splitDistance, extraColumn, summary: sumRows(all, splitDistance), summaryFromScreen: false, rows: all };
+  if (consistent < Math.max(1, Math.ceil((known.length - 1) * 0.6))) return;
+
+  const lastValue = work[lastIndex]![key];
+  const remainder = lastValue === null ? null : lastValue - step * lastIndex;
+  work.forEach((row, i) => {
+    if (i < lastIndex) row[key] = step;
+    else row[key] = remainder !== null && remainder > 0 && remainder <= step + tolerance ? remainder : row[key] === null ? null : step;
+  });
 }
 
 function readHeader(line: string): { splitDistance: 500 | 1000; extraColumn: ExtraColumn | null } | null {
@@ -135,7 +164,8 @@ function readRow(tokens: Token[]): ParsedLine | null {
     return { row, extra: null, restShaped: false, restDurationDs: null };
   }
   row.durationDs = asTime(first.text, true);
-  if (row.durationDs === null) return null;
+  const unreadableTime = /[:.%]/.test(first.text) && others.length >= 2;
+  if (row.durationDs === null && !unreadableTime) return null;
 
   let extra: number | null = null;
   let stage = 1;
