@@ -1,7 +1,7 @@
 # ErgScan
 
 An open-source progressive web app that reads the results screen of a Concept2
-PM5 monitor from a photo and exports the workout as a FIT file you can upload to
+PM4 or PM5 monitor from a photo and exports the workout as a FIT file you can upload to
 Strava, Garmin Connect, intervals.icu or any other tool that accepts FIT.
 
 Everything runs on your device. The photo is never uploaded: text recognition
@@ -10,10 +10,10 @@ opened.
 
 ## Features
 
-- Take a photo of the PM5 results screen, or pick an image you already have.
+- Take a photo of the PM4/PM5 results screen, or pick an image you already have.
 - Offline OCR with [Tesseract.js](https://github.com/naptha/tesseract.js),
   with image thresholding to cope with glare and uneven light on the LCD.
-- Parses the PM5 table: time, meters, split (/500m or /1000m), stroke rate,
+- Parses the PM4/PM5 table: time, meters, split (/500m or /1000m), stroke rate,
   and heart rate, watts or calories. Rest intervals are detected.
 - Editable review table to fix anything the OCR got wrong, add or remove rows,
   set the start time and recalculate the total.
@@ -49,7 +49,7 @@ loads OCR files from a CDN.
 
 | Path | Purpose |
 | --- | --- |
-| `src/core/` | Framework-free logic: time parsing, PM5 parser, workout model, FIT export |
+| `src/core/` | Framework-free logic: time parsing, PM4/PM5 parser, workout model, FIT export |
 | `src/ocr/` | Image preprocessing, Tesseract worker and OCR asset caching |
 | `src/components/` | Vue components for the review table |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
@@ -65,7 +65,7 @@ locale is missing keys.
 
 - OCR accuracy depends heavily on the photo. Always check the review table
   before exporting.
-- The PM5 does not show a per-stroke history on the results screen, so the FIT
+- The PM4 and PM5 do not show a per-stroke history on the results screen, so the FIT
   file has per-lap values with evenly spaced samples within each lap, not
   stroke-by-stroke data.
 

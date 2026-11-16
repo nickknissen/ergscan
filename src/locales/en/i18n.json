@@ -1,19 +1,19 @@
 {
   "app": {
     "title": "ErgScan",
-    "tagline": "Scan your Concept2 PM5 results and export a FIT file"
+    "tagline": "Scan your Concept2 PM4/PM5 results and export a FIT file"
   },
   "capture": {
     "camera": "Scan with camera",
     "takePhoto": "Take photo",
     "chooseImage": "Choose image",
     "manual": "Enter manually",
-    "hint": "Photograph the PM5 results screen straight on, with the table filling most of the frame and no glare on the digits."
+    "hint": "Photograph the PM4/PM5 results screen straight on, with the table filling most of the frame and no glare on the digits."
   },
   "guide": {
     "title": "Get the right screen",
     "open": "How to get the results screen",
-    "monitor": "Concept2 PM4",
+    "monitor": "Concept2 PM4/PM5",
     "intro": "ErgScan reads the results table with the total and the splits. Follow these steps on the monitor so that table is what you photograph.",
     "setup": {
       "title": "Start a workout",

@@ -1,19 +1,19 @@
 {
   "app": {
     "title": "ErgScan",
-    "tagline": "Scan dine Concept2 PM5-resultater og eksportér en FIT-fil"
+    "tagline": "Scan dine Concept2 PM4/PM5-resultater og eksportér en FIT-fil"
   },
   "capture": {
     "camera": "Scan med kamera",
     "takePhoto": "Tag billede",
     "chooseImage": "Vælg billede",
     "manual": "Indtast manuelt",
-    "hint": "Fotografér PM5-resultatskærmen lige forfra, så tabellen fylder det meste af billedet, og uden genskin på tallene."
+    "hint": "Fotografér PM4/PM5-resultatskærmen lige forfra, så tabellen fylder det meste af billedet, og uden genskin på tallene."
   },
   "guide": {
     "title": "Find resultatet",
     "open": "Sådan får du resultatskærmen frem",
-    "monitor": "Concept2 PM4",
+    "monitor": "Concept2 PM4/PM5",
     "intro": "ErgScan læser resultattabellen med totalen og dine splits. Følg disse trin på monitoren, så det er den tabel, du fotograferer.",
     "setup": {
       "title": "Start en træning",
