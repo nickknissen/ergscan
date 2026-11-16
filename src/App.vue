@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName } from './core/dates';
-import { workoutToFit } from './core/fitExport';
 import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
-import { scanImage } from './ocr/scan';
 
 type Stage = 'capture' | 'scanning' | 'review';
+type FitModule = typeof import('./core/fitExport');
 
 const { t } = useI18n();
 
@@ -20,7 +19,13 @@ const notice = ref('');
 const computedSummary = ref(false);
 const progressText = ref('');
 
-const canExport = computed(() => Boolean(workout.value?.summary.durationDs && workout.value.summary.distanceM));
+const fitModule = shallowRef<FitModule | null>(null);
+
+watch(stage, (value) => {
+  if (value === 'review' && !fitModule.value) void import('./core/fitExport').then((m) => (fitModule.value = m));
+});
+
+const canExport = computed(() => Boolean(fitModule.value && workout.value?.summary.durationDs && workout.value.summary.distanceM));
 const canShare = computed(() => typeof navigator.canShare === 'function');
 
 function newWorkout(): Workout {
@@ -50,6 +55,7 @@ async function onImage(event: Event) {
   progressText.value = t('scan.loading');
 
   try {
+    const { scanImage } = await import('./ocr/scan');
     const outcome = await scanImage(file, (status, progress) => {
       progressText.value = status === 'recognizing text' ? t('scan.recognizing', { percent: Math.round(progress * 100) }) : t('scan.loading');
     });
@@ -78,7 +84,7 @@ function enterManually() {
 
 function fitFile(): File {
   const w = workout.value!;
-  const bytes = workoutToFit(w);
+  const bytes = fitModule.value!.workoutToFit(w);
   return new File([bytes.slice().buffer], fitFileName(w.startTime), { type: 'application/vnd.ant.fit' });
 }
 
