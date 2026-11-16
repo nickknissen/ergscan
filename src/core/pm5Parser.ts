@@ -21,9 +21,12 @@ export function parsePm5Text(text: string): ParsedScan | null {
   let splitDistance: 500 | 1000 = 500;
   let extraColumn: ExtraColumn | null = null;
   let headerSeen = false;
+  let titleRestDs: number | null = null;
   const parsed: ParsedLine[] = [];
 
   for (const line of lines) {
+    const rest = headerSeen ? null : /(\d{1,2}:\d{2})r\b/.exec(line);
+    if (rest) titleRestDs = parseTime(rest[1]!);
     const header = readHeader(line);
     if (header) {
       headerSeen = true;
@@ -50,11 +53,16 @@ export function parsePm5Text(text: string): ParsedScan | null {
     decumulate(rows, 'durationDs', 10);
     decumulate(rows, 'distanceM', 5);
     for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
-    return { splitDistance, extraColumn, summary, summaryFromScreen, rows };
+    const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
+    return { splitDistance, extraColumn, summary, summaryFromScreen, rows: withRest };
   };
   if (rest.length === 0) return finish(first, [], true);
   if (headerSeen || isSummaryOf(first, rest)) return finish(first, rest, true);
   return finish(sumRows(all, splitDistance), all, false);
+}
+
+function interleaveRest(rows: WorkoutRow[], restDs: number): WorkoutRow[] {
+  return rows.flatMap((row) => [row, { ...emptyRow(), durationDs: restDs, isRest: true }]);
 }
 
 function decumulate(rows: WorkoutRow[], key: 'durationDs' | 'distanceM', minTolerance: number): void {

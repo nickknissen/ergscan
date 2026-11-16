@@ -204,6 +204,23 @@ describe('parsePm5Text', () => {
     ]);
   });
 
+  it('adds rest laps from the interval title when the screen lists no rest rows', () => {
+    const scan = parsePm5Text(
+      ['3¢S00mJS3:30r  Total Time:  o', 'Nov 10 2026  41:434 la', 'time meter /500m s/m', '3:28.7 1000 1:44.3 33', '1:44.7 500 1:44.7 32', '1:44.0 500 1:44.0 34'].join('\n'),
+    );
+    expect(scan!.rows.map((r) => [r.durationDs, r.isRest])).toEqual([
+      [1047, false],
+      [2100, true],
+      [1040, false],
+      [2100, true],
+    ]);
+  });
+
+  it('does not add title rest when rest rows are on screen', () => {
+    const scan = parsePm5Text('v25000m/4:00r...5\ntime meter /500m s/m\n1:54:43.0 25014 2:17.6 21\n1:50:43.0 25000 2:12.8 21 120\nr4:00 14');
+    expect(scan!.rows.filter((r) => r.isRest)).toHaveLength(1);
+  });
+
   it('reads meters with thousands separators', () => {
     const scan = parsePm5Text('time meter /500m s/m\n1:50:43.0 25,000 2:12.8 21 120\n33:34.6 7.500 2:14.3 27 126');
     expect(scan!.summary.distanceM).toBe(25000);
