@@ -10,6 +10,7 @@ re/tools/.venv/
 
 node_modules/
 dist/
+public/tesseract/
 .env
 .env.*
 !.env.example

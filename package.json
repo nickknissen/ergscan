@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "ocr-assets": "node scripts/copy-ocr-assets.mjs",
+    "predev": "npm run ocr-assets",
     "dev": "vite",
+    "prebuild": "npm run ocr-assets",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
@@ -13,10 +16,12 @@
   },
   "dependencies": {
     "@garmin/fitsdk": "^21.221.0",
+    "tesseract.js": "^7.0.0",
     "vue": "^3.5.45",
     "vue-i18n": "^11.4.20"
   },
   "devDependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
     "@types/node": "^24.19.2",
     "@vitejs/plugin-vue": "^6.0.11",
     "@vue/tsconfig": "^0.9.1",
