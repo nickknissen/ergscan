@@ -8,6 +8,8 @@ const versionOf = (pkg: string): string =>
   (JSON.parse(readFileSync(new URL(`./node_modules/${pkg}/package.json`, import.meta.url), 'utf8')) as { version: string }).version;
 
 export default defineConfig({
+  server: { allowedHosts: ['.ts.net'] },
+  preview: { allowedHosts: ['.ts.net'] },
   define: {
     __OCR_VERSION__: JSON.stringify(`${versionOf('tesseract.js')}-${versionOf('tesseract.js-core')}`),
   },
