@@ -1,0 +1,17 @@
+# Reverse-engineering artifacts: third-party binaries and decompiled code, never commit
+re/download/
+re/apk/
+re/out/
+re/tools/.venv/
+*.apk
+*.xapk
+*.onnx
+*.hbc
+
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
