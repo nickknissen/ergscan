@@ -62,11 +62,7 @@ export function parsePm5Text(text: string): ParsedScan | null {
     decumulate(rows, 'durationDs', 10);
     decumulate(rows, 'distanceM', 5);
     const summary = screenSummary ?? sumRows(rows, splitDistance);
-    const workTime = rows.filter((r) => !r.isRest).reduce((a, r) => a + (r.durationDs ?? 0), 0);
-    if (screenSummary && summary.durationDs !== null && workTime > summary.durationDs * 1.5) {
-      summary.durationDs = workTime;
-      summary.splitDs = null;
-    }
+    if (screenSummary) repairSummaryTime(summary, rows, splitDistance);
     for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
     const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
     return { date, splitDistance, extraColumn, summary, summaryFromScreen: screenSummary !== null, rows: withRest };
@@ -74,6 +70,24 @@ export function parsePm5Text(text: string): ParsedScan | null {
   if (rest.length === 0) return finish(first, []);
   if ((headerSeen && (!exceededBy(first, rest) || metersAddUp(first, rest))) || isSummaryOf(first, rest)) return finish(first, rest);
   return finish(null, all);
+}
+
+function repairSummaryTime(summary: WorkoutRow, rows: WorkoutRow[], splitDistance: number): void {
+  const work = rows.filter((r) => !r.isRest);
+  const workTime = work.reduce((a, r) => a + (r.durationDs ?? 0), 0);
+  const workMeters = work.reduce((a, r) => a + (r.distanceM ?? 0), 0);
+  const time = summary.durationDs;
+  const meters = summary.distanceM;
+  if (workTime === 0) return;
+
+  const tooSmall = time !== null && workTime > time * 1.5;
+  const lapsComplete = meters !== null && Math.abs(workMeters - meters) <= Math.max(10, meters * 0.02);
+  const matchesOwnSplit = time !== null && meters && summary.splitDs !== null && Math.abs(splitFor(time, meters, splitDistance) - summary.splitDs) <= 10;
+  const offFromLaps = time !== null && Math.abs(time - workTime) > Math.max(10, workTime * 0.01);
+  if (tooSmall || (lapsComplete && offFromLaps && !matchesOwnSplit)) {
+    summary.durationDs = workTime;
+    summary.splitDs = null;
+  }
 }
 
 function metersAddUp(candidate: WorkoutRow, rows: WorkoutRow[]): boolean {
@@ -126,22 +140,16 @@ function interleaveRest(rows: WorkoutRow[], restDs: number): WorkoutRow[] {
 
 function decumulate(rows: WorkoutRow[], key: 'durationDs' | 'distanceM', minTolerance: number): void {
   const work = rows.filter((r) => !r.isRest);
+  const lastIndex = work.length - 1;
   const known = work.map((r, i) => ({ i, v: r[key] })).filter((k): k is { i: number; v: number } => k.v !== null);
-  if (known.length < 3 || known[0]!.i !== 0) return;
-  const step = known[0]!.v;
+  const middle = known.filter((k) => k.i < lastIndex);
+  if (known.length < 3 || middle.length < 2) return;
+  const estimates = middle.map((k) => k.v / (k.i + 1)).sort((a, b) => a - b);
+  const step = Math.round(estimates[Math.floor(estimates.length / 2)]!);
   if (step <= 0) return;
   const tolerance = Math.max(minTolerance, step * 0.02);
-  const lastIndex = work.length - 1;
-
-  let consistent = 0;
-  for (let k = 1; k < known.length; k++) {
-    const { i, v } = known[k]!;
-    const gap = i - known[k - 1]!.i;
-    const diff = v - known[k - 1]!.v;
-    const ok = i === lastIndex ? diff > step * (gap - 1) && diff <= step * gap + tolerance : Math.abs(diff - step * gap) <= tolerance * gap;
-    if (ok) consistent++;
-  }
-  if (consistent < Math.max(1, Math.ceil((known.length - 1) * 0.6))) return;
+  const consistent = middle.filter((k) => Math.abs(k.v - step * (k.i + 1)) <= tolerance * (k.i + 1)).length;
+  if (consistent < Math.max(2, Math.ceil(middle.length * 0.6))) return;
 
   const lastValue = work[lastIndex]![key];
   const remainder = lastValue === null ? null : lastValue - step * lastIndex;

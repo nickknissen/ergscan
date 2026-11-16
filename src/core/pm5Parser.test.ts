@@ -236,6 +236,30 @@ describe('parsePm5Text', () => {
     expect(scan!.rows.map((r) => r.durationDs)).toEqual([11165, 11448, 11838, 11750, 10066]);
   });
 
+  it('de-accumulates even when the first split time is unreadable, and fixes a misread total (camera capture)', () => {
+    const scan = parsePm5Text(
+      [
+        'time meter /500m s/m',
+        '1:45:10.2 6518 2:18.8 20',
+        '5:0#.0 1056 2:22.0 20',
+        '10:00.0 1073 2:19.7 20',
+        '15:00.0 1069 2:20.3 20',
+        '20:00.0 1068 2:20.4 20',
+        '25:00.0 1069 2:20.3 21',
+        '30:00.0 1144 2:11.1 25',
+        '30:10.2 40 2:07.5 18',
+      ].join('\n'),
+    );
+    expect(scan!.rows.map((r) => r.durationDs)).toEqual([3000, 3000, 3000, 3000, 3000, 3000, 102]);
+    expect(scan!.summary).toMatchObject({ durationDs: 18102, distanceM: 6518, splitDs: 1389 });
+    expect(scan!.summary.durationDs).not.toBe(63102);
+  });
+
+  it('keeps a total that agrees with its own split even if one lap is misread', () => {
+    const scan = parsePm5Text(['time meter /500m s/m', '6:00.0 1500 2:00.0 24', '2:00.0 500 2:00.0 24', '2:30.0 500 2:30.0 24', '2:00.0 500 2:00.0 24'].join('\n'));
+    expect(scan!.summary.durationDs).toBe(3600);
+  });
+
   it('leaves interval rows with equal distances alone', () => {
     const scan = parsePm5Text('time meter /500m s/m\n3:28.7 1000 1:44.3 33\n1:44.7 500 1:44.7 32\n1:44.0 500 1:44.0 34');
     expect(scan!.rows.map((r) => [r.durationDs, r.distanceM])).toEqual([
