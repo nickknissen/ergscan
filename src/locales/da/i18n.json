@@ -24,6 +24,8 @@
   },
   "review": {
     "title": "Tjek resultaterne",
+    "details": "Træning",
+    "splits": "Splits",
     "computedSummary": "Totalen blev ikke fundet på skærmen, så den er beregnet ud fra rækkerne.",
     "start": "Starttidspunkt",
     "splitDistance": "Split pr.",

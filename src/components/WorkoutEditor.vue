@@ -52,28 +52,30 @@ function recalculate() {
 
 <template>
   <section class="editor">
-    <div class="fields">
-      <label>
-        {{ t('review.start') }}
-        <input v-model="startInput" type="datetime-local" />
+    <h2 class="group-header">{{ t('review.details') }}</h2>
+    <div class="group">
+      <label class="group-row">
+        <span class="row-label">{{ t('review.start') }}</span>
+        <input v-model="startInput" class="row-value" type="datetime-local" />
       </label>
-      <label>
-        {{ t('review.splitDistance') }}
-        <select v-model.number="workout.splitDistance">
+      <label class="group-row">
+        <span class="row-label">{{ t('review.splitDistance') }}</span>
+        <select v-model.number="workout.splitDistance" class="row-value">
           <option :value="500">500 m</option>
           <option :value="1000">1000 m</option>
         </select>
       </label>
-      <label>
-        {{ t('review.extraColumn') }}
-        <select v-model="extraSelection">
+      <label class="group-row">
+        <span class="row-label">{{ t('review.extraColumn') }}</span>
+        <select v-model="extraSelection" class="row-value">
           <option value="">{{ t('review.none') }}</option>
           <option v-for="option in extraOptions" :key="option" :value="option">{{ t(`columns.${option}`) }}</option>
         </select>
       </label>
     </div>
 
-    <div class="table-wrap">
+    <h2 class="group-header">{{ t('review.splits') }}</h2>
+    <div class="group table-wrap">
       <table>
         <thead>
           <tr>
@@ -107,19 +109,27 @@ function recalculate() {
               <NumberCell v-model="row[extraColumn]" :label="label(t(`columns.${extraColumn}`), row)" />
             </td>
             <td class="center">
-              <input v-model="row.isRest" type="checkbox" :aria-label="label(t('columns.rest'), row)" />
+              <input v-model="row.isRest" type="checkbox" class="check" :aria-label="label(t('columns.rest'), row)" />
             </td>
             <td class="center">
-              <button type="button" class="icon" :aria-label="t('review.removeRow', { number: index + 1 })" @click="removeRow(index)">×</button>
+              <button type="button" class="icon" :aria-label="t('review.removeRow', { number: index + 1 })" @click="removeRow(index)">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8 12h8" /></svg>
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="row-actions">
-      <button type="button" class="secondary" @click="addRow">{{ t('review.addRow') }}</button>
-      <button type="button" class="secondary" @click="recalculate">{{ t('review.recalculate') }}</button>
+    <div class="group">
+      <button type="button" class="group-row tappable accent" @click="addRow">
+        <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></svg>
+        <span class="row-label">{{ t('review.addRow') }}</span>
+      </button>
+      <button type="button" class="group-row tappable accent" @click="recalculate">
+        <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" /></svg>
+        <span class="row-label">{{ t('review.recalculate') }}</span>
+      </button>
     </div>
   </section>
 </template>

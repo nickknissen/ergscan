@@ -19,6 +19,7 @@ const rawText = ref('');
 const notice = ref('');
 const computedSummary = ref(false);
 const progressText = ref('');
+const progress = ref<number | null>(null);
 
 const fitModule = shallowRef<FitModule | null>(null);
 
@@ -69,13 +70,16 @@ async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
   photoUrl.value = URL.createObjectURL(image);
   stage.value = 'scanning';
   progressText.value = t('scan.loading');
+  progress.value = null;
 
   try {
     const { scanImage } = await import('./ocr/scan');
     const outcome = await scanImage(
       image,
-      (status, progress) => {
-        progressText.value = status === 'recognizing text' ? t('scan.recognizing', { percent: Math.round(progress * 100) }) : t('scan.loading');
+      (status, value) => {
+        const recognizing = status === 'recognizing text';
+        progress.value = recognizing ? value : null;
+        progressText.value = recognizing ? t('scan.recognizing', { percent: Math.round(value * 100) }) : t('scan.loading');
       },
       framed,
     );
@@ -136,58 +140,122 @@ async function share() {
 </script>
 
 <template>
-  <header class="app-header">
-    <h1>{{ t('app.title') }}</h1>
-    <p class="muted">{{ t('app.tagline') }}</p>
-  </header>
+  <CameraCapture
+    v-if="stage === 'camera'"
+    @capture="(image) => scanBlob(image, new Date(), true)"
+    @cancel="stage = 'capture'"
+    @failed="onCameraFailed"
+  />
 
-  <main>
-    <section v-if="stage === 'capture'" class="capture">
-      <p class="muted">{{ t('capture.hint') }}</p>
-      <p v-if="cameraError" class="notice" role="alert">{{ cameraError }}</p>
-      <button v-if="cameraSupported" type="button" class="primary" @click="openCamera">{{ t('capture.camera') }}</button>
-      <label v-if="!cameraSupported || cameraError" class="button secondary">
-        {{ t('capture.takePhoto') }}
-        <input type="file" accept="image/*" capture="environment" hidden @change="onImage" />
-      </label>
-      <label class="button secondary">
-        {{ t('capture.chooseImage') }}
-        <input type="file" accept="image/*" hidden @change="onImage" />
-      </label>
-      <button type="button" class="link" @click="enterManually">{{ t('capture.manual') }}</button>
-    </section>
-
-    <CameraCapture
-      v-else-if="stage === 'camera'"
-      @capture="(image) => scanBlob(image, new Date(), true)"
-      @cancel="stage = 'capture'"
-      @failed="onCameraFailed"
-    />
-
-    <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
-      <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
-      <p>{{ progressText }}</p>
-    </section>
-
-    <section v-else-if="workout" class="review">
-      <h2>{{ t('review.title') }}</h2>
-      <p v-if="notice" class="notice" role="alert">{{ notice }}</p>
-      <p v-if="computedSummary" class="muted">{{ t('review.computedSummary') }}</p>
-
-      <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" />
-
-      <p v-if="!canExport" class="muted">{{ t('export.invalid') }}</p>
-      <div class="actions">
-        <button type="button" class="primary" :disabled="!canExport" @click="download">{{ t('export.download') }}</button>
-        <button v-if="canShare" type="button" class="secondary" :disabled="!canExport" @click="share">{{ t('export.share') }}</button>
-        <button type="button" class="link" @click="reset">{{ t('export.newScan') }}</button>
+  <div v-else class="shell">
+    <header class="navbar">
+      <div class="navbar-side">
+        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="t('export.newScan')" @click="reset">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          <span>{{ t('export.newScan') }}</span>
+        </button>
       </div>
+      <h1 class="navbar-title">{{ stage === 'review' ? t('review.title') : t('app.title') }}</h1>
+      <div class="navbar-side"></div>
+    </header>
 
-      <details v-if="photoUrl || rawText" class="debug">
-        <summary>{{ t('review.rawText') }}</summary>
-        <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
-        <pre>{{ rawText }}</pre>
-      </details>
-    </section>
-  </main>
+    <main class="screen" :class="`screen-${stage}`">
+      <section v-if="stage === 'capture'" class="capture">
+        <div class="hero">
+          <img src="/icon.svg" alt="" class="hero-icon" width="88" height="88" />
+          <p class="hero-tagline">{{ t('app.tagline') }}</p>
+        </div>
+
+        <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
+
+        <div class="tip">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+          <p>{{ t('capture.hint') }}</p>
+        </div>
+
+        <div class="capture-actions">
+          <button v-if="cameraSupported" type="button" class="primary large" @click="openCamera">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+              <circle cx="12" cy="13" r="3.5" />
+            </svg>
+            {{ t('capture.camera') }}
+          </button>
+
+          <div class="group">
+            <label v-if="!cameraSupported || cameraError" class="group-row tappable">
+              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+                <circle cx="12" cy="13" r="3.5" />
+              </svg>
+              <span class="row-label">{{ t('capture.takePhoto') }}</span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+              <input type="file" accept="image/*" capture="environment" hidden @change="onImage" />
+            </label>
+            <label class="group-row tappable">
+              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="5" width="16" height="14" rx="2" />
+                <circle cx="9" cy="10" r="1.5" />
+                <path d="M20 16l-5-5-8 8" />
+              </svg>
+              <span class="row-label">{{ t('capture.chooseImage') }}</span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+              <input type="file" accept="image/*" hidden @change="onImage" />
+            </label>
+            <button type="button" class="group-row tappable" @click="enterManually">
+              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20h4L19 9l-4-4L4 16z" />
+                <path d="M13 7l4 4" />
+              </svg>
+              <span class="row-label">{{ t('capture.manual') }}</span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
+        <div v-if="photoUrl" class="scan-photo">
+          <img :src="photoUrl" :alt="t('review.photo')" />
+          <span class="scan-line" aria-hidden="true"></span>
+        </div>
+        <div class="progress" :class="{ indeterminate: progress === null }" role="progressbar" :aria-valuenow="progress === null ? undefined : Math.round(progress * 100)" aria-valuemin="0" aria-valuemax="100">
+          <span :style="progress === null ? undefined : { width: `${Math.round(progress * 100)}%` }"></span>
+        </div>
+        <p class="scan-status">{{ progressText }}</p>
+      </section>
+
+      <section v-else-if="workout" class="review">
+        <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
+        <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
+
+        <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" />
+
+        <details v-if="photoUrl || rawText" class="group disclosure">
+          <summary class="group-row tappable">
+            <span class="row-label">{{ t('review.rawText') }}</span>
+            <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </summary>
+          <div class="disclosure-body">
+            <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
+            <pre>{{ rawText }}</pre>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <footer v-if="stage === 'review' && workout" class="toolbar">
+      <p v-if="!canExport" class="toolbar-hint">{{ t('export.invalid') }}</p>
+      <div class="toolbar-actions">
+        <button v-if="canShare" type="button" class="primary" :disabled="!canExport" @click="share">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M6 12v8h12v-8" /></svg>
+          {{ t('export.share') }}
+        </button>
+        <button type="button" :class="canShare ? 'secondary' : 'primary'" :disabled="!canExport" @click="download">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 20h14" /></svg>
+          {{ t('export.download') }}
+        </button>
+      </div>
+    </footer>
+  </div>
 </template>

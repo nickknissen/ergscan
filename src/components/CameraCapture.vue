@@ -71,7 +71,7 @@ function capture() {
       </div>
     </div>
     <div class="camera-actions">
-      <button type="button" class="link" @click="emit('cancel')">{{ t('camera.cancel') }}</button>
+      <button type="button" class="camera-cancel" @click="emit('cancel')">{{ t('camera.cancel') }}</button>
       <button type="button" class="shutter" :disabled="!ready" :aria-label="t('camera.capture')" @click="capture"></button>
       <span class="spacer"></span>
     </div>

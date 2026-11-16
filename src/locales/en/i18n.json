@@ -24,6 +24,8 @@
   },
   "review": {
     "title": "Check the results",
+    "details": "Workout",
+    "splits": "Splits",
     "computedSummary": "The total was not found on the screen, so it was calculated from the rows.",
     "start": "Start time",
     "splitDistance": "Split per",
