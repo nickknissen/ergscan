@@ -55,6 +55,14 @@ export function sumRows(rows: WorkoutRow[], splitDistance: number): WorkoutRow {
   return total;
 }
 
+export function moveExtraColumn(workout: Workout, from: ExtraColumn, to: ExtraColumn): void {
+  if (from === to) return;
+  for (const row of [workout.summary, ...workout.rows]) {
+    row[to] = row[from];
+    row[from] = null;
+  }
+}
+
 type NumericKey = Exclude<keyof WorkoutRow, 'isRest'>;
 
 function sumOf(rows: WorkoutRow[], key: NumericKey): number | null {

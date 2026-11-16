@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyRow, splitFor, sumRows, wattsForSplit, type WorkoutRow } from './workout';
+import { emptyRow, moveExtraColumn, splitFor, sumRows, wattsForSplit, type Workout, type WorkoutRow } from './workout';
 
 function row(partial: Partial<WorkoutRow>): WorkoutRow {
   return { ...emptyRow(), ...partial };
@@ -23,6 +23,21 @@ describe('wattsForSplit', () => {
 
   it('handles /1000m splits', () => {
     expect(wattsForSplit(2400, 1000)).toBe(203);
+  });
+});
+
+describe('moveExtraColumn', () => {
+  it('moves values from one extra column to another on every row', () => {
+    const workout: Workout = {
+      startTime: new Date(),
+      splitDistance: 500,
+      summary: row({ heartRate: 203 }),
+      rows: [row({ heartRate: 197 }), row({ isRest: true })],
+    };
+    moveExtraColumn(workout, 'heartRate', 'watts');
+    expect(workout.summary).toMatchObject({ heartRate: null, watts: 203 });
+    expect(workout.rows[0]).toMatchObject({ heartRate: null, watts: 197 });
+    expect(workout.rows[1]!.watts).toBeNull();
   });
 });
 

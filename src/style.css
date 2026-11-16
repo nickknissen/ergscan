@@ -27,3 +27,185 @@ body {
   margin: 0 auto;
   padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
 }
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.notice {
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #04121f;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.capture {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.scanning {
+  text-align: center;
+}
+
+.photo {
+  display: block;
+  max-width: 100%;
+  max-height: 50vh;
+  margin: 16px auto;
+  border-radius: 8px;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 40px;
+  padding: 0 8px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+th {
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 4px;
+}
+
+td {
+  padding: 2px;
+}
+
+.cell {
+  width: 100%;
+  min-width: 0;
+  padding: 0 5px;
+  font-size: 0.95rem;
+}
+
+td.center,
+th:nth-last-child(-n + 2) {
+  width: 1%;
+}
+
+.cell.invalid {
+  border-color: var(--danger);
+}
+
+tr.summary .cell {
+  font-weight: 700;
+  border-color: var(--accent);
+}
+
+tr.rest .cell {
+  color: var(--rest);
+}
+
+.center {
+  text-align: center;
+}
+
+input[type='checkbox'] {
+  min-height: auto;
+  width: 20px;
+  height: 20px;
+}
+
+.icon {
+  min-height: 36px;
+  padding: 0 10px;
+}
+
+.row-actions,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.actions {
+  margin-top: 20px;
+}
+
+.debug {
+  margin-top: 24px;
+  color: var(--muted);
+}
+
+.debug pre {
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+}

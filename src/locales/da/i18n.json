@@ -2,5 +2,47 @@
   "app": {
     "title": "ErgScan",
     "tagline": "Scan dine Concept2 PM5-resultater og eksportér en FIT-fil"
+  },
+  "capture": {
+    "takePhoto": "Tag billede",
+    "chooseImage": "Vælg billede",
+    "manual": "Indtast manuelt",
+    "hint": "Fotografér PM5-resultatskærmen lige forfra, så tabellen fylder det meste af billedet, og uden genskin på tallene."
+  },
+  "scan": {
+    "loading": "Indlæser OCR…",
+    "recognizing": "Læser skærmen… {percent}%",
+    "failed": "Der blev ikke fundet en resultattabel. Prøv et andet billede, eller indtast træningen manuelt.",
+    "error": "Scanningen fejlede: {message}"
+  },
+  "review": {
+    "title": "Tjek resultaterne",
+    "computedSummary": "Totalen blev ikke fundet på skærmen, så den er beregnet ud fra rækkerne.",
+    "start": "Starttidspunkt",
+    "splitDistance": "Split pr.",
+    "extraColumn": "Sidste kolonne",
+    "none": "Ingen",
+    "total": "Total",
+    "addRow": "Tilføj række",
+    "removeRow": "Fjern række {number}",
+    "recalculate": "Genberegn total ud fra rækkerne",
+    "rawText": "Genkendt tekst",
+    "photo": "Billede"
+  },
+  "columns": {
+    "time": "Tid",
+    "meter": "Meter",
+    "split": "/{distance}m",
+    "rate": "s/m",
+    "heartRate": "Puls",
+    "watts": "Watt",
+    "calories": "Kal",
+    "rest": "Pause"
+  },
+  "export": {
+    "download": "Download FIT",
+    "share": "Del FIT",
+    "newScan": "Ny scanning",
+    "invalid": "Udfyld totalens tid og distance før eksport."
   }
 }

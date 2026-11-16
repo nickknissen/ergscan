@@ -11,6 +11,7 @@ re/tools/.venv/
 node_modules/
 dist/
 public/tesseract/
+.scratch/
 .env
 .env.*
 !.env.example

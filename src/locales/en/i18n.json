@@ -2,5 +2,47 @@
   "app": {
     "title": "ErgScan",
     "tagline": "Scan your Concept2 PM5 results and export a FIT file"
+  },
+  "capture": {
+    "takePhoto": "Take photo",
+    "chooseImage": "Choose image",
+    "manual": "Enter manually",
+    "hint": "Photograph the PM5 results screen straight on, with the table filling most of the frame and no glare on the digits."
+  },
+  "scan": {
+    "loading": "Loading the OCR engine…",
+    "recognizing": "Reading the screen… {percent}%",
+    "failed": "No results table was found. Try another photo or enter the workout manually.",
+    "error": "Scanning failed: {message}"
+  },
+  "review": {
+    "title": "Check the results",
+    "computedSummary": "The total was not found on the screen, so it was calculated from the rows.",
+    "start": "Start time",
+    "splitDistance": "Split per",
+    "extraColumn": "Last column",
+    "none": "None",
+    "total": "Total",
+    "addRow": "Add row",
+    "removeRow": "Remove row {number}",
+    "recalculate": "Recalculate total from rows",
+    "rawText": "Recognized text",
+    "photo": "Photo"
+  },
+  "columns": {
+    "time": "Time",
+    "meter": "Meters",
+    "split": "/{distance}m",
+    "rate": "s/m",
+    "heartRate": "HR",
+    "watts": "Watts",
+    "calories": "Cal",
+    "rest": "Rest"
+  },
+  "export": {
+    "download": "Download FIT",
+    "share": "Share FIT",
+    "newScan": "New scan",
+    "invalid": "Fill in the total time and distance before exporting."
   }
 }
