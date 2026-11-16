@@ -7,7 +7,8 @@ export type { ScanOutcome } from './firstParsed';
 
 export async function scanImage(image: Blob, onProgress?: OcrProgress): Promise<ScanOutcome> {
   const { gray, width, height } = await loadGray(image, DEFAULT_PREPROCESS.longSide);
-  const canvases = ocrInputs(gray, width, height).map((values) => canvasFromGray(values, width, height));
+  const inputs = ocrInputs(gray, width, height);
+  const canvases = inputs.images.map((values) => canvasFromGray(values, inputs.width, inputs.height));
   return firstParsed(canvases.map((canvas) => () => recognizeText(canvas, onProgress)));
 }
 

@@ -1,16 +1,25 @@
+import { cropGray, findScreen, resizeGray } from './crop';
 import { adaptiveThreshold } from './threshold';
 
 export interface PreprocessOptions {
   longSide: number;
   blurRadius: number;
   sensitivity: number;
+  cropWidth: number | null;
 }
 
 export const DEFAULT_PREPROCESS: PreprocessOptions = {
-  longSide: 2000,
-  blurRadius: 0,
-  sensitivity: 0.15,
+  longSide: 3000,
+  blurRadius: 2,
+  sensitivity: 0.1,
+  cropWidth: 1300,
 };
+
+export interface OcrInputs {
+  images: Uint8Array[];
+  width: number;
+  height: number;
+}
 
 export function boxBlur(src: Uint8Array, width: number, height: number, radius: number, passes = 3): Uint8Array {
   if (radius <= 0) return src;
@@ -37,7 +46,20 @@ function blurLine(src: Float32Array, dst: Float32Array, length: number, lines: n
   }
 }
 
-export function ocrInputs(gray: Uint8Array, width: number, height: number, options: PreprocessOptions = DEFAULT_PREPROCESS): Uint8Array[] {
-  const blurred = boxBlur(gray, width, height, options.blurRadius);
-  return [adaptiveThreshold(blurred, width, height, options.sensitivity), blurred];
+function cropToScreen(gray: Uint8Array, width: number, height: number, cropWidth: number) {
+  const rect = findScreen(gray, width, height);
+  if (!rect) return { gray, width, height };
+  const cropped = cropGray(gray, width, rect);
+  const newHeight = Math.round((rect.height * cropWidth) / rect.width);
+  return { gray: resizeGray(cropped, rect.width, rect.height, cropWidth, newHeight), width: cropWidth, height: newHeight };
+}
+
+export function ocrInputs(gray: Uint8Array, width: number, height: number, options: PreprocessOptions = DEFAULT_PREPROCESS): OcrInputs {
+  const source = options.cropWidth ? cropToScreen(gray, width, height, options.cropWidth) : { gray, width, height };
+  const blurred = boxBlur(source.gray, source.width, source.height, options.blurRadius);
+  return {
+    images: [adaptiveThreshold(blurred, source.width, source.height, options.sensitivity), blurred],
+    width: source.width,
+    height: source.height,
+  };
 }

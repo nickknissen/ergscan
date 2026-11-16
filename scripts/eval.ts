@@ -17,7 +17,9 @@ const { values: args } = parseArgs({
     long: { type: 'string' },
     blur: { type: 'string' },
     sens: { type: 'string' },
+    crop: { type: 'string' },
     label: { type: 'string' },
+    dump: { type: 'boolean', default: false },
     show: { type: 'boolean', default: false },
   },
 });
@@ -26,6 +28,7 @@ const options: PreprocessOptions = {
   longSide: Number(args.long ?? DEFAULT_PREPROCESS.longSide),
   blurRadius: Number(args.blur ?? DEFAULT_PREPROCESS.blurRadius),
   sensitivity: Number(args.sens ?? DEFAULT_PREPROCESS.sensitivity),
+  cropWidth: args.crop === undefined ? DEFAULT_PREPROCESS.cropWidth : Number(args.crop) || null,
 };
 
 async function loadGray(file: string, longSide: number) {
@@ -53,15 +56,18 @@ interface Result extends OcrScore, WorkoutScore {
   ms: number;
 }
 
+const dumpDir = join(root, 'eval-results', 'images');
+if (args.dump) mkdirSync(dumpDir, { recursive: true });
+
 const results: Result[] = [];
 for (const { name, facts } of loadFacts()) {
   if (args.only && !name.includes(args.only)) continue;
   const started = Date.now();
   const { gray, width, height } = await loadGray(join(TESTDATA_DIR, facts.image), options.longSide);
-  const images = ocrInputs(gray, width, height, options);
-  const outcome = await firstParsed(
-    images.map((img) => async () => (await worker.recognize(await toPng(img, width, height))).data.text),
-  );
+  const inputs = ocrInputs(gray, width, height, options);
+  const pngs = await Promise.all(inputs.images.map((img) => toPng(img, inputs.width, inputs.height)));
+  if (args.dump) pngs.forEach((png, i) => writeFileSync(join(dumpDir, `${name}-${i}.png`), png));
+  const outcome = await firstParsed(pngs.map((png) => async () => (await worker.recognize(png)).data.text));
   const result = { name, ms: Date.now() - started, ...scoreOcr(outcome.text, facts.screen.rows), ...scoreWorkout(outcome.scan, facts) };
   results.push(result);
   if (args.show) console.log(`--- ${name}\n${outcome.text}`);
