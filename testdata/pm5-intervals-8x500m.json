@@ -1,0 +1,48 @@
+{
+  "image": "pm5-intervals-8x500m.jpeg",
+  "monitor": "PM5",
+  "capture": "phone photo, LCD fills most of the frame, uneven light",
+  "screen": {
+    "title": "8x500m/3:30r",
+    "date": "Nov 10 2026",
+    "totalTime": "41:49.4",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["13:49.4", "4000", "1:43.6", "34"],
+      ["1:44.7", "500", "1:44.7", "32", "147"],
+      ["1:44.3", "500", "1:44.3", "33", "150"],
+      ["1:44.2", "500", "1:44.2", "34", "150"],
+      ["1:44.3", "500", "1:44.3", "34", "151"],
+      ["1:44.0", "500", "1:44.0", "34", "151"],
+      ["1:43.7", "500", "1:43.7", "36", "152"],
+      ["1:43.1", "500", "1:43.1", "34", "152"],
+      ["1:41.1", "500", "1:41.1", "38", "153"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceInterval",
+    "date": "2026-11-10",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "13:49.4", "meters": 4000, "split": "1:43.6", "rate": 34 },
+    "laps": [
+      { "time": "1:44.7", "meters": 500, "rate": 32, "heartRate": 147 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:44.3", "meters": 500, "rate": 33, "heartRate": 150 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:44.2", "meters": 500, "rate": 34, "heartRate": 150 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:44.3", "meters": 500, "rate": 34, "heartRate": 151 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:44.0", "meters": 500, "rate": 34, "heartRate": 151 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:43.7", "meters": 500, "rate": 36, "heartRate": 152 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:43.1", "meters": 500, "rate": 34, "heartRate": 152 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:41.1", "meters": 500, "rate": 38, "heartRate": 153 },
+      { "time": "3:30.0", "rest": true }
+    ]
+  },
+  "notes": "Rest rows are not shown on screen; the 3:30 rest comes from the title and Total Time (13:49.4 work + 8 x 3:30 rest = 41:49.4). Rest meters are unknown. The summary row has no heart rate."
+}

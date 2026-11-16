@@ -1,0 +1,33 @@
+{
+  "image": "pm5-distance-splits-10000m.jpeg",
+  "monitor": "PM5",
+  "capture": "phone photo, left edge of the LCD cut off, dust on the screen",
+  "screen": {
+    "title": "10,000m",
+    "date": "Nov 09 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["43:49.7", "10000", "2:11.4", "18", "112"],
+      ["8:49.1", "2000", "2:12.2", "19", "107"],
+      ["8:45.1", "4000", "2:11.2", "18", "110"],
+      ["8:42.2", "6000", "2:10.5", "18", "113"],
+      ["8:44.4", "8000", "2:11.1", "18", "116"],
+      ["8:48.8", "10000", "2:12.2", "18", "117"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-11-09",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "43:49.7", "meters": 10000, "split": "2:11.4", "rate": 18, "heartRate": 112 },
+    "laps": [
+      { "time": "8:49.1", "meters": 2000, "rate": 19, "heartRate": 107 },
+      { "time": "8:45.1", "meters": 2000, "rate": 18, "heartRate": 110 },
+      { "time": "8:42.2", "meters": 2000, "rate": 18, "heartRate": 113 },
+      { "time": "8:44.4", "meters": 2000, "rate": 18, "heartRate": 116 },
+      { "time": "8:48.8", "meters": 2000, "rate": 18, "heartRate": 117 }
+    ]
+  },
+  "notes": "Meter column is cumulative. Splits sum to 43:49.6; the PM rounds the total to 43:49.7."
+}

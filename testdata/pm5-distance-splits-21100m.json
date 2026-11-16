@@ -1,0 +1,33 @@
+{
+  "image": "pm5-distance-splits-21100m.webp",
+  "monitor": "PM5",
+  "capture": "recompressed low-resolution phone photo of the whole monitor",
+  "screen": {
+    "title": "21,100m",
+    "date": "Oct 31 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["1:33:46.6", "21100", "2:13.3", "20"],
+      ["18:36.5", "4300", "2:09.8", "21"],
+      ["19:04.8", "8600", "2:13.1", "20"],
+      ["19:43.8", "12900", "2:17.6", "20"],
+      ["19:35.0", "17200", "2:16.6", "19"],
+      ["16:46.6", "21100", "2:09.0", "22"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-10-31",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "1:33:46.6", "meters": 21100, "split": "2:13.3", "rate": 20 },
+    "laps": [
+      { "time": "18:36.5", "meters": 4300, "rate": 21 },
+      { "time": "19:04.8", "meters": 4300, "rate": 20 },
+      { "time": "19:43.8", "meters": 4300, "rate": 20 },
+      { "time": "19:35.0", "meters": 4300, "rate": 19 },
+      { "time": "16:46.6", "meters": 3900, "rate": 22 }
+    ]
+  },
+  "notes": "Meter column is cumulative and the last split is shorter. Hour-long total. The screen also shows a Verification code that must be ignored."
+}

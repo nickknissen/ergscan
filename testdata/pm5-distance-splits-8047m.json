@@ -1,0 +1,39 @@
+{
+  "image": "pm5-distance-splits-8047m.jpeg",
+  "monitor": "PM5",
+  "capture": "phone photo, LCD fills most of the frame, slightly soft focus",
+  "screen": {
+    "title": "8047m",
+    "date": "Nov 02 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["36:20.4", "8047", "2:15.4", "19"],
+      ["2:08.6", "500", "2:08.6", "20"],
+      ["2:06.8", "1000", "2:06.8", "19"],
+      ["2:12.5", "1500", "2:12.5", "21"],
+      ["2:18.2", "2000", "2:18.2", "20"],
+      ["2:21.0", "2500", "2:21.0", "17"],
+      ["2:23.8", "3000", "2:23.8", "17"],
+      ["2:17.9", "3500", "2:17.9", "16"],
+      ["2:14.3", "4000", "2:14.3", "16"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-11-02",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "36:20.4", "meters": 8047, "split": "2:15.4", "rate": 19 },
+    "laps": [
+      { "time": "2:08.6", "meters": 500, "rate": 20 },
+      { "time": "2:06.8", "meters": 500, "rate": 19 },
+      { "time": "2:12.5", "meters": 500, "rate": 21 },
+      { "time": "2:18.2", "meters": 500, "rate": 20 },
+      { "time": "2:21.0", "meters": 500, "rate": 17 },
+      { "time": "2:23.8", "meters": 500, "rate": 17 },
+      { "time": "2:17.9", "meters": 500, "rate": 16 },
+      { "time": "2:14.3", "meters": 500, "rate": 16 }
+    ]
+  },
+  "notes": "Meter column is cumulative. Only 8 of 17 splits are visible; the screen scrolls."
+}

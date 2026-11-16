@@ -8,5 +8,5 @@
     "noUncheckedIndexedAccess": true,
     "types": ["node", "vite/client"]
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "testdata/**/*.ts", "scripts/**/*.ts", "vite.config.ts", "pwa-assets.config.ts"]
 }

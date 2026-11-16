@@ -1,0 +1,37 @@
+{
+  "image": "pm5-time-splits-30min.jpeg",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole monitor, background visible",
+  "screen": {
+    "title": "30:10",
+    "date": "Nov 02 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["30:10.2", "6518", "2:18.8", "20"],
+      ["5:00.0", "1056", "2:22.0", "20"],
+      ["10:00.0", "1073", "2:19.7", "20"],
+      ["15:00.0", "1069", "2:20.3", "20"],
+      ["20:00.0", "1068", "2:20.4", "20"],
+      ["25:00.0", "1069", "2:20.3", "21"],
+      ["30:00.0", "1144", "2:11.1", "25"],
+      ["30:10.2", "40", "2:07.5", "18"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-11-02",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "30:10.2", "meters": 6518, "split": "2:18.8", "rate": 20 },
+    "laps": [
+      { "time": "5:00.0", "meters": 1056, "rate": 20 },
+      { "time": "5:00.0", "meters": 1073, "rate": 20 },
+      { "time": "5:00.0", "meters": 1069, "rate": 20 },
+      { "time": "5:00.0", "meters": 1068, "rate": 20 },
+      { "time": "5:00.0", "meters": 1069, "rate": 21 },
+      { "time": "5:00.0", "meters": 1144, "rate": 25 },
+      { "time": "0:10.2", "meters": 40, "rate": 18 }
+    ]
+  },
+  "notes": "Time column is cumulative elapsed time; the last split is a 10.2 s remainder."
+}

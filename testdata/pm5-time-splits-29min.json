@@ -1,0 +1,35 @@
+{
+  "image": "pm5-time-splits-29min.jpeg",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole monitor, background visible",
+  "screen": {
+    "title": "29:15",
+    "date": "Oct 06 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["29:15.2", "6012", "2:25.9", "23"],
+      ["5:00.0", "1012", "2:28.2", "19"],
+      ["10:00.0", "1040", "2:24.2", "23"],
+      ["15:00.0", "1017", "2:27.4", "25"],
+      ["20:00.0", "1006", "2:29.1", "25"],
+      ["25:00.0", "1025", "2:26.3", "25"],
+      ["29:15.2", "913", "2:19.7", "26"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-10-06",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "29:15.2", "meters": 6012, "split": "2:25.9", "rate": 23 },
+    "laps": [
+      { "time": "5:00.0", "meters": 1012, "rate": 19 },
+      { "time": "5:00.0", "meters": 1040, "rate": 23 },
+      { "time": "5:00.0", "meters": 1017, "rate": 25 },
+      { "time": "5:00.0", "meters": 1006, "rate": 25 },
+      { "time": "5:00.0", "meters": 1025, "rate": 25 },
+      { "time": "4:15.2", "meters": 913, "rate": 26 }
+    ]
+  },
+  "notes": "Time column is cumulative elapsed time. No heart rate monitor, so the last column is empty."
+}

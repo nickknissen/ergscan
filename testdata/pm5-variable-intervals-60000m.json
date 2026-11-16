@@ -1,0 +1,40 @@
+{
+  "image": "pm5-variable-intervals-60000m.jpeg",
+  "monitor": "PM5",
+  "capture": "screenshot of a social media post: small LCD inside a larger image with unrelated text",
+  "screen": {
+    "title": "v25000m/4:00r...5",
+    "date": "Nov 4, 2026",
+    "totalTime": "4:44:54.8",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["4:26:54.8", "60000", "2:13.4", "22", "130"],
+      ["1:50:43.0", "25,000", "2:12.8", "21", "120"],
+      ["r4:00", "14"],
+      ["1:07:16.6", "15,000", "2:14.5", "21", "124"],
+      ["r5:00", "27"],
+      ["33:34.6", "7,500", "2:14.3", "27", "126"],
+      ["r5:00", "26"],
+      ["33:36.1", "7,500", "2:14.4", "23", "133"],
+      ["r4:00", "12"]
+    ]
+  },
+  "workout": {
+    "type": "VariableInterval",
+    "date": "2026-11-04",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "4:26:54.8", "meters": 60000, "split": "2:13.4", "rate": 22, "heartRate": 130 },
+    "laps": [
+      { "time": "1:50:43.0", "meters": 25000, "rate": 21, "heartRate": 120 },
+      { "time": "4:00.0", "meters": 14, "rest": true },
+      { "time": "1:07:16.6", "meters": 15000, "rate": 21, "heartRate": 124 },
+      { "time": "5:00.0", "meters": 27, "rest": true },
+      { "time": "33:34.6", "meters": 7500, "rate": 27, "heartRate": 126 },
+      { "time": "5:00.0", "meters": 26, "rest": true },
+      { "time": "33:36.1", "meters": 7500, "rate": 23, "heartRate": 133 },
+      { "time": "4:00.0", "meters": 12, "rest": true }
+    ]
+  },
+  "notes": "Variable intervals with rest rows shown as r-prefixed time and rest meters. Meters use thousands separators. The fifth interval is scrolled off screen, so laps do not add up to the summary."
+}

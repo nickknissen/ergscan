@@ -1,0 +1,33 @@
+{
+  "image": "pm4-time-splits-30min-calhr.webp",
+  "monitor": "PM4",
+  "capture": "phone photo of the whole monitor, greenish LCD with glare",
+  "screen": {
+    "title": "30:00",
+    "date": "Sep 20 2026",
+    "header": ["time", "meter", "cal/hr", "s/m", "♡"],
+    "rows": [
+      ["30:00.0", "6828", "825", "25"],
+      ["6:00.0", "1392", "857", "23"],
+      ["12:00.0", "1394", "859", "25"],
+      ["18:00.0", "1385", "848", "27"],
+      ["24:00.0", "1343", "800", "25"],
+      ["30:00.0", "1314", "768", "26"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-09-20",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "30:00.0", "meters": 6828, "split": "2:11.8", "rate": 25 },
+    "laps": [
+      { "time": "6:00.0", "meters": 1392, "rate": 23 },
+      { "time": "6:00.0", "meters": 1394, "rate": 25 },
+      { "time": "6:00.0", "meters": 1385, "rate": 27 },
+      { "time": "6:00.0", "meters": 1343, "rate": 25 },
+      { "time": "6:00.0", "meters": 1314, "rate": 26 }
+    ]
+  },
+  "notes": "Units set to cal/hr, so the pace column shows calories per hour instead of a split; the summary split is derived from time and meters. Time column is cumulative."
+}
