@@ -1,0 +1,60 @@
+import type { ParsedScan } from '../src/core/pm5Parser';
+import { parseTime } from '../src/core/time';
+import type { WorkoutRow } from '../src/core/workout';
+import type { FactLap, Facts } from './facts';
+
+export interface OcrScore {
+  cells: number;
+  cellsTotal: number;
+  rows: number;
+  rowsTotal: number;
+}
+
+export interface WorkoutScore {
+  fields: number;
+  fieldsTotal: number;
+  laps: number;
+  lapsExpected: number;
+}
+
+export function scoreOcr(text: string, screenRows: string[][]): OcrScore {
+  const bag = new Map<string, number>();
+  for (const token of text.replace(/[|[\]{}()]/g, ' ').split(/\s+/)) bag.set(token, (bag.get(token) ?? 0) + 1);
+  let cells = 0;
+  for (const cell of screenRows.flat()) {
+    const n = bag.get(cell) ?? 0;
+    if (n > 0) {
+      cells++;
+      bag.set(cell, n - 1);
+    }
+  }
+  const lines = text.split('\n').map((l) => ` ${l.replace(/[|[\]{}]/g, ' ').replace(/\s+/g, ' ').trim()} `);
+  const rows = screenRows.filter((r) => lines.some((l) => l.includes(` ${r.join(' ')} `))).length;
+  return { cells, cellsTotal: screenRows.flat().length, rows, rowsTotal: screenRows.length };
+}
+
+export function scoreWorkout(scan: ParsedScan | null, facts: Facts): WorkoutScore {
+  const checks: boolean[] = [];
+  const { summary, laps } = facts.workout;
+  const s = scan?.summary;
+  checks.push(s?.durationDs === parseTime(summary.time));
+  checks.push(s?.distanceM === summary.meters);
+  checks.push(s?.rate === summary.rate);
+  if (summary.heartRate !== undefined) checks.push(s?.heartRate === summary.heartRate);
+
+  laps.forEach((lap, i) => checks.push(...lapChecks(lap, scan?.rows[i])));
+  return {
+    fields: checks.filter(Boolean).length,
+    fieldsTotal: checks.length,
+    laps: scan?.rows.length ?? 0,
+    lapsExpected: laps.length,
+  };
+}
+
+function lapChecks(lap: FactLap, row: WorkoutRow | undefined): boolean[] {
+  const checks = [row?.durationDs === parseTime(lap.time), row?.isRest === (lap.rest ?? false)];
+  if (lap.meters !== undefined) checks.push(row?.distanceM === lap.meters);
+  if (lap.rate !== undefined) checks.push(row?.rate === lap.rate);
+  if (lap.heartRate !== undefined) checks.push(row?.heartRate === lap.heartRate);
+  return checks;
+}

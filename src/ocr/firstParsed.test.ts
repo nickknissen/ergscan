@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { firstParsed } from './scan';
-
-vi.mock('./tesseract', () => ({ recognizeText: vi.fn() }));
+import { firstParsed } from './firstParsed';
 
 const SPLITS = 'time meter /500m s/m\n4:00.0 1000 2:00.0 24\n2:00.0 500 2:00.0 24\n2:00.0 500 2:00.0 24';
 const SUMMARY_ONLY = 'time meter /500m s/m\n4:00.0 1000 2:00.0 24';

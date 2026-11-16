@@ -1,5 +1,6 @@
-import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
+import { createWorker, type Worker } from 'tesseract.js';
 import { ocrAssetUrl } from './assets';
+import { OCR_ENGINE, OCR_PARAMS } from './ocrConfig';
 
 export type OcrProgress = (status: string, progress: number) => void;
 
@@ -8,17 +9,14 @@ const listeners = new Set<OcrProgress>();
 
 export function getOcrWorker(): Promise<Worker> {
   workerPromise ??= (async () => {
-    const worker = await createWorker('eng', OEM.LSTM_ONLY, {
+    const worker = await createWorker('eng', OCR_ENGINE, {
       workerPath: ocrAssetUrl('worker.min.js'),
       corePath: ocrAssetUrl('core/'),
       langPath: ocrAssetUrl('lang/'),
       workerBlobURL: false,
       logger: (m) => listeners.forEach((l) => l(m.status, m.progress)),
     });
-    await worker.setParameters({
-      tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-      preserve_interword_spaces: '1',
-    });
+    await worker.setParameters(OCR_PARAMS);
     return worker;
   })().catch((error: unknown) => {
     workerPromise = null;

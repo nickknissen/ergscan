@@ -12,6 +12,7 @@ node_modules/
 dist/
 public/tesseract/
 .scratch/
+eval-results/
 .env
 .env.*
 !.env.example
