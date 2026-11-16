@@ -4,10 +4,17 @@
     "tagline": "Scan dine Concept2 PM5-resultater og eksportér en FIT-fil"
   },
   "capture": {
+    "camera": "Scan med kamera",
     "takePhoto": "Tag billede",
     "chooseImage": "Vælg billede",
     "manual": "Indtast manuelt",
     "hint": "Fotografér PM5-resultatskærmen lige forfra, så tabellen fylder det meste af billedet, og uden genskin på tallene."
+  },
+  "camera": {
+    "hint": "Placér PM-skærmen inden for rammen",
+    "capture": "Tag billede",
+    "cancel": "Annullér",
+    "failed": "Kameraet kunne ikke startes ({message}). Tag eller vælg et billede i stedet."
   },
   "scan": {
     "loading": "Indlæser OCR…",

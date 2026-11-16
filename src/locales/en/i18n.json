@@ -4,10 +4,17 @@
     "tagline": "Scan your Concept2 PM5 results and export a FIT file"
   },
   "capture": {
+    "camera": "Scan with camera",
     "takePhoto": "Take photo",
     "chooseImage": "Choose image",
     "manual": "Enter manually",
     "hint": "Photograph the PM5 results screen straight on, with the table filling most of the frame and no glare on the digits."
+  },
+  "camera": {
+    "hint": "Fit the PM screen inside the frame",
+    "capture": "Capture",
+    "cancel": "Cancel",
+    "failed": "The camera could not be started ({message}). Take or choose a photo instead."
   },
   "scan": {
     "loading": "Loading the OCR engine…",

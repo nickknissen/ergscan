@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import CameraCapture from './components/CameraCapture.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
 import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
 
-type Stage = 'capture' | 'scanning' | 'review';
+type Stage = 'capture' | 'camera' | 'scanning' | 'review';
 type FitModule = typeof import('./core/fitExport');
 
 const { t } = useI18n();
@@ -27,6 +28,8 @@ watch(stage, (value) => {
 
 const canExport = computed(() => Boolean(fitModule.value && workout.value?.summary.durationDs && workout.value.summary.distanceM));
 const canShare = computed(() => typeof navigator.canShare === 'function');
+const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
+const cameraError = ref('');
 
 function newWorkout(): Workout {
   return { startTime: new Date(), splitDistance: 500, summary: emptyRow(), rows: [] };
@@ -48,19 +51,35 @@ async function onImage(event: Event) {
   const file = input.files?.[0];
   input.value = '';
   if (!file) return;
+  await scanBlob(file, new Date(file.lastModified || Date.now()), false);
+}
 
+function openCamera() {
+  cameraError.value = '';
+  stage.value = 'camera';
+}
+
+function onCameraFailed(message: string) {
+  cameraError.value = t('camera.failed', { message });
+  stage.value = 'capture';
+}
+
+async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
   reset();
-  photoUrl.value = URL.createObjectURL(file);
+  photoUrl.value = URL.createObjectURL(image);
   stage.value = 'scanning';
   progressText.value = t('scan.loading');
 
   try {
     const { scanImage } = await import('./ocr/scan');
-    const outcome = await scanImage(file, (status, progress) => {
-      progressText.value = status === 'recognizing text' ? t('scan.recognizing', { percent: Math.round(progress * 100) }) : t('scan.loading');
-    });
+    const outcome = await scanImage(
+      image,
+      (status, progress) => {
+        progressText.value = status === 'recognizing text' ? t('scan.recognizing', { percent: Math.round(progress * 100) }) : t('scan.loading');
+      },
+      framed,
+    );
     rawText.value = outcome.text;
-    const photoTime = new Date(file.lastModified || Date.now());
     const start = photoTime;
     if (outcome.scan) {
       const { scan } = outcome;
@@ -125,7 +144,9 @@ async function share() {
   <main>
     <section v-if="stage === 'capture'" class="capture">
       <p class="muted">{{ t('capture.hint') }}</p>
-      <label class="button primary">
+      <p v-if="cameraError" class="notice" role="alert">{{ cameraError }}</p>
+      <button v-if="cameraSupported" type="button" class="primary" @click="openCamera">{{ t('capture.camera') }}</button>
+      <label v-if="!cameraSupported || cameraError" class="button secondary">
         {{ t('capture.takePhoto') }}
         <input type="file" accept="image/*" capture="environment" hidden @change="onImage" />
       </label>
@@ -135,6 +156,13 @@ async function share() {
       </label>
       <button type="button" class="link" @click="enterManually">{{ t('capture.manual') }}</button>
     </section>
+
+    <CameraCapture
+      v-else-if="stage === 'camera'"
+      @capture="(image) => scanBlob(image, new Date(), true)"
+      @cancel="stage = 'capture'"
+      @failed="onCameraFailed"
+    />
 
     <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
       <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
