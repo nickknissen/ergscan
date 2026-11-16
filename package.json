@@ -12,6 +12,7 @@
     "check": "vue-tsc --noEmit && vitest run"
   },
   "dependencies": {
+    "@garmin/fitsdk": "^21.221.0",
     "vue": "^3.5.45"
   },
   "devDependencies": {
