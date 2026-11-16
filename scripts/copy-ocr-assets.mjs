@@ -1,10 +1,13 @@
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const modules = join(root, 'node_modules');
-const target = join(root, 'public', 'tesseract');
+const versionOf = (pkg) => JSON.parse(readFileSync(join(modules, pkg, 'package.json'), 'utf8')).version;
+const version = `${versionOf('tesseract.js')}-${versionOf('tesseract.js-core')}`;
+rmSync(join(root, 'public', 'tesseract'), { recursive: true, force: true });
+const target = join(root, 'public', 'tesseract', version);
 
 const files = [
   ['tesseract.js/dist/worker.min.js', 'worker.min.js'],
@@ -19,4 +22,4 @@ for (const [from, to] of files) {
   mkdirSync(dirname(dest), { recursive: true });
   copyFileSync(join(modules, from), dest);
 }
-console.log(`Copied ${files.length} OCR assets to public/tesseract`);
+console.log(`Copied ${files.length} OCR assets to public/tesseract/${version}`);

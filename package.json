@@ -18,15 +18,18 @@
     "@garmin/fitsdk": "^21.221.0",
     "tesseract.js": "^7.0.0",
     "vue": "^3.5.45",
-    "vue-i18n": "^11.4.20"
+    "vue-i18n": "^11.4.20",
+    "wasm-feature-detect": "^1.10.1"
   },
   "devDependencies": {
     "@tesseract.js-data/eng": "^1.0.0",
     "@types/node": "^24.19.2",
+    "@vite-pwa/assets-generator": "^2.0.0",
     "@vitejs/plugin-vue": "^6.0.11",
     "@vue/tsconfig": "^0.9.1",
     "typescript": "~6.0.3",
     "vite": "^8.3.8",
+    "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.1.0",
     "vue-tsc": "^3.3.14"
   }

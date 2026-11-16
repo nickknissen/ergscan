@@ -1,20 +1,17 @@
 import { createWorker, OEM, PSM, type Worker } from 'tesseract.js';
+import { ocrAssetUrl } from './assets';
 
 export type OcrProgress = (status: string, progress: number) => void;
 
 let workerPromise: Promise<Worker> | null = null;
 const listeners = new Set<OcrProgress>();
 
-function assetUrl(path: string): string {
-  return new URL(`${import.meta.env.BASE_URL}tesseract/${path}`, window.location.href).href;
-}
-
 export function getOcrWorker(): Promise<Worker> {
   workerPromise ??= (async () => {
     const worker = await createWorker('eng', OEM.LSTM_ONLY, {
-      workerPath: assetUrl('worker.min.js'),
-      corePath: assetUrl('core/'),
-      langPath: assetUrl('lang/'),
+      workerPath: ocrAssetUrl('worker.min.js'),
+      corePath: ocrAssetUrl('core/'),
+      langPath: ocrAssetUrl('lang/'),
       workerBlobURL: false,
       logger: (m) => listeners.forEach((l) => l(m.status, m.progress)),
     });
