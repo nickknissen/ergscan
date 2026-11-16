@@ -127,6 +127,38 @@ describe('parsePm5Text', () => {
     expect(scan!.rows[1]).toMatchObject({ isRest: false, distanceM: 480, splitDs: 1250 });
   });
 
+  it('repairs cell-level OCR slips seen on real photos', () => {
+    const scan = parsePm5Text(
+      [
+        'time meter fS00m Zn \\ 4',
+        '13:49.4 4000 1:43.6 34  A',
+        '1:442 500 1:44.2 34150!Y',
+        '1:440 500 1:44.0 341514',
+        '© L431 500 1:43.01 34152)',
+        '5.00.0 1056 2:20,3 20  v',
+        '30:10.2 40 2i07.5 18  .',
+        '1:43.6 3000 1:43.6 30 1649',
+        '1:43.4 1000 1:43.4 29 155|_',
+      ].join('\n'),
+    );
+    const compact = scan!.rows.map((r) => [r.durationDs, r.distanceM, r.splitDs, r.rate, r.heartRate]);
+    expect(compact).toEqual([
+      [1042, 500, 1042, 34, 150],
+      [1040, 500, 1040, 34, 151],
+      [1031, 500, 1030, 34, 152],
+      [3000, 1056, 1403, 20, null],
+      [18102, 40, 1275, 18, null],
+      [1036, 3000, 1036, 30, 164],
+      [1034, 1000, 1034, 29, 155],
+    ]);
+  });
+
+  it('reads meters with thousands separators', () => {
+    const scan = parsePm5Text('time meter /500m s/m\n1:50:43.0 25,000 2:12.8 21 120\n33:34.6 7.500 2:14.3 27 126');
+    expect(scan!.summary.distanceM).toBe(25000);
+    expect(scan!.rows[0]!.distanceM).toBe(7500);
+  });
+
   it('returns null when no data rows are found', () => {
     expect(parsePm5Text('Concept2\nMain Menu\nJust Row')).toBeNull();
   });

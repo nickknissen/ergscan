@@ -12,7 +12,7 @@ export interface ParsedScan {
 type Token = { text: string; rest: boolean };
 type ParsedLine = { row: WorkoutRow; extra: number | null; restShaped: boolean; restDurationDs: number | null };
 
-const OCR_DIGIT_FIXES: Record<string, string> = { O: '0', o: '0', D: '0', I: '1', l: '1', '|': '1', S: '5', B: '8' };
+const OCR_DIGIT_FIXES: Record<string, string> = { O: '0', o: '0', D: '0', I: '1', l: '1', L: '1', S: '5', B: '8' };
 const MIN_SPLIT_DS = 500;
 const MAX_SPLIT_DS = 12000;
 
@@ -20,11 +20,13 @@ export function parsePm5Text(text: string): ParsedScan | null {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   let splitDistance: 500 | 1000 = 500;
   let extraColumn: ExtraColumn | null = null;
+  let headerSeen = false;
   const parsed: ParsedLine[] = [];
 
   for (const line of lines) {
     const header = readHeader(line);
     if (header) {
+      headerSeen = true;
       splitDistance = header.splitDistance;
       extraColumn = header.extraColumn;
       continue;
@@ -47,7 +49,7 @@ export function parsePm5Text(text: string): ParsedScan | null {
   if (rest.length === 0) {
     return { splitDistance, extraColumn, summary: first, summaryFromScreen: true, rows: [] };
   }
-  if (isSummaryOf(first, rest)) {
+  if (headerSeen || isSummaryOf(first, rest)) {
     return { splitDistance, extraColumn, summary: first, summaryFromScreen: true, rows: rest };
   }
   return { splitDistance, extraColumn, summary: sumRows(all, splitDistance), summaryFromScreen: false, rows: all };
@@ -67,21 +69,41 @@ function readHeader(line: string): { splitDistance: 500 | 1000; extraColumn: Ext
 
 function tokenize(line: string): Token[] {
   return line
-    .replace(/(\d),(\d)/g, '$1.$2')
+    .replace(/[|[\]{}()!©®“”‘’"`~<>_—–]/g, ' ')
+    .replace(/(\d),(\d)(?!\d)/g, '$1.$2')
     .replace(/(\d+:\d{2})\.\s+(\d)\b/g, '$1.$2')
     .replace(/(\d+:\d{2})\s+\.(\d)\b/g, '$1.$2')
     .split(/\s+/)
-    .map((piece) => {
-      let text = piece.replace(/^[^\w:.|]+|[^\w:.|]+$/g, '');
-      const rest = /^[rR]/.test(text);
-      if (rest) text = text.slice(1);
-      return { text: /\d/.test(text) ? text.replace(/[OoDIl|SB]/g, (c) => OCR_DIGIT_FIXES[c] ?? c) : text, rest };
-    })
+    .map(cleanToken)
     .filter((t) => /\d/.test(t.text));
 }
 
+function cleanToken(piece: string): Token {
+  let text = piece.replace(/^[^\w:.,]+|[^\w:.,]+$/g, '');
+  const rest = /^[rR]/.test(text);
+  if (rest) text = text.slice(1);
+  if (!/\d/.test(text)) return { text, rest };
+  text = text
+    .replace(/[OoDIlLSB]/g, (c) => OCR_DIGIT_FIXES[c] ?? c)
+    .replace(/(\d)[i;](\d)/g, '$1:$2')
+    .replace(/[A-Za-z]+$/, '')
+    .replace(/^(\d{1,2})\.(\d{2})\.(\d)$/, '$1:$2.$3')
+    .replace(/^((?:\d{1,2}:)?\d{1,2}:\d{2}\.\d)\d+$/, '$1');
+  return { text, rest };
+}
+
 function asInt(text: string): number | null {
-  return /^\d+$/.test(text) ? Number(text) : null;
+  if (/^\d+$/.test(text)) return Number(text);
+  if (/^\d{1,3}([.,]\d{3})+$/.test(text)) return Number(text.replace(/[.,]/g, ''));
+  return null;
+}
+
+function splitMergedRateAndExtra(value: number): { rate: number; extra: number } | null {
+  const digits = String(value);
+  if (digits.length < 4 || digits.length > 6) return null;
+  const rate = Number(digits.slice(0, 2));
+  const extra = Number(digits.slice(2, 5));
+  return rate >= 10 && rate <= 70 && extra >= 40 && extra <= 230 ? { rate, extra } : null;
 }
 
 function asTime(text: string, allowWholeSeconds: boolean): number | null {
@@ -131,8 +153,13 @@ function readRow(tokens: Token[]): ParsedLine | null {
     } else if (stage <= 3 && int !== null && int >= 10 && int <= 70) {
       row.rate = int;
       stage = 4;
+    } else if (stage <= 3 && int !== null && splitMergedRateAndExtra(int)) {
+      const merged = splitMergedRateAndExtra(int)!;
+      row.rate = merged.rate;
+      extra = merged.extra;
+      stage = 5;
     } else if (stage >= 2 && stage <= 4 && int !== null) {
-      extra = int;
+      extra = int >= 1000 && int < 10000 ? Math.floor(int / 10) : int;
       stage = 5;
     }
   }
