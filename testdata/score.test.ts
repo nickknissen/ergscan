@@ -7,6 +7,7 @@ const facts: Facts = {
   image: 'x.jpeg',
   monitor: 'PM5',
   capture: '',
+  screenRect: { x: 0, y: 0, width: 1, height: 1 },
   screen: { title: '', date: '', header: [], rows: [] },
   workout: {
     type: 'FixedDistanceSplits',

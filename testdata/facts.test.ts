@@ -16,6 +16,13 @@ describe('testdata fact files', () => {
       expect(existsSync(join(TESTDATA_DIR, facts.image))).toBe(true);
     });
 
+    it('marks a screen rectangle inside the image', () => {
+      const { x, y, width, height } = facts.screenRect;
+      expect(Math.min(x, y, width, height)).toBeGreaterThanOrEqual(0);
+      expect(x + width).toBeLessThanOrEqual(1);
+      expect(y + height).toBeLessThanOrEqual(1);
+    });
+
     it('uses valid PM times everywhere', () => {
       const times = [facts.workout.summary.time, facts.workout.summary.split, ...facts.workout.laps.map((l) => l.time)];
       for (const t of times) expect(parseTime(t), t).not.toBeNull();

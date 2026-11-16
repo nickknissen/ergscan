@@ -2,6 +2,7 @@
   "image": "pm4-time-splits-30min-calhr.webp",
   "monitor": "PM4",
   "capture": "phone photo of the whole monitor, greenish LCD with glare",
+  "screenRect": { "x": 0.194, "y": 0.306, "width": 0.574, "height": 0.413 },
   "screen": {
     "title": "30:00",
     "date": "Sep 20 2026",

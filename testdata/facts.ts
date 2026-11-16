@@ -13,6 +13,7 @@ export interface Facts {
   image: string;
   monitor: string;
   capture: string;
+  screenRect: { x: number; y: number; width: number; height: number };
   screen: {
     title: string;
     date: string;

@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
 import { createWorker } from 'tesseract.js';
+import { cropGray } from '../src/ocr/crop';
 import { firstParsed } from '../src/ocr/firstParsed';
+import { SCREEN_GUIDE } from '../src/ocr/guide';
 import { OCR_ENGINE, OCR_PARAMS } from '../src/ocr/ocrConfig';
 import { DEFAULT_PREPROCESS, ocrInputs, type PreprocessOptions } from '../src/ocr/preprocess';
 import { toGrayscale } from '../src/ocr/threshold';
@@ -20,6 +22,7 @@ const { values: args } = parseArgs({
     crop: { type: 'string' },
     label: { type: 'string' },
     dump: { type: 'boolean', default: false },
+    framed: { type: 'boolean', default: false },
     show: { type: 'boolean', default: false },
   },
 });
@@ -29,7 +32,18 @@ const options: PreprocessOptions = {
   blurRadius: Number(args.blur ?? DEFAULT_PREPROCESS.blurRadius),
   sensitivity: Number(args.sens ?? DEFAULT_PREPROCESS.sensitivity),
   cropWidth: args.crop === undefined ? DEFAULT_PREPROCESS.cropWidth : Number(args.crop) || null,
+  detectScreen: !args.framed,
 };
+
+function frameAroundScreen(gray: Uint8Array, width: number, height: number, screen: { x: number; y: number; width: number; height: number }) {
+  const m = SCREEN_GUIDE.margin;
+  const x0 = Math.max(0, Math.round((screen.x - screen.width * m) * width));
+  const y0 = Math.max(0, Math.round((screen.y - screen.height * m) * height));
+  const x1 = Math.min(width, Math.round((screen.x + screen.width * (1 + m)) * width));
+  const y1 = Math.min(height, Math.round((screen.y + screen.height * (1 + m)) * height));
+  const rect = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+  return { gray: cropGray(gray, width, rect), width: rect.width, height: rect.height };
+}
 
 async function loadGray(file: string, longSide: number) {
   const { data, info } = await sharp(file)
@@ -63,7 +77,8 @@ const results: Result[] = [];
 for (const { name, facts } of loadFacts()) {
   if (args.only && !name.includes(args.only)) continue;
   const started = Date.now();
-  const { gray, width, height } = await loadGray(join(TESTDATA_DIR, facts.image), options.longSide);
+  const loaded = await loadGray(join(TESTDATA_DIR, facts.image), options.longSide);
+  const { gray, width, height } = args.framed ? frameAroundScreen(loaded.gray, loaded.width, loaded.height, facts.screenRect) : loaded;
   const inputs = ocrInputs(gray, width, height, options);
   const pngs = await Promise.all(inputs.images.map((img) => toPng(img, inputs.width, inputs.height)));
   if (args.dump) pngs.forEach((png, i) => writeFileSync(join(dumpDir, `${name}-${i}.png`), png));

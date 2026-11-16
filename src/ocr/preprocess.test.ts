@@ -26,7 +26,7 @@ describe('boxBlur', () => {
 describe('ocrInputs', () => {
   it('produces a thresholded image first and the grayscale fallback second', () => {
     const gray = new Uint8Array(16).fill(200);
-    const { images, width, height } = ocrInputs(gray, 4, 4, { longSide: 4, blurRadius: 0, sensitivity: 0.15, cropWidth: null });
+    const { images, width, height } = ocrInputs(gray, 4, 4, { longSide: 4, blurRadius: 0, sensitivity: 0.15, cropWidth: null, detectScreen: true });
     expect([...new Set(images[0])]).toEqual([255]);
     expect(images[1]).toEqual(gray);
     expect([width, height]).toEqual([4, 4]);
@@ -37,9 +37,15 @@ describe('ocrInputs', () => {
     const height = 300;
     const gray = new Uint8Array(width * height).fill(30);
     for (let y = 100; y < 220; y++) for (let x = 120; x < 280; x++) gray[y * width + x] = 210;
-    const result = ocrInputs(gray, width, height, { longSide: 400, blurRadius: 0, sensitivity: 0.15, cropWidth: 320 });
+    const result = ocrInputs(gray, width, height, { longSide: 400, blurRadius: 0, sensitivity: 0.15, cropWidth: 320, detectScreen: true });
     expect(result.width).toBe(320);
     expect(result.height).toBeGreaterThan(230);
     expect(result.height).toBeLessThan(260);
+  });
+
+  it('only scales an already framed image when screen detection is off', () => {
+    const gray = new Uint8Array(400 * 300).fill(30);
+    const result = ocrInputs(gray, 400, 300, { longSide: 400, blurRadius: 0, sensitivity: 0.15, cropWidth: 200, detectScreen: false });
+    expect([result.width, result.height]).toEqual([200, 150]);
   });
 });

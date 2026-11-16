@@ -5,9 +5,9 @@ import { toGrayscale } from './threshold';
 
 export type { ScanOutcome } from './firstParsed';
 
-export async function scanImage(image: Blob, onProgress?: OcrProgress): Promise<ScanOutcome> {
+export async function scanImage(image: Blob, onProgress?: OcrProgress, framed = false): Promise<ScanOutcome> {
   const { gray, width, height } = await loadGray(image, DEFAULT_PREPROCESS.longSide);
-  const inputs = ocrInputs(gray, width, height);
+  const inputs = ocrInputs(gray, width, height, { ...DEFAULT_PREPROCESS, detectScreen: !framed });
   const canvases = inputs.images.map((values) => canvasFromGray(values, inputs.width, inputs.height));
   return firstParsed(canvases.map((canvas) => () => recognizeText(canvas, onProgress)));
 }

@@ -2,6 +2,7 @@
   "image": "pm5-time-splits-29min.jpeg",
   "monitor": "PM5",
   "capture": "phone photo of the whole monitor, background visible",
+  "screenRect": { "x": 0.139, "y": 0.271, "width": 0.705, "height": 0.538 },
   "screen": {
     "title": "29:15",
     "date": "Oct 06 2026",

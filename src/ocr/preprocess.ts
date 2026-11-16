@@ -6,6 +6,7 @@ export interface PreprocessOptions {
   blurRadius: number;
   sensitivity: number;
   cropWidth: number | null;
+  detectScreen: boolean;
 }
 
 export const DEFAULT_PREPROCESS: PreprocessOptions = {
@@ -13,6 +14,7 @@ export const DEFAULT_PREPROCESS: PreprocessOptions = {
   blurRadius: 2,
   sensitivity: 0.1,
   cropWidth: 1300,
+  detectScreen: true,
 };
 
 export interface OcrInputs {
@@ -46,16 +48,23 @@ function blurLine(src: Float32Array, dst: Float32Array, length: number, lines: n
   }
 }
 
+function scaleToWidth(gray: Uint8Array, width: number, height: number, targetWidth: number) {
+  const newHeight = Math.round((height * targetWidth) / width);
+  return { gray: resizeGray(gray, width, height, targetWidth, newHeight), width: targetWidth, height: newHeight };
+}
+
 function cropToScreen(gray: Uint8Array, width: number, height: number, cropWidth: number) {
   const rect = findScreen(gray, width, height);
   if (!rect) return { gray, width, height };
-  const cropped = cropGray(gray, width, rect);
-  const newHeight = Math.round((rect.height * cropWidth) / rect.width);
-  return { gray: resizeGray(cropped, rect.width, rect.height, cropWidth, newHeight), width: cropWidth, height: newHeight };
+  return scaleToWidth(cropGray(gray, width, rect), rect.width, rect.height, cropWidth);
 }
 
 export function ocrInputs(gray: Uint8Array, width: number, height: number, options: PreprocessOptions = DEFAULT_PREPROCESS): OcrInputs {
-  const source = options.cropWidth ? cropToScreen(gray, width, height, options.cropWidth) : { gray, width, height };
+  const source = !options.cropWidth
+    ? { gray, width, height }
+    : options.detectScreen
+      ? cropToScreen(gray, width, height, options.cropWidth)
+      : scaleToWidth(gray, width, height, options.cropWidth);
   const blurred = boxBlur(source.gray, source.width, source.height, options.blurRadius);
   return {
     images: [adaptiveThreshold(blurred, source.width, source.height, options.sensitivity), blurred],

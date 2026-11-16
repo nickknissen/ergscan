@@ -2,6 +2,7 @@
   "image": "pm5-distance-splits-10000m.jpeg",
   "monitor": "PM5",
   "capture": "phone photo, left edge of the LCD cut off, dust on the screen",
+  "screenRect": { "x": 0, "y": 0, "width": 0.856, "height": 0.683 },
   "screen": {
     "title": "10,000m",
     "date": "Nov 09 2026",

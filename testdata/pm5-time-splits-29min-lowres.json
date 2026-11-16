@@ -2,6 +2,7 @@
   "image": "pm5-time-splits-29min-lowres.webp",
   "monitor": "PM5",
   "capture": "recompressed low-resolution copy of pm5-time-splits-29min.jpeg",
+  "screenRect": { "x": 0.139, "y": 0.271, "width": 0.705, "height": 0.538 },
   "screen": {
     "title": "29:15",
     "date": "Oct 06 2026",

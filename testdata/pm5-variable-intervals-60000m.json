@@ -2,6 +2,7 @@
   "image": "pm5-variable-intervals-60000m.jpeg",
   "monitor": "PM5",
   "capture": "screenshot of a social media post: small LCD inside a larger image with unrelated text",
+  "screenRect": { "x": 0.273, "y": 0.462, "width": 0.356, "height": 0.362 },
   "screen": {
     "title": "v25000m/4:00r...5",
     "date": "Nov 4, 2026",

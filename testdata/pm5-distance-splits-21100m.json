@@ -2,6 +2,7 @@
   "image": "pm5-distance-splits-21100m.webp",
   "monitor": "PM5",
   "capture": "recompressed low-resolution phone photo of the whole monitor",
+  "screenRect": { "x": 0.111, "y": 0.222, "width": 0.722, "height": 0.538 },
   "screen": {
     "title": "21,100m",
     "date": "Oct 31 2026",
