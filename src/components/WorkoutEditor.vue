@@ -77,13 +77,13 @@ function recalculate() {
       <table>
         <thead>
           <tr>
-            <th>{{ t('columns.time') }}</th>
-            <th>{{ t('columns.meter') }}</th>
-            <th>{{ splitHeader }}</th>
-            <th>{{ t('columns.rate') }}</th>
-            <th v-if="extraColumn">{{ t(`columns.${extraColumn}`) }}</th>
-            <th>{{ t('columns.rest') }}</th>
-            <th></th>
+            <th class="col-time">{{ t('columns.time') }}</th>
+            <th class="col-meter">{{ t('columns.meter') }}</th>
+            <th class="col-split">{{ splitHeader }}</th>
+            <th class="col-small">{{ t('columns.rate') }}</th>
+            <th v-if="extraColumn" class="col-small">{{ t(`columns.${extraColumn}`) }}</th>
+            <th class="col-tight">{{ t('columns.rest') }}</th>
+            <th class="col-tight"></th>
           </tr>
         </thead>
         <tbody>
