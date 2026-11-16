@@ -384,6 +384,122 @@ button svg {
   margin: 0;
 }
 
+.group .tip {
+  margin: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.group .tip + .group-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 52px;
+  right: 0;
+  border-top: 0.5px solid var(--separator);
+}
+
+/* ---------- PM guide ---------- */
+
+.guide-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.guide-intro p {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+
+.guide-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.step-number {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.step-body {
+  min-width: 0;
+}
+
+.step-body h2 {
+  margin: 3px 0 6px;
+  font-size: 1.0625rem;
+}
+
+.step-body p {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.step-body p + p {
+  margin-top: 10px;
+}
+
+.step-body .step-path {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.step-body .step-warning {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+.step-warning svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}
+
+.step-body .step-note {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
 .capture-actions {
   display: flex;
   flex-direction: column;

@@ -10,6 +10,33 @@
     "manual": "Indtast manuelt",
     "hint": "Fotografér PM5-resultatskærmen lige forfra, så tabellen fylder det meste af billedet, og uden genskin på tallene."
   },
+  "guide": {
+    "title": "Find resultatet",
+    "open": "Sådan får du resultatskærmen frem",
+    "monitor": "Concept2 PM4",
+    "intro": "ErgScan læser resultattabellen med totalen og dine splits. Følg disse trin på monitoren, så det er den tabel, du fotograferer.",
+    "setup": {
+      "title": "Start en træning",
+      "body": "Vælg en træning med fast distance eller fast tid, så resultatet bliver delt op i splits. Just Row virker også: begynd bare at ro fra hovedmenuen.",
+      "path": "Select Workout › Standard List, eller New Workout › Single Distance / Single Time"
+    },
+    "finish": {
+      "title": "Afslut korrekt",
+      "body": "En træning med fast distance eller tid slutter af sig selv, når nedtællingen når nul, så ro videre indtil da. Ved Just Row: stop med at ro, vent 6 sekunder og tryk én gang på Menu {'|'} Back. Ro mindst 1 minut eller 100 m, ellers bliver intet gemt.",
+      "warning": "Tryk ikke på Menu {'|'} Back midt i træningen eller i en pause: så afsluttes træningen."
+    },
+    "results": {
+      "title": "Åbn resultatet",
+      "body": "Åbn træningen fra hukommelsen via hovedmenuen. Find den med pilene (tjek dato og tid), og tryk på knappen med forstørrelsesglasset for at se totalen og alle splits.",
+      "path": "More Options › Memory › List by Date › 🔍",
+      "note": "Hvis monitoren slukker, så tryk på en knap for at vække den. Træningen ligger stadig i hukommelsen."
+    },
+    "photo": {
+      "title": "Tag billedet",
+      "body": "Hold telefonen lige foran skærmen, lad tabellen fylde billedet, og undgå genskin på tallene. Tryk derefter på Scan med kamera."
+    },
+    "done": "Forstået"
+  },
   "camera": {
     "hint": "Placér PM-skærmen inden for rammen",
     "capture": "Tag billede",

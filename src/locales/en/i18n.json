@@ -10,6 +10,33 @@
     "manual": "Enter manually",
     "hint": "Photograph the PM5 results screen straight on, with the table filling most of the frame and no glare on the digits."
   },
+  "guide": {
+    "title": "Get the right screen",
+    "open": "How to get the results screen",
+    "monitor": "Concept2 PM4",
+    "intro": "ErgScan reads the results table with the total and the splits. Follow these steps on the monitor so that table is what you photograph.",
+    "setup": {
+      "title": "Start a workout",
+      "body": "Pick a set distance or set time workout so the result is split into parts. Just Row also works: start rowing from the main menu.",
+      "path": "Select Workout › Standard List, or New Workout › Single Distance / Single Time"
+    },
+    "finish": {
+      "title": "Finish it properly",
+      "body": "A set distance or time workout ends by itself when the countdown reaches zero, so keep rowing until then. For Just Row, stop rowing, wait 6 seconds and press Menu {'|'} Back once. Row at least 1 minute or 100 m, or nothing is saved.",
+      "warning": "Don't press Menu {'|'} Back mid-workout or during a rest: it ends the workout."
+    },
+    "results": {
+      "title": "Open the results",
+      "body": "From the main menu, open the workout from memory. Find it with the arrows (check the date and time), then press the magnifying glass button to see the total and every split.",
+      "path": "More Options › Memory › List by Date › 🔍",
+      "note": "If the monitor goes dark, press a button to wake it. The workout stays in memory."
+    },
+    "photo": {
+      "title": "Take the photo",
+      "body": "Hold the phone straight in front of the screen, let the table fill the frame and avoid glare on the digits. Then tap Scan with camera."
+    },
+    "done": "Got it"
+  },
   "camera": {
     "hint": "Fit the PM screen inside the frame",
     "capture": "Capture",

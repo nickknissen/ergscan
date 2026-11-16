@@ -2,16 +2,36 @@
 import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
+import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
 import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
 
-type Stage = 'capture' | 'camera' | 'scanning' | 'review';
+type Stage = 'guide' | 'capture' | 'camera' | 'scanning' | 'review';
 type FitModule = typeof import('./core/fitExport');
 
 const { t } = useI18n();
 
-const stage = ref<Stage>('capture');
+const GUIDE_SEEN_KEY = 'ergscan.guideSeen';
+
+function guideSeen(): boolean {
+  try {
+    return localStorage.getItem(GUIDE_SEEN_KEY) === '1';
+  } catch {
+    return true;
+  }
+}
+
+function closeGuide() {
+  try {
+    localStorage.setItem(GUIDE_SEEN_KEY, '1');
+  } catch {
+    // Storage unavailable: the guide simply shows again next time.
+  }
+  stage.value = 'capture';
+}
+
+const stage = ref<Stage>(guideSeen() ? 'capture' : 'guide');
 const workout = ref<Workout | null>(null);
 const extraColumn = ref<ExtraColumn | null>(null);
 const photoUrl = ref<string | null>(null);
@@ -154,13 +174,19 @@ async function share() {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
           <span>{{ t('export.newScan') }}</span>
         </button>
+        <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('app.title')" @click="closeGuide">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          <span>{{ t('app.title') }}</span>
+        </button>
       </div>
-      <h1 class="navbar-title">{{ stage === 'review' ? t('review.title') : t('app.title') }}</h1>
+      <h1 class="navbar-title">{{ stage === 'review' ? t('review.title') : stage === 'guide' ? t('guide.title') : t('app.title') }}</h1>
       <div class="navbar-side"></div>
     </header>
 
     <main class="screen" :class="`screen-${stage}`">
-      <section v-if="stage === 'capture'" class="capture">
+      <PmGuide v-if="stage === 'guide'" @done="closeGuide" />
+
+      <section v-else-if="stage === 'capture'" class="capture">
         <div class="hero">
           <img src="/icon.svg" alt="" class="hero-icon" width="88" height="88" />
           <p class="hero-tagline">{{ t('app.tagline') }}</p>
@@ -168,9 +194,19 @@ async function share() {
 
         <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
 
-        <div class="tip">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
-          <p>{{ t('capture.hint') }}</p>
+        <div class="group">
+          <div class="tip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+            <p>{{ t('capture.hint') }}</p>
+          </div>
+          <button type="button" class="group-row tappable accent" @click="stage = 'guide'">
+            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="3" width="14" height="18" rx="2" />
+              <path d="M9 8h6M9 12h6M9 16h3" />
+            </svg>
+            <span class="row-label">{{ t('guide.open') }}</span>
+            <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
         </div>
 
         <div class="capture-actions">
