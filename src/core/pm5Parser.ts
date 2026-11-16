@@ -1,7 +1,14 @@
 import { parseTime } from './time';
 import { emptyRow, splitFor, sumRows, type ExtraColumn, type WorkoutRow } from './workout';
 
+export interface ScreenDate {
+  year: number;
+  month: number;
+  day: number;
+}
+
 export interface ParsedScan {
+  date?: ScreenDate | null;
   splitDistance: 500 | 1000;
   extraColumn: ExtraColumn | null;
   summary: WorkoutRow;
@@ -22,11 +29,13 @@ export function parsePm5Text(text: string): ParsedScan | null {
   let extraColumn: ExtraColumn | null = null;
   let headerSeen = false;
   let titleRestDs: number | null = null;
+  let date: ScreenDate | null = null;
   const parsed: ParsedLine[] = [];
 
   for (const line of lines) {
     const rest = headerSeen ? null : /(\d{1,2}:\d{2})r\b/.exec(line);
     if (rest) titleRestDs = parseTime(rest[1]!);
+    if (!headerSeen) date ??= readDate(line);
     const header = readHeader(line);
     if (header) {
       headerSeen = true;
@@ -54,11 +63,36 @@ export function parsePm5Text(text: string): ParsedScan | null {
     decumulate(rows, 'distanceM', 5);
     for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
     const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
-    return { splitDistance, extraColumn, summary, summaryFromScreen, rows: withRest };
+    return { date, splitDistance, extraColumn, summary, summaryFromScreen, rows: withRest };
   };
   if (rest.length === 0) return finish(first, [], true);
   if (headerSeen || isSummaryOf(first, rest)) return finish(first, rest, true);
   return finish(sumRows(all, splitDistance), all, false);
+}
+
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+function editDistance(a: string, b: string): number {
+  const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...new Array<number>(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) dp[0]![j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      dp[i]![j] = Math.min(dp[i - 1]![j]! + 1, dp[i]![j - 1]! + 1, dp[i - 1]![j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+  }
+  return dp[a.length]![b.length]!;
+}
+
+function readDate(line: string): ScreenDate | null {
+  const m = /([A-Za-z]{2,4})[^A-Za-z\d]{0,2}\s+(\d{1,2}),?\s+(20\d\d)\b/.exec(line);
+  if (!m) return null;
+  const word = m[1]!.toLowerCase().slice(0, 3);
+  const scored = MONTHS.map((name, index) => ({ index, distance: editDistance(word, name) })).sort((a, b) => a.distance - b.distance);
+  const [best, second] = scored as [{ index: number; distance: number }, { index: number; distance: number }];
+  if (best.distance > 1 || best.distance === second.distance) return null;
+  const day = Number(m[2]);
+  if (day < 1 || day > 31) return null;
+  return { year: Number(m[3]), month: best.index + 1, day };
 }
 
 function interleaveRest(rows: WorkoutRow[], restDs: number): WorkoutRow[] {

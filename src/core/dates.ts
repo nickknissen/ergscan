@@ -1,3 +1,5 @@
+import type { ScreenDate } from './pm5Parser';
+
 const pad = (n: number) => String(n).padStart(2, '0');
 
 export function toLocalInput(date: Date): string {
@@ -9,6 +11,14 @@ export function fromLocalInput(value: string): Date | null {
   if (!m) return null;
   const [, y, mo, d, h, mi] = m.map(Number) as [number, number, number, number, number, number];
   return new Date(y, mo - 1, d, h, mi);
+}
+
+export function startTimeFor(screenDate: ScreenDate | null | undefined, photoTime: Date, elapsedDs: number): Date {
+  const start = new Date(photoTime.getTime() - elapsedDs * 100);
+  if (!screenDate) return start;
+  const { year, month, day } = screenDate;
+  if (start.getFullYear() === year && start.getMonth() + 1 === month && start.getDate() === day) return start;
+  return new Date(year, month - 1, day, 12, 0);
 }
 
 export function fitFileName(start: Date): string {

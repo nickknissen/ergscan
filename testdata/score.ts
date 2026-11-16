@@ -41,6 +41,8 @@ export function scoreWorkout(scan: ParsedScan | null, facts: Facts): WorkoutScor
   checks.push(s?.distanceM === summary.meters);
   checks.push(s?.rate === summary.rate);
   if (summary.heartRate !== undefined) checks.push(s?.heartRate === summary.heartRate);
+  const d = scan?.date;
+  checks.push(d ? `${d.year}-${String(d.month).padStart(2, '0')}-${String(d.day).padStart(2, '0')}` === facts.workout.date : false);
 
   laps.forEach((lap, i) => checks.push(...lapChecks(lap, scan?.rows[i])));
   return {

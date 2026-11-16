@@ -2,7 +2,7 @@
 import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import WorkoutEditor from './components/WorkoutEditor.vue';
-import { fitFileName } from './core/dates';
+import { fitFileName, startTimeFor } from './core/dates';
 import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
 
 type Stage = 'capture' | 'scanning' | 'review';
@@ -60,9 +60,13 @@ async function onImage(event: Event) {
       progressText.value = status === 'recognizing text' ? t('scan.recognizing', { percent: Math.round(progress * 100) }) : t('scan.loading');
     });
     rawText.value = outcome.text;
-    const start = new Date(file.lastModified || Date.now());
+    const photoTime = new Date(file.lastModified || Date.now());
+    const start = photoTime;
     if (outcome.scan) {
-      workout.value = { startTime: start, splitDistance: outcome.scan.splitDistance, summary: outcome.scan.summary, rows: outcome.scan.rows };
+      const { scan } = outcome;
+      const elapsedDs = scan.rows.length > 0 ? scan.rows.reduce((a, r) => a + (r.durationDs ?? 0), 0) : (scan.summary.durationDs ?? 0);
+      const startTime = startTimeFor(scan.date, photoTime, elapsedDs);
+      workout.value = { startTime, splitDistance: scan.splitDistance, summary: scan.summary, rows: scan.rows };
       extraColumn.value = outcome.scan.extraColumn;
       computedSummary.value = !outcome.scan.summaryFromScreen;
     } else {

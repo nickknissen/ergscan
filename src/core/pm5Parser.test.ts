@@ -221,6 +221,18 @@ describe('parsePm5Text', () => {
     expect(scan!.rows.filter((r) => r.isRest)).toHaveLength(1);
   });
 
+  it.each([
+    ['Oct 06 2026  c  a', { year: 2026, month: 10, day: 6 }],
+    ['Nov 4, 2026', { year: 2026, month: 11, day: 4 }],
+    ['Sep 20 2026', { year: 2026, month: 9, day: 20 }],
+    ['Mow 05 2026  -.  w', null],
+    ['Nev 05 2026', { year: 2026, month: 11, day: 5 }],
+    ['ou 31 2026  FRD7-233%  a', null],
+  ])('reads the workout date from %s', (line, date) => {
+    const scan = parsePm5Text(`${line}\ntime meter /500m s/m\n2:00.0 500 2:00.0 24`);
+    expect(scan!.date).toEqual(date);
+  });
+
   it('reads meters with thousands separators', () => {
     const scan = parsePm5Text('time meter /500m s/m\n1:50:43.0 25,000 2:12.8 21 120\n33:34.6 7.500 2:14.3 27 126');
     expect(scan!.summary.distanceM).toBe(25000);
