@@ -52,19 +52,41 @@ describe('parsePm5Text', () => {
     expect(scan!.rows[4]).toMatchObject({ distanceM: 500, rate: 25 });
   });
 
-  it('maps the extra column to watts and reads /1000m splits from the header', () => {
+  it('reads /1000m splits from the header and heart rate from the last column', () => {
     const scan = parsePm5Text(`
-      time meter /1000m s/m watt
-      30:00.0 7500 4:00.0 22 203
-      10:00.0 2480 4:01.9 22 197
-      10:00.0 2500 4:00.0 22 203
-      10:00.0 2520 3:58.1 23 209
+      time meter /1000m s/m ♥
+      30:00.0 7500 4:00.0 22 150
+      10:00.0 2480 4:01.9 22 145
+      10:00.0 2500 4:00.0 22 151
+      10:00.0 2520 3:58.1 23 155
     `);
     expect(scan!.splitDistance).toBe(1000);
-    expect(scan!.extraColumn).toBe('watts');
-    expect(scan!.summary).toMatchObject({ durationDs: 18000, distanceM: 7500, watts: 203 });
-    expect(scan!.rows.map((r) => r.watts)).toEqual([197, 203, 209]);
-    expect(scan!.rows[0]!.heartRate).toBeNull();
+    expect(scan!.extraColumn).toBe('heartRate');
+    expect(scan!.rows.map((r) => [r.splitDs, r.heartRate])).toEqual([
+      [2419, 145],
+      [2400, 151],
+      [2381, 155],
+    ]);
+  });
+
+  it('reads watts from the pace column when Units is set to watts', () => {
+    const scan = parsePm5Text('time meter watt s/m ♥\n20:00.0 5000 203 22 150\n10:00.0 2480 197 22 145\n10:00.0 2520 209 23 155');
+    expect(scan!.summary).toMatchObject({ watts: 203, rate: 22, heartRate: 150, splitDs: 1200 });
+    expect(scan!.rows.map((r) => r.watts)).toEqual([197, 209]);
+  });
+
+  it('skips the cal/hr pace column and derives the split (PM4 OCR output)', () => {
+    const scan = parsePm5Text(
+      ['= meter calf Mm ®', '300.0  6828  825 25', '6:000 1392 857 23', '12000 1394  859 2S', '| 1800.0 1385  848 27', '| 24000 1343 800 26', '| 30000 1314 768 26'].join('\n'),
+    );
+    expect(scan!.summary).toMatchObject({ durationDs: 18000, distanceM: 6828, rate: 25, heartRate: null, splitDs: 1318 });
+    expect(scan!.rows.map((r) => [r.durationDs, r.distanceM, r.rate])).toEqual([
+      [3600, 1392, 23],
+      [3600, 1394, 25],
+      [3600, 1385, 27],
+      [3600, 1343, 26],
+      [3600, 1314, 26],
+    ]);
   });
 
   it('repairs dropped decimal points and colons', () => {
@@ -131,7 +153,7 @@ describe('parsePm5Text', () => {
     const scan = parsePm5Text(
       [
         'time meter fS00m Zn \\ 4',
-        '13:49.4 4000 1:43.6 34  A',
+        '59:59.9 9999 1:43.6 34  A',
         '1:442 500 1:44.2 34150!Y',
         '1:440 500 1:44.0 341514',
         '© L431 500 1:43.01 34152)',
@@ -170,6 +192,24 @@ describe('parsePm5Text', () => {
     expect(scan!.summary.durationDs).toBe(18102);
     expect(scan!.rows.map((r) => r.durationDs)).toEqual([3000, 3000, 3000, 3000, 3000, 3000, 102]);
     expect(scan!.rows.map((r) => r.distanceM)).toEqual([1056, 1073, 1069, 1068, 1069, 1144, 40]);
+  });
+
+  it('computes the total when OCR dropped the summary row instead of shifting every lap', () => {
+    const scan = parsePm5Text(
+      ['time meter fS00m mn 4', '5:00.0 1056 2:22.0 20', '10:00.0 1073 2:19.7 20', '15:00.0 1069 2:20.3 20', '30:00.0 1144 2:11.1 25'].join('\n'),
+    );
+    expect(scan!.summaryFromScreen).toBe(false);
+    expect(scan!.rows).toHaveLength(4);
+    expect(scan!.summary).toMatchObject({ durationDs: 4 * 3000, distanceM: 1056 + 1073 + 1069 + 1144 });
+  });
+
+  it('keeps the screen total when only one misread lap is larger than it', () => {
+    const scan = parsePm5Text(
+      ['time meter /500m s/m', '33.497 10000 2:11.4 18 112', '8:49.1 2000 2:12.2 19 107', '8145.1 4000 2:11.2 18 110', '8:42.2 6000 2:10.5 18 113', '8:44.4 8000 2:11.1 18 116'].join('\n'),
+    );
+    expect(scan!.summaryFromScreen).toBe(true);
+    expect(scan!.summary.distanceM).toBe(10000);
+    expect(scan!.rows).toHaveLength(4);
   });
 
   it('keeps a row whose time is unreadable instead of shifting every row up', () => {

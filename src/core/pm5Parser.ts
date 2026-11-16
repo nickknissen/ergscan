@@ -26,7 +26,7 @@ const MAX_SPLIT_DS = 12000;
 export function parsePm5Text(text: string): ParsedScan | null {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   let splitDistance: 500 | 1000 = 500;
-  let extraColumn: ExtraColumn | null = null;
+  let paceUnit: PaceUnit = 'split';
   let headerSeen = false;
   let titleRestDs: number | null = null;
   let date: ScreenDate | null = null;
@@ -40,34 +40,59 @@ export function parsePm5Text(text: string): ParsedScan | null {
     if (header) {
       headerSeen = true;
       splitDistance = header.splitDistance;
-      extraColumn = header.extraColumn;
+      paceUnit = header.paceUnit;
       parsed.length = 0;
       continue;
     }
-    const result = readRow(tokenize(line));
+    const result = readRow(tokenize(line), paceUnit);
     if (result) parsed.push(result);
   }
 
   if (parsed.length === 0) return null;
 
   markShapedRests(parsed);
-  if (!extraColumn && parsed.some((p) => p.extra !== null)) extraColumn = 'heartRate';
+  const extraColumn: ExtraColumn | null = parsed.some((p) => p.extra !== null) ? 'heartRate' : null;
   for (const p of parsed) {
-    if (p.extra !== null && extraColumn) p.row[extraColumn] = p.extra;
+    if (p.extra !== null) p.row.heartRate = p.extra;
   }
 
   const all = parsed.map((p) => p.row);
   const [first, ...rest] = all as [WorkoutRow, ...WorkoutRow[]];
-  const finish = (summary: WorkoutRow, rows: WorkoutRow[], summaryFromScreen: boolean): ParsedScan => {
+  const finish = (screenSummary: WorkoutRow | null, rows: WorkoutRow[]): ParsedScan => {
     decumulate(rows, 'durationDs', 10);
     decumulate(rows, 'distanceM', 5);
+    const summary = screenSummary ?? sumRows(rows, splitDistance);
+    const workTime = rows.filter((r) => !r.isRest).reduce((a, r) => a + (r.durationDs ?? 0), 0);
+    if (screenSummary && summary.durationDs !== null && workTime > summary.durationDs * 1.5) {
+      summary.durationDs = workTime;
+      summary.splitDs = null;
+    }
     for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
     const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
-    return { date, splitDistance, extraColumn, summary, summaryFromScreen, rows: withRest };
+    return { date, splitDistance, extraColumn, summary, summaryFromScreen: screenSummary !== null, rows: withRest };
   };
-  if (rest.length === 0) return finish(first, [], true);
-  if (headerSeen || isSummaryOf(first, rest)) return finish(first, rest, true);
-  return finish(sumRows(all, splitDistance), all, false);
+  if (rest.length === 0) return finish(first, []);
+  if ((headerSeen && (!exceededBy(first, rest) || metersAddUp(first, rest))) || isSummaryOf(first, rest)) return finish(first, rest);
+  return finish(null, all);
+}
+
+function metersAddUp(candidate: WorkoutRow, rows: WorkoutRow[]): boolean {
+  const total = candidate.distanceM;
+  const work = rows.filter((r) => !r.isRest && r.distanceM !== null).map((r) => r.distanceM!);
+  if (total === null || work.length === 0) return false;
+  const close = (v: number) => Math.abs(v - total) <= Math.max(10, total * 0.02);
+  return close(work.reduce((a, b) => a + b, 0)) || close(Math.max(...work));
+}
+
+function exceededBy(candidate: WorkoutRow, rows: WorkoutRow[]): boolean {
+  const work = rows.filter((r) => !r.isRest);
+  const larger = (key: 'durationDs' | 'distanceM') => {
+    const own = candidate[key];
+    if (own === null) return false;
+    const count = work.filter((r) => r[key] !== null && r[key]! > own * 1.01 + 1).length;
+    return count > 0 && count >= Math.ceil(work.length / 2);
+  };
+  return larger('durationDs') || larger('distanceM');
 }
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -102,7 +127,7 @@ function interleaveRest(rows: WorkoutRow[], restDs: number): WorkoutRow[] {
 function decumulate(rows: WorkoutRow[], key: 'durationDs' | 'distanceM', minTolerance: number): void {
   const work = rows.filter((r) => !r.isRest);
   const known = work.map((r, i) => ({ i, v: r[key] })).filter((k): k is { i: number; v: number } => k.v !== null);
-  if (known.length < 2 || known[0]!.i !== 0) return;
+  if (known.length < 3 || known[0]!.i !== 0) return;
   const step = known[0]!.v;
   if (step <= 0) return;
   const tolerance = Math.max(minTolerance, step * 0.02);
@@ -126,16 +151,15 @@ function decumulate(rows: WorkoutRow[], key: 'durationDs' | 'distanceM', minTole
   });
 }
 
-function readHeader(line: string): { splitDistance: 500 | 1000; extraColumn: ExtraColumn | null } | null {
+type PaceUnit = 'split' | 'watts' | 'calPerHour';
+
+function readHeader(line: string): { splitDistance: 500 | 1000; paceUnit: PaceUnit } | null {
   const lower = line.toLowerCase();
   const isHeader = /meter|s\/m|\/\s*[15]000?\s*m/.test(lower) || (/\btime\b/.test(lower) && !/\d:\d/.test(lower));
   if (!isHeader) return null;
   const splitDistance = /\/\s*1000\s*m/.test(lower) ? 1000 : 500;
-  let extraColumn: ExtraColumn | null = null;
-  if (/watt/.test(lower)) extraColumn = 'watts';
-  else if (/cal/.test(lower)) extraColumn = 'calories';
-  else if (/[♡♥]|\bhr\b|bpm/.test(lower)) extraColumn = 'heartRate';
-  return { splitDistance, extraColumn };
+  const paceUnit: PaceUnit = /watt/.test(lower) ? 'watts' : /cal/.test(lower) ? 'calPerHour' : 'split';
+  return { splitDistance, paceUnit };
 }
 
 function tokenize(line: string): Token[] {
@@ -195,7 +219,7 @@ function asTime(text: string, allowWholeSeconds: boolean): number | null {
   }
 }
 
-function readRow(tokens: Token[]): ParsedLine | null {
+function readRow(tokens: Token[], paceUnit: PaceUnit): ParsedLine | null {
   const [first, ...others] = tokens;
   if (!first) return null;
   const row = emptyRow();
@@ -218,7 +242,12 @@ function readRow(tokens: Token[]): ParsedLine | null {
       stage = 2;
       continue;
     }
-    const split = stage <= 2 ? asTime(t.text, false) : null;
+    if (stage === 2 && paceUnit !== 'split' && int !== null) {
+      if (paceUnit === 'watts') row.watts = int;
+      stage = 3;
+      continue;
+    }
+    const split = stage <= 2 && paceUnit === 'split' ? asTime(t.text, false) : null;
     if (split !== null && split >= MIN_SPLIT_DS && split <= MAX_SPLIT_DS) {
       row.splitDs = split;
       stage = 3;
