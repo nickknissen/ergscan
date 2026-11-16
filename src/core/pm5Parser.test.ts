@@ -90,6 +90,43 @@ describe('parsePm5Text', () => {
     expect(scan!.summary).toMatchObject({ durationDs: 2400, distanceM: 1000, splitDs: 1200, rate: 24 });
   });
 
+  it('reads real Tesseract output with dropped colons, lost rest markers and an unreadable heart icon', () => {
+    const scan = parsePm5Text(
+      [
+        'EE',
+        '4x500m/1:00r',
+        'time               meter                 /500m                  s/m             Q',
+        '8.000                              2000                                         2000                                           24                                152',
+        '2013                           500                                       2013                                      23                             141',
+        'r1:00                             23',
+        '1598                           500                                       1598                                      24                             150',
+        '71:00                             21',
+        '2:00.1                              500                                           2.00.1                                           24                                156',
+        '1:00                             22',
+        '1588                           500                                       1588                                      25                             161',
+        '                                                                                                                                              CL',
+      ].join('\n'),
+    );
+    expect(scan!.extraColumn).toBe('heartRate');
+    expect(scan!.summaryFromScreen).toBe(true);
+    expect(scan!.summary).toMatchObject({ durationDs: 4800, distanceM: 2000, splitDs: 1200, rate: 24, heartRate: 152 });
+    const compact = scan!.rows.map((r) => [r.durationDs, r.distanceM, r.splitDs, r.rate, r.heartRate, r.isRest]);
+    expect(compact).toEqual([
+      [1213, 500, 1213, 23, 141, false],
+      [600, 23, null, null, null, true],
+      [1198, 500, 1198, 24, 150, false],
+      [600, 21, null, null, null, true],
+      [1201, 500, 1201, 24, 156, false],
+      [600, 22, null, null, null, true],
+      [1188, 500, 1188, 25, 161, false],
+    ]);
+  });
+
+  it('does not treat a work row with missing split and rate as rest when its distance is normal', () => {
+    const scan = parsePm5Text('2:00.0 500 2:00.0 24\n2:00.0 480\n2:00.0 500 2:00.0 24');
+    expect(scan!.rows[1]).toMatchObject({ isRest: false, distanceM: 480, splitDs: 1250 });
+  });
+
   it('returns null when no data rows are found', () => {
     expect(parsePm5Text('Concept2\nMain Menu\nJust Row')).toBeNull();
   });

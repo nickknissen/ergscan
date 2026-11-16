@@ -9,21 +9,22 @@ export interface ParsedScan {
   rows: WorkoutRow[];
 }
 
-type Token = { kind: 'time' | 'int'; value: number; rest: boolean };
+type Token = { text: string; rest: boolean };
+type ParsedLine = { row: WorkoutRow; extra: number | null; restShaped: boolean; restDurationDs: number | null };
 
 const OCR_DIGIT_FIXES: Record<string, string> = { O: '0', o: '0', D: '0', I: '1', l: '1', '|': '1', S: '5', B: '8' };
+const MIN_SPLIT_DS = 500;
+const MAX_SPLIT_DS = 12000;
 
 export function parsePm5Text(text: string): ParsedScan | null {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   let splitDistance: 500 | 1000 = 500;
   let extraColumn: ExtraColumn | null = null;
-  let headerSeen = false;
-  const parsed: { row: WorkoutRow; extra: number | null }[] = [];
+  const parsed: ParsedLine[] = [];
 
   for (const line of lines) {
     const header = readHeader(line);
     if (header) {
-      headerSeen = true;
       splitDistance = header.splitDistance;
       extraColumn = header.extraColumn;
       continue;
@@ -34,7 +35,8 @@ export function parsePm5Text(text: string): ParsedScan | null {
 
   if (parsed.length === 0) return null;
 
-  if (!headerSeen && parsed.some((p) => p.extra !== null)) extraColumn = 'heartRate';
+  markShapedRests(parsed);
+  if (!extraColumn && parsed.some((p) => p.extra !== null)) extraColumn = 'heartRate';
   for (const p of parsed) {
     if (p.extra !== null && extraColumn) p.row[extraColumn] = p.extra;
     fillSplit(p.row, splitDistance);
@@ -64,71 +66,100 @@ function readHeader(line: string): { splitDistance: 500 | 1000; extraColumn: Ext
 }
 
 function tokenize(line: string): Token[] {
-  const raw = line
+  return line
     .replace(/(\d),(\d)/g, '$1.$2')
     .replace(/(\d+:\d{2})\.\s+(\d)\b/g, '$1.$2')
     .replace(/(\d+:\d{2})\s+\.(\d)\b/g, '$1.$2')
-    .split(/\s+/);
-  const tokens: Token[] = [];
-  for (const piece of raw) {
-    const token = classify(piece);
-    if (token) tokens.push(token);
-  }
-  return tokens;
+    .split(/\s+/)
+    .map((piece) => {
+      let text = piece.replace(/^[^\w:.|]+|[^\w:.|]+$/g, '');
+      const rest = /^[rR]/.test(text);
+      if (rest) text = text.slice(1);
+      return { text: /\d/.test(text) ? text.replace(/[OoDIl|SB]/g, (c) => OCR_DIGIT_FIXES[c] ?? c) : text, rest };
+    })
+    .filter((t) => /\d/.test(t.text));
 }
 
-function classify(piece: string): Token | null {
-  let text = piece.replace(/^[^\w:.|]+|[^\w:.|]+$/g, '');
-  let rest = false;
-  if (/^[rR]/.test(text)) {
-    rest = true;
-    text = text.slice(1);
-  }
-  if (!/\d/.test(text)) return null;
-  text = text.replace(/[OoDIl|SB]/g, (c) => OCR_DIGIT_FIXES[c] ?? c);
-  if (/^\d{1,2}:\d{3}$/.test(text)) text = `${text.slice(0, -1)}.${text.slice(-1)}`;
-  else if (/^\d{3,4}\.\d$/.test(text)) text = `${text.slice(0, -4)}:${text.slice(-4)}`;
-  else if (/^\d:\d{2}:\d{3}$/.test(text)) text = `${text.slice(0, -1)}.${text.slice(-1)}`;
-  if (/^\d+$/.test(text)) return { kind: 'int', value: Number(text), rest };
-  const ds = parseTime(text);
-  if (ds !== null) return { kind: 'time', value: ds, rest };
-  return null;
+function asInt(text: string): number | null {
+  return /^\d+$/.test(text) ? Number(text) : null;
 }
 
-function readRow(tokens: Token[]): { row: WorkoutRow; extra: number | null } | null {
-  const first = tokens[0];
+function asTime(text: string, allowWholeSeconds: boolean): number | null {
+  if (/^\d{0,2}(:\d{2}){1,2}(\.\d)?$/.test(text)) return parseTime(text);
+  if (!/^[\d:.]+$/.test(text)) return null;
+  const d = text.replace(/\D/g, '');
+  switch (d.length) {
+    case 3:
+      return allowWholeSeconds ? parseTime(`${d[0]}:${d.slice(1)}`) : null;
+    case 4:
+      return parseTime(`${d[0]}:${d.slice(1, 3)}.${d[3]}`);
+    case 5:
+      return parseTime(`${d.slice(0, 2)}:${d.slice(2, 4)}.${d[4]}`);
+    case 6:
+      return parseTime(`${d[0]}:${d.slice(1, 3)}:${d.slice(3, 5)}.${d[5]}`);
+    default:
+      return null;
+  }
+}
+
+function readRow(tokens: Token[]): ParsedLine | null {
+  const [first, ...others] = tokens;
   if (!first) return null;
   const row = emptyRow();
-  row.isRest = first.rest;
+  row.isRest = first.rest || Boolean(others[0]?.rest);
 
-  if (first.rest && first.kind === 'int') {
-    row.distanceM = first.value;
-    return { row, extra: null };
+  if (first.rest && asInt(first.text) !== null && others.length === 0) {
+    row.distanceM = asInt(first.text);
+    return { row, extra: null, restShaped: false, restDurationDs: null };
   }
-  if (first.kind !== 'time') return null;
-  row.durationDs = first.value;
+  row.durationDs = asTime(first.text, true);
+  if (row.durationDs === null) return null;
 
   let extra: number | null = null;
   let stage = 1;
-  for (const t of tokens.slice(1)) {
-    if (stage <= 1 && t.kind === 'int') {
-      row.distanceM = t.value;
+  for (const t of others) {
+    const int = asInt(t.text);
+    if (stage <= 1 && int !== null) {
+      row.distanceM = int;
       stage = 2;
-    } else if (stage <= 2 && t.kind === 'time') {
-      row.splitDs = t.value;
+      continue;
+    }
+    const split = stage <= 2 ? asTime(t.text, false) : null;
+    if (split !== null && split >= MIN_SPLIT_DS && split <= MAX_SPLIT_DS) {
+      row.splitDs = split;
       stage = 3;
-    } else if (stage <= 3 && t.kind === 'int' && t.value >= 10 && t.value <= 70 && !row.isRest) {
-      row.rate = t.value;
+    } else if (stage <= 3 && int !== null && int >= 10 && int <= 70) {
+      row.rate = int;
       stage = 4;
-    } else if (stage >= 2 && stage <= 4 && t.kind === 'int' && !row.isRest) {
-      extra = t.value;
+    } else if (stage >= 2 && stage <= 4 && int !== null) {
+      extra = int;
       stage = 5;
     }
   }
 
-  const filled = [row.distanceM, row.splitDs, row.rate].filter((v) => v !== null).length;
-  if (!row.isRest && filled === 0) return null;
-  return { row, extra };
+  if (row.isRest) {
+    row.splitDs = null;
+    row.rate = null;
+    extra = null;
+  } else if (row.distanceM === null && row.splitDs === null && row.rate === null) {
+    return null;
+  }
+
+  const restShaped = !row.isRest && others.length === 1 && row.distanceM !== null;
+  const stripped = /^[7fFtT]\d/.test(first.text) ? asTime(first.text.slice(1), true) : null;
+  return { row, extra, restShaped, restDurationDs: stripped ?? row.durationDs };
+}
+
+function markShapedRests(lines: ParsedLine[]): void {
+  const work = lines.filter((l) => !l.restShaped && !l.row.isRest && l.row.splitDs !== null && l.row.distanceM !== null);
+  if (work.length === 0) return;
+  const distances = work.map((l) => l.row.distanceM!).sort((a, b) => a - b);
+  const median = distances[Math.floor(distances.length / 2)]!;
+  for (const line of lines) {
+    if (!line.restShaped || line.row.distanceM! >= median * 0.3) continue;
+    line.row.isRest = true;
+    line.row.durationDs = line.restDurationDs;
+  }
 }
 
 function fillSplit(row: WorkoutRow, splitDistance: number): void {
