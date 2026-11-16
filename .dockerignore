@@ -1,0 +1,9 @@
+node_modules
+dist
+public/tesseract
+.git
+.env
+.env.*
+re
+eval-results
+.scratch
