@@ -67,13 +67,40 @@ export function findScreen(gray: Uint8Array, width: number, height: number): Rec
   const h = Math.max(1, Math.round(height * scale));
   const small = scale < 1 ? resizeGray(gray, width, height, w, h) : gray;
   const threshold = otsuThreshold(small);
+  const best =
+    brightestPanel(small, w, h, threshold, false) ??
+    brightestPanel(small, w, h, otsuThreshold(small.filter((v) => v <= threshold)), true);
+  if (!best) return null;
 
+  const pad = 0.02;
+  const x0 = Math.max(0, Math.floor((best.x - best.width * pad) / scale));
+  const y0 = Math.max(0, Math.floor((best.y - best.height * pad) / scale));
+  const x1 = Math.min(width, Math.ceil((best.x + best.width * (1 + pad)) / scale));
+  const y1 = Math.min(height, Math.ceil((best.y + best.height * (1 + pad)) / scale));
+  return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+}
+
+function brightMask(small: Uint8Array, w: number, h: number, threshold: number, radius: number): Uint8Array {
+  const mask = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (small[y * w + x]! <= threshold) continue;
+      for (let yy = Math.max(0, y - radius); yy <= Math.min(h - 1, y + radius); yy++) {
+        for (let xx = Math.max(0, x - radius); xx <= Math.min(w - 1, x + radius); xx++) mask[yy * w + xx] = 1;
+      }
+    }
+  }
+  return mask;
+}
+
+function brightestPanel(small: Uint8Array, w: number, h: number, threshold: number, nested: boolean): Rect | null {
+  const bright = brightMask(small, w, h, threshold, nested ? 1 : 0);
   const labels = new Int32Array(w * h).fill(-1);
   const stack: number[] = [];
   let best: { rect: Rect; score: number } | null = null;
 
   for (let start = 0; start < w * h; start++) {
-    if (labels[start] !== -1 || small[start]! <= threshold) continue;
+    if (labels[start] !== -1 || !bright[start]) continue;
     let minX = w, minY = h, maxX = 0, maxY = 0, area = 0;
     let touches = 0;
     labels[start] = start;
@@ -88,7 +115,7 @@ export function findScreen(gray: Uint8Array, width: number, height: number): Rec
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
       for (const q of [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, y > 0 ? p - w : -1, y < h - 1 ? p + w : -1]) {
-        if (q >= 0 && labels[q] === -1 && small[q]! > threshold) {
+        if (q >= 0 && labels[q] === -1 && bright[q]) {
           labels[q] = start;
           stack.push(q);
         }
@@ -103,16 +130,11 @@ export function findScreen(gray: Uint8Array, width: number, height: number): Rec
     const boxH = maxY - minY + 1;
     const fill = area / (boxW * boxH);
     const aspect = boxW / boxH;
-    if (fill < 0.45 || aspect < 0.5 || aspect > 2) continue;
+    if ((nested && touches === 4) || fill < 0.45 || aspect < 0.5 || aspect > 2) continue;
     const score = area * fill * (touches >= 2 ? 0.25 : touches === 1 ? 0.8 : 1);
     if (!best || score > best.score) best = { rect: { x: minX, y: minY, width: boxW, height: boxH }, score };
   }
 
   if (!best || best.rect.width * best.rect.height < w * h * 0.04) return null;
-  const pad = 0.02;
-  const x0 = Math.max(0, Math.floor((best.rect.x - best.rect.width * pad) / scale));
-  const y0 = Math.max(0, Math.floor((best.rect.y - best.rect.height * pad) / scale));
-  const x1 = Math.min(width, Math.ceil((best.rect.x + best.rect.width * (1 + pad)) / scale));
-  const y1 = Math.min(height, Math.ceil((best.rect.y + best.rect.height * (1 + pad)) / scale));
-  return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+  return best.rect;
 }

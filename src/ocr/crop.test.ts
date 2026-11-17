@@ -50,6 +50,29 @@ describe('findScreen', () => {
     expect(rect.y + rect.height).toBeLessThan(780);
   });
 
+  it('finds a grey LCD with ruled lines below a white page in a screenshot', () => {
+    const width = 640;
+    const height = 640;
+    const { gray, fill } = scene(width, height);
+    fill(0, 0, width, 260, 250);
+    fill(0, 260, width, height, 150);
+    fill(160, 300, 480, 620, 30);
+    fill(200, 340, 440, 580, 160);
+    fill(210, 400, 430, 402, 40);
+    fill(210, 440, 430, 442, 40);
+    fill(210, 350, 212, 570, 40);
+
+    const rect = findScreen(gray, width, height)!;
+    expect(rect.x).toBeGreaterThan(185);
+    expect(rect.x).toBeLessThan(200);
+    expect(rect.y).toBeGreaterThan(325);
+    expect(rect.y).toBeLessThan(340);
+    expect(rect.x + rect.width).toBeGreaterThan(440);
+    expect(rect.x + rect.width).toBeLessThan(455);
+    expect(rect.y + rect.height).toBeGreaterThan(580);
+    expect(rect.y + rect.height).toBeLessThan(595);
+  });
+
   it('returns null when nothing screen-like is present', () => {
     const { gray } = scene(100, 100);
     expect(findScreen(gray, 100, 100)).toBeNull();
