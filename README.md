@@ -5,23 +5,32 @@ PM4 or PM5 monitor from a photo and exports the workout as a FIT file you can up
 Strava, Garmin Connect, intervals.icu or any other tool that accepts FIT.
 
 Everything runs on your device. The photo is never uploaded: text recognition
-happens in the browser, and the app keeps working offline once it has been
-opened.
+happens in the browser, saved workouts and settings stay in the browser's
+local storage, and the app keeps working offline once it has been opened.
 
 ## Features
 
 - Take a photo of the PM4/PM5 results screen, or pick an image you already have.
+  A step-by-step guide shows how to reach the results screen on a PM5 or PM4.
+- Finds the LCD in the image before reading it, so cropped photos and
+  screenshots of social media posts work as well as close-ups.
 - Offline OCR with [Tesseract.js](https://github.com/naptha/tesseract.js),
   with image thresholding to cope with glare and uneven light on the LCD.
 - Parses the PM4/PM5 table: time, meters, split (/500m or /1000m), stroke rate,
   and heart rate, watts or calories. Rest intervals are detected.
 - Editable review table to fix anything the OCR got wrong, add or remove rows,
-  set the start time and recalculate the total.
+  set the start time and recalculate the total. Unsaved edits survive a reload.
+- Time in heart rate zones (60/70/80/90% of max) on the result page, using a
+  measured max heart rate or one estimated from your age.
+- History of saved workouts, kept on the device.
 - FIT export as an indoor rowing activity: one lap per split or interval, rest
   laps marked as rest, and per-lap distance, stroke rate, power and heart rate.
   Power is derived from pace when the screen has no watts column.
 - Manual entry when no photo is at hand.
-- Installable PWA in English and Danish.
+- Settings for light or dark theme, accent color, heart rate, hiding the intro
+  card and clearing all app data.
+- Installable Material 3 PWA in English and Danish, with a bottom bar on phones
+  and a navigation rail on wide screens.
 
 ## Taking a good photo
 
@@ -39,21 +48,52 @@ npm run dev        # start the dev server
 npm run check      # typecheck and run the tests
 npm run build      # production build in dist/
 npm run preview    # serve the production build
+npm run eval       # score OCR and parsing against the labelled test images
 ```
 
 `npm run dev` and `npm run build` copy the Tesseract worker, wasm core and
 English model from `node_modules` into `public/tesseract/`, so the app never
 loads OCR files from a CDN.
 
+### OCR evaluation
+
+`testdata/` holds photos and screenshots of PM4/PM5 results screens, each with
+a JSON file describing what the screen shows and the workout it should parse
+to. `npm run eval` runs the same preprocessing and OCR as the app on every
+image in Node and prints per-image scores for OCR cells, rows, workout fields
+and lap counts. Results are saved to `eval-results/` (ignored by git).
+
+Useful flags, passed after `--`:
+
+| Flag | Effect |
+| --- | --- |
+| `--only <text>` | Only images whose name contains the text |
+| `--sens <n>`, `--blur <n>`, `--long <n>`, `--crop <n>` | Override a preprocessing option |
+| `--framed` | Skip screen detection and use the labelled screen position |
+| `--show` | Print the OCR text |
+| `--dump` | Write the preprocessed images to `eval-results/images/` |
+| `--label <name>` | Add a label to the saved result file name |
+
+### Docker
+
+The `Dockerfile` builds the app and serves `dist/` with nginx on port 80:
+
+```sh
+docker build -t ergscan .
+docker run -p 8080:80 ergscan
+```
+
 ### Project layout
 
 | Path | Purpose |
 | --- | --- |
-| `src/core/` | Framework-free logic: time parsing, PM4/PM5 parser, workout model, FIT export |
-| `src/ocr/` | Image preprocessing, Tesseract worker and OCR asset caching |
-| `src/components/` | Vue components for the review table |
+| `src/core/` | Framework-free logic: time parsing, PM4/PM5 parser, workout model, FIT export, heart rate zones, history, settings, routing |
+| `src/ocr/` | Screen detection, image preprocessing, Tesseract worker and OCR asset caching |
+| `src/components/` | Vue components: camera, review table, PM guide, Material 3 dialogs and menus |
+| `src/ui/` | Framework-free UI behavior: icons, menus, ripples, transitions, confirm dialogs |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
-| `scripts/` | Build helpers |
+| `testdata/` | Labelled results-screen images for tests and `npm run eval` |
+| `scripts/` | Build helpers and the OCR evaluation script |
 
 ### Adding a language
 
