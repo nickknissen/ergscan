@@ -2,6 +2,7 @@ import add from '@material-symbols/svg-400/rounded/add.svg?raw';
 import arrowBack from '@material-symbols/svg-400/rounded/arrow_back.svg?raw';
 import arrowDropDown from '@material-symbols/svg-400/rounded/arrow_drop_down.svg?raw';
 import cake from '@material-symbols/svg-400/rounded/cake.svg?raw';
+import cameraswitch from '@material-symbols/svg-400/rounded/cameraswitch.svg?raw';
 import calculate from '@material-symbols/svg-400/rounded/calculate.svg?raw';
 import check from '@material-symbols/svg-400/rounded/check.svg?raw';
 import contrast from '@material-symbols/svg-400/rounded/contrast.svg?raw';
@@ -43,6 +44,7 @@ export const ICONS = {
   arrow_drop_down: pair(arrowDropDown),
   cake: pair(cake),
   calculate: pair(calculate),
+  cameraswitch: pair(cameraswitch),
   check: pair(check),
   contrast: pair(contrast),
   delete: pair(deleteIcon),

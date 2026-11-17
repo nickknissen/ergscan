@@ -1382,6 +1382,13 @@ button svg {
   background: #000;
 }
 
+.camera-actions .camera-switch {
+  justify-self: end;
+  width: 48px;
+  min-height: 48px;
+  color: #fff;
+}
+
 .camera-cancel {
   justify-self: start;
   padding: 0 12px;

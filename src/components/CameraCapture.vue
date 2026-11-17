@@ -2,7 +2,9 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { captureRect, guideRectInView, type Size } from '../ocr/guide';
+import { CAMERA_KEY, lostChosenCamera, nextCamera, videoConstraints, videoInputs } from './cameraChoice';
 import { cameraFailure } from './cameraFailure';
+import MdIcon from './MdIcon.vue';
 
 const emit = defineEmits<{
   capture: [image: Blob];
@@ -48,16 +50,16 @@ async function start() {
   timeout = setTimeout(() => {
     if (current === attempt && state.value === 'starting') state.value = 'stalled';
   }, START_TIMEOUT_MS);
+  const chosen = chosenCamera();
   try {
-    const media = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 2560 }, height: { ideal: 1920 } },
-    });
+    const media = await navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints(chosen) });
     if (current !== attempt) {
       media.getTracks().forEach((track) => track.stop());
       return;
     }
     stream = media;
+    cameraId.value = media.getVideoTracks()[0]?.getSettings().deviceId ?? null;
+    void refreshCameras();
     media.getVideoTracks().forEach((track) =>
       track.addEventListener('ended', () => {
         if (current !== attempt) return;
@@ -72,8 +74,44 @@ async function start() {
   } catch (error) {
     if (current !== attempt) return;
     stop();
+    if (lostChosenCamera(error, chosen)) {
+      chooseCamera(null);
+      void start();
+      return;
+    }
     emit('failed', failureMessage(error));
   }
+}
+
+const cameras = ref<MediaDeviceInfo[]>([]);
+const cameraId = ref<string | null>(null);
+
+function chosenCamera(): string | null {
+  try {
+    return sessionStorage.getItem(CAMERA_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function chooseCamera(id: string | null) {
+  try {
+    if (id) sessionStorage.setItem(CAMERA_KEY, id);
+    else sessionStorage.removeItem(CAMERA_KEY);
+  } catch {
+    // Storage unavailable: the switch still applies until the camera closes.
+  }
+}
+
+async function refreshCameras() {
+  cameras.value = videoInputs(await navigator.mediaDevices.enumerateDevices());
+}
+
+function switchCamera() {
+  const next = nextCamera(cameras.value, cameraId.value);
+  if (!next) return;
+  chooseCamera(next);
+  void start();
 }
 
 function onVisibilityChange() {
@@ -91,6 +129,7 @@ onMounted(() => {
   });
   if (container.value) observer.observe(container.value);
   document.addEventListener('visibilitychange', onVisibilityChange);
+  navigator.mediaDevices.addEventListener('devicechange', refreshCameras);
   void start();
 });
 
@@ -98,6 +137,7 @@ onBeforeUnmount(() => {
   attempt++;
   observer?.disconnect();
   document.removeEventListener('visibilitychange', onVisibilityChange);
+  navigator.mediaDevices.removeEventListener('devicechange', refreshCameras);
   stop();
 });
 
@@ -141,7 +181,17 @@ function capture() {
     <div class="camera-actions">
       <button type="button" class="camera-cancel" @click="emit('cancel')">{{ t('camera.cancel') }}</button>
       <button type="button" class="shutter" :disabled="!ready" :aria-label="t('camera.capture')" :title="t('camera.capture')" @click="capture"></button>
-      <span class="spacer"></span>
+      <button
+        v-if="cameras.length > 1"
+        type="button"
+        class="icon camera-switch"
+        :aria-label="t('camera.switch')"
+        :title="t('camera.switch')"
+        @click="switchCamera"
+      >
+        <MdIcon name="cameraswitch" />
+      </button>
+      <span v-else class="spacer"></span>
     </div>
   </section>
 </template>
