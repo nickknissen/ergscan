@@ -822,6 +822,48 @@ button svg {
   height: 18px;
 }
 
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.swatch {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  min-height: 0;
+  padding: 0;
+  color: var(--on-surface);
+}
+
+.swatch::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--swatch-1) 50%, transparent 50%),
+    linear-gradient(90deg, var(--swatch-2) 50%, var(--swatch-3) 50%);
+  transition: inset var(--duration-short) var(--ease-standard);
+}
+
+.swatch[aria-checked='true']::before {
+  inset: 8px;
+  outline: 2px solid var(--on-surface);
+  outline-offset: 2px;
+}
+
+.swatch svg {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
 .switch,
 .switch:focus {
   position: relative;

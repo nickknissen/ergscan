@@ -9,7 +9,8 @@ import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
 import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
-import { applyTheme, clearAppData, loadIntroHidden, loadTheme, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
+import { ACCENTS, accentSwatch, type Accent } from './core/palette';
+import { applyTheme, clearAppData, loadAccent, loadIntroHidden, loadTheme, saveAccent, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
 import { parseRoute, routeHash } from './core/route';
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
@@ -111,10 +112,17 @@ const reviewOrigin = ref<Tab>('capture');
 const tabbed = computed(() => ['capture', 'guide', 'history', 'settings'].includes(stage.value));
 
 const theme = ref<Theme>(loadTheme(storage));
+const accent = ref<Accent>(loadAccent(storage));
+const swatches = ACCENTS.map((option) => ({ option, colors: accentSwatch(option) }));
 
 watch(theme, (value) => {
   if (storage) saveTheme(storage, value);
-  applyTheme(document, value);
+  applyTheme(document, value, accent.value);
+});
+
+watch(accent, (value) => {
+  if (storage) saveAccent(storage, value);
+  applyTheme(document, theme.value, value);
 });
 
 const introHidden = ref(loadIntroHidden(storage));
@@ -137,6 +145,7 @@ async function clearData() {
   clearAppData(storage);
   history.value = [];
   theme.value = 'system';
+  accent.value = 'default';
   introHidden.value = false;
 }
 const transition = ref<ScreenTransition>('fade-through');
@@ -496,6 +505,25 @@ async function share() {
                 >
                   <MdIcon v-if="theme === option" name="check" />
                   {{ t(`settings.themes.${option}`) }}
+                </button>
+              </div>
+            </div>
+            <div class="group-row settings-theme">
+              <MdIcon name="palette" class="row-icon" />
+              <span class="row-label">{{ t('settings.color') }}</span>
+              <div class="swatches" role="radiogroup" :aria-label="t('settings.color')">
+                <button
+                  v-for="{ option, colors } in swatches"
+                  :key="option"
+                  type="button"
+                  role="radio"
+                  class="swatch"
+                  :aria-checked="accent === option"
+                  :aria-label="t(`settings.accents.${option}`)"
+                  :style="{ '--swatch-1': colors[0], '--swatch-2': colors[1], '--swatch-3': colors[2] }"
+                  @click="accent = option"
+                >
+                  <MdIcon v-if="accent === option" name="check" />
                 </button>
               </div>
             </div>

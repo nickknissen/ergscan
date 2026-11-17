@@ -55,5 +55,6 @@ export default defineConfig({
   ],
   test: {
     environment: 'node',
+    server: { deps: { inline: ['@material/material-color-utilities'] } },
   },
 });

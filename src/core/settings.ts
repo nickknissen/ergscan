@@ -1,9 +1,26 @@
+import { ACCENTS, accentPalette, paletteProperties, TOKEN_PROPERTIES, type Accent } from './palette';
+
 export type Theme = 'system' | 'light' | 'dark';
 
 export const THEMES: readonly Theme[] = ['system', 'light', 'dark'];
 export const THEME_KEY = 'ergscan.theme';
+export const ACCENT_KEY = 'ergscan.accent';
 const APP_PREFIX = 'ergscan.';
 const THEME_COLORS = { light: '#f9f9ff', dark: '#111318' } as const;
+
+export function loadAccent(storage: Pick<Storage, 'getItem'> | null): Accent {
+  const value = storage?.getItem(ACCENT_KEY);
+  return ACCENTS.includes(value as Accent) ? (value as Accent) : 'default';
+}
+
+export function saveAccent(storage: Pick<Storage, 'setItem' | 'removeItem'>, accent: Accent): void {
+  try {
+    if (accent === 'default') storage.removeItem(ACCENT_KEY);
+    else storage.setItem(ACCENT_KEY, accent);
+  } catch {
+    // Storage full or blocked: the color still applies for this session.
+  }
+}
 
 export function loadTheme(storage: Pick<Storage, 'getItem'> | null): Theme {
   const value = storage?.getItem(THEME_KEY);
@@ -34,11 +51,15 @@ export function saveIntroHidden(storage: Pick<Storage, 'setItem' | 'removeItem'>
   }
 }
 
-export function applyTheme(doc: Document, theme: Theme): void {
-  doc.documentElement.style.colorScheme = theme === 'system' ? '' : theme;
+export function applyTheme(doc: Document, theme: Theme, accent: Accent = 'default'): void {
+  const style = doc.documentElement.style;
+  const palette = accentPalette(accent);
+  style.colorScheme = theme === 'system' ? '' : theme;
+  for (const property of TOKEN_PROPERTIES) style.removeProperty(property);
+  if (palette) for (const [property, value] of paletteProperties(palette)) style.setProperty(property, value);
   for (const meta of doc.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
     const scheme = theme === 'system' ? (meta.media.includes('dark') ? 'dark' : 'light') : theme;
-    meta.content = THEME_COLORS[scheme];
+    meta.content = palette ? palette[scheme].surface : THEME_COLORS[scheme];
   }
 }
 

@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import App from './App.vue';
-import { applyTheme, loadTheme } from './core/settings';
+import { applyTheme, loadAccent, loadTheme } from './core/settings';
 import { i18n } from './i18n';
 import { prefetchOcrAssets } from './ocr/assets';
 import { installRipple } from './ui/ripple';
@@ -9,7 +9,7 @@ import './style.css';
 
 document.documentElement.lang = i18n.global.locale.value;
 try {
-  applyTheme(document, loadTheme(localStorage));
+  applyTheme(document, loadTheme(localStorage), loadAccent(localStorage));
 } catch {
   applyTheme(document, 'system');
 }

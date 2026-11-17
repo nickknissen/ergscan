@@ -126,6 +126,15 @@
       "light": "Lyst",
       "dark": "Mørkt"
     },
+    "color": "Farve",
+    "accents": {
+      "default": "Standard",
+      "teal": "Blågrøn",
+      "green": "Grøn",
+      "amber": "Rav",
+      "red": "Rød",
+      "purple": "Lilla"
+    },
     "showIntro": "Vis introduktion på Scan",
     "showIntroDetail": "Velkomstkortet med fototippet",
     "data": "Data",

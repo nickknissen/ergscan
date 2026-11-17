@@ -126,6 +126,15 @@
       "light": "Light",
       "dark": "Dark"
     },
+    "color": "Color",
+    "accents": {
+      "default": "Default",
+      "teal": "Teal",
+      "green": "Green",
+      "amber": "Amber",
+      "red": "Red",
+      "purple": "Purple"
+    },
     "showIntro": "Show intro on Scan",
     "showIntroDetail": "The welcome card with the photo tip",
     "data": "Data",

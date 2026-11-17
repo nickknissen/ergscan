@@ -16,6 +16,7 @@ import history from '@material-symbols/svg-400/rounded/history.svg?raw';
 import keyboardArrowDown from '@material-symbols/svg-400/rounded/keyboard_arrow_down.svg?raw';
 import menuBook from '@material-symbols/svg-400/rounded/menu_book.svg?raw';
 import moreVert from '@material-symbols/svg-400/rounded/more_vert.svg?raw';
+import palette from '@material-symbols/svg-400/rounded/palette.svg?raw';
 import photoCamera from '@material-symbols/svg-400/rounded/photo_camera.svg?raw';
 import photoLibrary from '@material-symbols/svg-400/rounded/photo_library.svg?raw';
 import rowing from '@material-symbols/svg-400/rounded/rowing.svg?raw';
@@ -46,6 +47,7 @@ export const ICONS = {
   keyboard_arrow_down: pair(keyboardArrowDown),
   menu_book: pair(menuBook),
   more_vert: pair(moreVert),
+  palette: pair(palette),
   photo_camera: pair(photoCamera),
   photo_library: pair(photoLibrary),
   rowing: pair(rowing),
