@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
 import HeartRateZones from './components/HeartRateZones.vue';
@@ -36,6 +36,7 @@ import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
+import { appShortcut, isTextField } from './ui/shortcuts';
 import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
 
@@ -243,8 +244,36 @@ function onScroll() {
   lastScrollY = y;
 }
 
-onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }));
-onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
+function onKeydown(event: KeyboardEvent) {
+  const action = appShortcut(event, {
+    stage: stage.value,
+    editing: isTextField(document.activeElement as HTMLInputElement | null),
+    overlayOpen: Boolean(document.querySelector('dialog[open], :popover-open')),
+  });
+  if (!action) return;
+  event.preventDefault();
+  if (action === 'save') void saveFromKeyboard();
+  else if (stage.value === 'camera') stage.value = 'capture';
+  else if (stage.value === 'guide') closeGuide();
+  else void discardWorkout();
+}
+
+async function saveFromKeyboard() {
+  const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  focused?.blur();
+  await nextTick();
+  if (canSave.value) saveWorkout();
+  focused?.focus();
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true });
+  document.addEventListener('keydown', onKeydown);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll);
+  document.removeEventListener('keydown', onKeydown);
+});
 
 const navTitle = computed(() => {
   if (stage.value === 'review') return t('review.title');

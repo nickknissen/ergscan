@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { cellEscape } from '../ui/shortcuts';
 import { CELL_HINT_ID, trackCellValidity } from './cellValidity';
 
 const model = defineModel<number | null>({ required: true });
@@ -32,6 +33,17 @@ function commit() {
   invalid.value = false;
   model.value = Number(trimmed);
 }
+
+function onEscape(event: KeyboardEvent) {
+  event.preventDefault();
+  const committed = model.value === null ? '' : String(model.value);
+  if (cellEscape(text.value, committed) === 'blur') {
+    (event.target as HTMLInputElement).blur();
+    return;
+  }
+  text.value = committed;
+  invalid.value = false;
+}
 </script>
 
 <template>
@@ -45,5 +57,6 @@ function commit() {
     inputmode="numeric"
     autocomplete="off"
     @change="commit"
+    @keydown.esc="onEscape"
   />
 </template>
