@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import MdIcon from './MdIcon.vue';
 
 const emit = defineEmits<{ done: [] }>();
 
@@ -48,7 +49,7 @@ const menuButton = computed(() => (monitor.value ? t(key('menu')) : ''));
             <p>{{ t(`guide.${step}.body`, { menu: menuButton }) }}</p>
             <p v-if="step === 'setup'" class="step-path">{{ t('guide.setup.path') }}</p>
             <p v-if="step === 'finish'" class="step-warning">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
+              <MdIcon name="warning" />
               {{ t('guide.finish.warning', { menu: menuButton }) }}
             </p>
             <template v-if="step === 'results'">

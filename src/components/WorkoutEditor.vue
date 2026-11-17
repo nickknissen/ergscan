@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
 import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
+import MdIcon from './MdIcon.vue';
 import NumberCell from './NumberCell.vue';
 import TimeCell from './TimeCell.vue';
 
@@ -130,7 +131,7 @@ function recalculate() {
             </td>
             <td class="center">
               <button type="button" class="icon" :aria-label="t('review.removeRow', { number: index + 1 })" @click="removeRow(index)">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8 12h8" /></svg>
+                <MdIcon name="do_not_disturb_on" />
               </button>
             </td>
           </tr>
@@ -141,11 +142,11 @@ function recalculate() {
 
     <div class="group">
       <button type="button" class="group-row tappable accent" @click="addRow">
-        <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></svg>
+        <MdIcon name="add" class="row-icon" />
         <span class="row-label">{{ t('review.addRow') }}</span>
       </button>
       <button type="button" class="group-row tappable accent" @click="recalculate">
-        <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" /></svg>
+        <MdIcon name="calculate" class="row-icon" />
         <span class="row-label">{{ t('review.recalculate') }}</span>
       </button>
     </div>
