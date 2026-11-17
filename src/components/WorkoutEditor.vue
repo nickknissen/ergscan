@@ -91,29 +91,35 @@ function recalculate() {
             <th class="col-time">{{ t('columns.time') }}</th>
             <th class="col-meter">{{ t('columns.meter') }}</th>
             <th class="col-split">{{ splitHeader }}</th>
-            <th class="col-small">{{ t('columns.rate') }}</th>
+            <th class="col-small"><abbr :title="t('columns.rateLong')">{{ t('columns.rate') }}</abbr></th>
             <th v-if="extraColumn" class="col-small">{{ t(`columns.${extraColumn}`) }}</th>
             <th class="col-tight">{{ t('columns.rest') }}</th>
             <th class="col-tight"></th>
           </tr>
         </thead>
         <tbody>
+          <tr class="row-caption">
+            <th :colspan="extraColumn ? 7 : 6" scope="rowgroup">{{ t('review.total') }}</th>
+          </tr>
           <tr class="summary">
             <td><TimeCell v-model="workout.summary.durationDs" :label="label(t('columns.time'), workout.summary)" /></td>
             <td><NumberCell v-model="workout.summary.distanceM" :label="label(t('columns.meter'), workout.summary)" /></td>
             <td><TimeCell v-model="workout.summary.splitDs" :label="label(splitHeader, workout.summary)" /></td>
-            <td><NumberCell v-model="workout.summary.rate" :label="label(t('columns.rate'), workout.summary)" /></td>
+            <td><NumberCell v-model="workout.summary.rate" :label="label(t('columns.rateLong'), workout.summary)" /></td>
             <td v-if="extraColumn">
               <NumberCell v-model="workout.summary[extraColumn]" :label="label(t(`columns.${extraColumn}`), workout.summary)" />
             </td>
             <td></td>
             <td></td>
           </tr>
+          <tr v-if="workout.rows.length" class="row-caption">
+            <th :colspan="extraColumn ? 7 : 6" scope="rowgroup">{{ t('review.splits') }}</th>
+          </tr>
           <tr v-for="(row, index) in workout.rows" :key="index" :class="{ rest: row.isRest }">
             <td><TimeCell v-model="row.durationDs" :label="label(t('columns.time'), row)" /></td>
             <td><NumberCell v-model="row.distanceM" :label="label(t('columns.meter'), row)" /></td>
             <td><TimeCell v-model="row.splitDs" :label="label(splitHeader, row)" /></td>
-            <td><NumberCell v-model="row.rate" :label="label(t('columns.rate'), row)" /></td>
+            <td><NumberCell v-model="row.rate" :label="label(t('columns.rateLong'), row)" /></td>
             <td v-if="extraColumn">
               <NumberCell v-model="row[extraColumn]" :label="label(t(`columns.${extraColumn}`), row)" />
             </td>

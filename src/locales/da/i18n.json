@@ -71,13 +71,16 @@
     "timePlaceholder": "0:00.0",
     "invalidCells": "Ret de markerede felter. Skriv tider som 8:00.0 (eller 8.00.0) og andre værdier som hele tal.",
     "rawText": "Genkendt tekst",
-    "photo": "Billede"
+    "photo": "Billede",
+    "back": "Tilbage til {screen}",
+    "discardConfirm": "Træningen har endnu ingen samlet tid og distance, så den er ikke gemt. Vil du forlade den og kassere den?"
   },
   "columns": {
     "time": "Tid",
     "meter": "Meter",
     "split": "/{distance}m",
     "rate": "s/m",
+    "rateLong": "Tagtal",
     "heartRate": "Puls",
     "watts": "Watt",
     "calories": "Kal",
@@ -88,7 +91,9 @@
   },
   "history": {
     "title": "Historik",
-    "empty": "Træninger, du scanner eller indtaster, gemmes her.",
+    "emptyTitle": "Ingen træninger endnu",
+    "empty": "En træning gemmes her automatisk, så snart den har en samlet tid og distance.",
+    "scanFirst": "Scan en træning",
     "summary": "{distance} m · {time}",
     "remove": "Slet træningen fra {date}"
   },
@@ -103,13 +108,12 @@
     },
     "data": "Data",
     "clear": "Ryd data",
-    "clearDetail": "Nulstiller indstillinger | Sletter 1 gemt træning og nulstiller indstillinger | Sletter {count} gemte træninger og nulstiller indstillinger",
+    "clearDetail": "Ingen gemte træninger. Nulstiller temaet og viser vejledningen igen | Sletter 1 gemt træning, nulstiller temaet og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller temaet og viser vejledningen igen",
     "clearConfirm": "Slet alle gemte træninger og nulstil indstillinger? Det kan ikke fortrydes."
   },
   "export": {
     "download": "Download FIT",
     "share": "Del FIT",
-    "newScan": "Ny scanning",
     "invalid": "Udfyld totalens tid og distance før eksport."
   }
 }

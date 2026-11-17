@@ -71,13 +71,16 @@
     "timePlaceholder": "0:00.0",
     "invalidCells": "Fix the highlighted cells. Enter times like 8:00.0 (or 8.00.0) and other values as whole numbers.",
     "rawText": "Recognized text",
-    "photo": "Photo"
+    "photo": "Photo",
+    "back": "Back to {screen}",
+    "discardConfirm": "This workout has no total time and distance yet, so it hasn't been saved. Leave and discard it?"
   },
   "columns": {
     "time": "Time",
     "meter": "Meters",
     "split": "/{distance}m",
     "rate": "s/m",
+    "rateLong": "Stroke rate",
     "heartRate": "HR",
     "watts": "Watts",
     "calories": "Cal",
@@ -88,7 +91,9 @@
   },
   "history": {
     "title": "History",
-    "empty": "Workouts you scan or enter are saved here.",
+    "emptyTitle": "No workouts yet",
+    "empty": "A workout is saved here automatically as soon as it has a total time and distance.",
+    "scanFirst": "Scan a workout",
     "summary": "{distance} m · {time}",
     "remove": "Delete the workout from {date}"
   },
@@ -103,13 +108,12 @@
     },
     "data": "Data",
     "clear": "Clear data",
-    "clearDetail": "Resets settings | Deletes 1 saved workout and resets settings | Deletes {count} saved workouts and resets settings",
+    "clearDetail": "No saved workouts. Resets the theme and shows the guide again | Deletes 1 saved workout, resets the theme and shows the guide again | Deletes {count} saved workouts, resets the theme and shows the guide again",
     "clearConfirm": "Delete all saved workouts and reset settings? This can't be undone."
   },
   "export": {
     "download": "Download FIT",
     "share": "Share FIT",
-    "newScan": "New scan",
     "invalid": "Fill in the total time and distance before exporting."
   }
 }

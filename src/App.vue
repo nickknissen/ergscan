@@ -8,7 +8,7 @@ import { fitFileName, startTimeFor } from './core/dates';
 import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { applyTheme, clearAppData, loadTheme, saveTheme, THEMES, type Theme } from './core/settings';
 import { formatTime } from './core/time';
-import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
+import { emptyRow, isBlank, isExportable, type ExtraColumn, type Workout } from './core/workout';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
@@ -70,7 +70,9 @@ function clearData() {
   history.value = [];
   theme.value = 'system';
 }
-const reviewBackLabel = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('export.newScan')));
+const reviewBackLabel = computed(() =>
+  t('review.back', { screen: reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan') }),
+);
 const navTitle = computed(() => {
   if (stage.value === 'review') return t('review.title');
   if (stage.value === 'guide') return t('guide.title');
@@ -105,6 +107,9 @@ function openEntry(id: string) {
 }
 
 function leaveReview() {
+  const w = workout.value;
+  const unsaved = w && !isExportable(w, 0) && !isBlank(w);
+  if (unsaved && !window.confirm(t('review.discardConfirm'))) return;
   const origin = reviewOrigin.value;
   reset();
   stage.value = origin;
@@ -333,7 +338,12 @@ async function share() {
       </section>
 
       <section v-else-if="stage === 'history'" class="history">
-        <p v-if="!history.length" class="history-empty">{{ t('history.empty') }}</p>
+        <div v-if="!history.length" class="history-empty">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          <h2>{{ t('history.emptyTitle') }}</h2>
+          <p>{{ t('history.empty') }}</p>
+          <button type="button" class="primary" @click="stage = 'capture'">{{ t('history.scanFirst') }}</button>
+        </div>
         <div v-else class="group">
           <div v-for="entry in history" :key="entry.id" class="group-row">
             <button type="button" class="history-open" @click="openEntry(entry.id)">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyRow, isExportable, moveExtraColumn, splitFor, sumRows, wattsForSplit, type Workout, type WorkoutRow } from './workout';
+import { emptyRow, isBlank, isExportable, moveExtraColumn, splitFor, sumRows, wattsForSplit, type Workout, type WorkoutRow } from './workout';
 
 function row(partial: Partial<WorkoutRow>): WorkoutRow {
   return { ...emptyRow(), ...partial };
@@ -76,5 +76,18 @@ describe('isExportable', () => {
 
   it('is blocked while any cell holds text that could not be parsed', () => {
     expect(isExportable(workout(4500, 2000), 1)).toBe(false);
+  });
+});
+
+describe('isBlank', () => {
+  const blank = (): Workout => ({ startTime: new Date(), splitDistance: 500, summary: emptyRow(), rows: [] });
+
+  it('is true for an untouched manual entry', () => {
+    expect(isBlank(blank())).toBe(true);
+  });
+
+  it('is false once any total or row has been added', () => {
+    expect(isBlank({ ...blank(), summary: row({ rate: 24 }) })).toBe(false);
+    expect(isBlank({ ...blank(), rows: [emptyRow()] })).toBe(false);
   });
 });
