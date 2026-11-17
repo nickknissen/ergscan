@@ -490,7 +490,7 @@ button svg {
   margin-left: auto;
 }
 
-.feelings button[aria-checked='true'] {
+.feelings button[aria-pressed='true'] {
   background-color: var(--secondary-container);
   color: var(--on-secondary-container);
 }
@@ -499,6 +499,11 @@ button svg {
   display: flex;
   flex: none;
   color: var(--on-surface-variant);
+}
+
+.history-selected .history-feeling,
+.history-open[aria-current] .history-feeling {
+  color: inherit;
 }
 
 .history-feeling svg {

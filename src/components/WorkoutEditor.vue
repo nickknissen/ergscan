@@ -2,11 +2,11 @@
 import { computed, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
+import { FEELINGS, type Feeling } from '../core/feeling';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
 import { suggestName } from '../core/workoutName';
-import { FEELINGS, type Feeling } from '../core/feeling';
 import { FEELING_ICONS } from '../ui/icons';
-import { handleCellKeydown, handleRadioKeydown } from '../ui/keyboardNav';
+import { handleCellKeydown } from '../ui/keyboardNav';
 import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
 import MdIcon from './MdIcon.vue';
 import MdSelect from './MdSelect.vue';
@@ -124,20 +124,13 @@ function recalculate() {
       </label>
       <div class="group-row feeling-row">
         <span :id="`${id}-feeling`" class="row-label">{{ t('review.feeling') }}</span>
-        <div
-          class="feelings"
-          role="radiogroup"
-          :aria-labelledby="`${id}-feeling`"
-          @keydown="handleRadioKeydown($event, FEELINGS, workout.feeling ?? 3, (value) => (workout.feeling = value))"
-        >
+        <div class="feelings" role="group" :aria-labelledby="`${id}-feeling`">
           <button
             v-for="feeling in FEELINGS"
             :key="feeling"
             type="button"
-            role="radio"
             class="icon"
-            :aria-checked="workout.feeling === feeling"
-            :tabindex="(workout.feeling ?? 3) === feeling ? 0 : -1"
+            :aria-pressed="workout.feeling === feeling"
             :aria-label="t(`feelings.${feeling}`)"
             :title="t(`feelings.${feeling}`)"
             @click="toggleFeeling(feeling)"

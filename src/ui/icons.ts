@@ -1,5 +1,5 @@
-import add from '@material-symbols/svg-400/rounded/add.svg?raw';
 import type { Feeling } from '../core/feeling';
+import add from '@material-symbols/svg-400/rounded/add.svg?raw';
 import arrowBack from '@material-symbols/svg-400/rounded/arrow_back.svg?raw';
 import arrowDropDown from '@material-symbols/svg-400/rounded/arrow_drop_down.svg?raw';
 import cake from '@material-symbols/svg-400/rounded/cake.svg?raw';
