@@ -1,0 +1,28 @@
+{
+  "pages": ["pm5-distance-splits-8047m", "pm5-distance-splits-8047m-scrolled"],
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-11-02",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "36:20.4", "meters": 8047, "split": "2:15.4", "rate": 19 },
+    "laps": [
+      { "time": "2:08.6", "meters": 500, "rate": 20 },
+      { "time": "2:06.8", "meters": 500, "rate": 19 },
+      { "time": "2:12.5", "meters": 500, "rate": 21 },
+      { "time": "2:18.2", "meters": 500, "rate": 20 },
+      { "time": "2:21.0", "meters": 500, "rate": 17 },
+      { "time": "2:23.8", "meters": 500, "rate": 17 },
+      { "time": "2:17.9", "meters": 500, "rate": 16 },
+      { "time": "2:14.3", "meters": 500, "rate": 16 },
+      { "time": "2:19.6", "meters": 500, "rate": 15 },
+      { "time": "2:15.9", "meters": 500, "rate": 18 },
+      { "time": "2:19.8", "meters": 500, "rate": 16 },
+      { "time": "2:14.8", "meters": 500, "rate": 21 },
+      { "time": "2:14.6", "meters": 500, "rate": 22 },
+      { "time": "2:19.6", "meters": 500, "rate": 19 },
+      { "time": "2:12.4", "meters": 500, "rate": 22 }
+    ]
+  },
+  "notes": "Two photos overlapping on the 4000 m row. Meter column is cumulative. Together they show 15 of 17 splits; the 8000 m and 8047 m splits are on a third screen that was not photographed."
+}

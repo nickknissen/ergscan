@@ -2,9 +2,42 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseTime } from '../src/core/time';
-import { loadFacts, TESTDATA_DIR } from './facts';
+import { loadFacts, loadMultiFacts, TESTDATA_DIR } from './facts';
 
 const all = loadFacts();
+const multi = loadMultiFacts();
+
+describe('multi-photo fact files', () => {
+  it('exist', () => {
+    expect(multi.length).toBeGreaterThan(0);
+  });
+
+  describe.each(multi)('$name', ({ facts }) => {
+    const pages = facts.pages.map((name) => all.find((f) => f.name === name)?.facts);
+
+    it('name at least two single-photo fact files', () => {
+      expect(pages.length).toBeGreaterThanOrEqual(2);
+      for (const page of pages) expect(page).toBeDefined();
+    });
+
+    it('keeps the summary and date of the first photo', () => {
+      expect(facts.workout.summary).toEqual(pages[0]!.workout.summary);
+      expect(facts.workout.date).toBe(pages[0]!.workout.date);
+    });
+
+    it('has more laps than any one photo', () => {
+      for (const page of pages) expect(facts.workout.laps.length).toBeGreaterThan(page!.workout.laps.length);
+    });
+
+    it.runIf(facts.workout.complete)('has work laps that add up to the summary', () => {
+      const work = facts.workout.laps.filter((l) => !l.rest);
+      const time = work.reduce((a, l) => a + parseTime(l.time)!, 0);
+      const meters = work.reduce((a, l) => a + (l.meters ?? 0), 0);
+      expect(Math.abs(time - parseTime(facts.workout.summary.time)!)).toBeLessThanOrEqual(2);
+      expect(Math.abs(meters - facts.workout.summary.meters)).toBeLessThanOrEqual(2);
+    });
+  });
+});
 
 describe('testdata fact files', () => {
   it('exist', () => {

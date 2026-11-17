@@ -4,12 +4,14 @@ import { parseArgs } from 'node:util';
 import sharp from 'sharp';
 import { createWorker } from 'tesseract.js';
 import { cropGray } from '../src/ocr/crop';
-import { firstParsed } from '../src/ocr/firstParsed';
+import type { ParsedScan } from '../src/core/pm5Parser';
+import { mergeScans } from '../src/core/scanMerge';
+import { firstParsed, type ScanOutcome } from '../src/ocr/firstParsed';
 import { SCREEN_GUIDE } from '../src/ocr/guide';
 import { OCR_ENGINE, OCR_PARAMS } from '../src/ocr/ocrConfig';
 import { DEFAULT_PREPROCESS, ocrInputs, type PreprocessOptions } from '../src/ocr/preprocess';
 import { toGrayscale } from '../src/ocr/threshold';
-import { loadFacts, TESTDATA_DIR } from '../testdata/facts';
+import { loadFacts, loadMultiFacts, TESTDATA_DIR } from '../testdata/facts';
 import { scoreOcr, scoreWorkout, type OcrScore, type WorkoutScore } from '../testdata/score';
 
 const root = join(import.meta.dirname, '..');
@@ -73,9 +75,15 @@ interface Result extends OcrScore, WorkoutScore {
 const dumpDir = join(root, 'eval-results', 'images');
 if (args.dump) mkdirSync(dumpDir, { recursive: true });
 
+const allFacts = loadFacts();
+const multiFacts = loadMultiFacts().filter(({ name, facts }) => !args.only || name.includes(args.only) || facts.pages.some((p) => p.includes(args.only!)));
+const multiPages = new Set(multiFacts.flatMap(({ facts }) => facts.pages));
+const outcomes = new Map<string, ScanOutcome>();
+
 const results: Result[] = [];
-for (const { name, facts } of loadFacts()) {
-  if (args.only && !name.includes(args.only)) continue;
+for (const { name, facts } of allFacts) {
+  const listed = !args.only || name.includes(args.only);
+  if (!listed && !multiPages.has(name)) continue;
   const started = Date.now();
   const loaded = await loadGray(join(TESTDATA_DIR, facts.image), options.longSide);
   const { gray, width, height } = args.framed ? frameAroundScreen(loaded.gray, loaded.width, loaded.height, facts.screenRect) : loaded;
@@ -83,11 +91,24 @@ for (const { name, facts } of loadFacts()) {
   const pngs = await Promise.all(inputs.images.map((img) => toPng(img, inputs.width, inputs.height)));
   if (args.dump) pngs.forEach((png, i) => writeFileSync(join(dumpDir, `${name}-${i}.png`), png));
   const outcome = await firstParsed(pngs.map((png) => async () => (await worker.recognize(png)).data.text));
-  const result = { name, ms: Date.now() - started, ...scoreOcr(outcome.text, facts.screen.rows), ...scoreWorkout(outcome.scan, facts) };
+  outcomes.set(name, outcome);
+  if (!listed) continue;
+  const result = { name, ms: Date.now() - started, ...scoreOcr(outcome.text, facts.screen.rows), ...scoreWorkout(outcome.scan, facts.workout) };
   results.push(result);
   if (args.show) console.log(`--- ${name}\n${outcome.text}`);
 }
 await worker.terminate();
+
+interface MultiResult extends WorkoutScore {
+  name: string;
+  photos: number;
+}
+
+const multiResults: MultiResult[] = multiFacts.map(({ name, facts }) => {
+  const scans = facts.pages.map((page) => outcomes.get(page)?.scan ?? null);
+  const merged = scans.reduce<ParsedScan | null>((acc, scan) => (acc && scan ? mergeScans(acc, scan) : (acc ?? scan)), null);
+  return { name, photos: facts.pages.length, ...scoreWorkout(merged, facts.workout) };
+});
 
 const pct = (a: number, b: number) => (b === 0 ? '-' : `${Math.round((100 * a) / b)}%`);
 const sum = (key: keyof Result) => results.reduce((a, r) => a + (r[key] as number), 0);
@@ -106,17 +127,27 @@ for (const r of results) {
     ].join('  '),
   );
 }
+if (multiResults.length) {
+  console.log(`\n${['multi-photo workout'.padEnd(52), 'photos', 'fields', 'laps'].join('  ')}`);
+  for (const r of multiResults) {
+    console.log([r.name.slice(0, 52).padEnd(52), String(r.photos).padStart(6), `${r.fields}/${r.fieldsTotal}`.padStart(6), `${r.laps}/${r.lapsExpected}`.padStart(4)].join('  '));
+  }
+}
+const multiSum = (key: keyof WorkoutScore) => multiResults.reduce((a, r) => a + r[key], 0);
 const totals = {
   ocrCells: pct(sum('cells'), sum('cellsTotal')),
   ocrRows: pct(sum('rows'), sum('rowsTotal')),
   fields: pct(sum('fields'), sum('fieldsTotal')),
   exactLapCounts: `${results.filter((r) => r.laps === r.lapsExpected).length}/${results.length}`,
+  multiFields: pct(multiSum('fields'), multiSum('fieldsTotal')),
+  multiExactLapCounts: `${multiResults.filter((r) => r.laps === r.lapsExpected).length}/${multiResults.length}`,
 };
 console.log(`\nTOTAL  ocr cells ${totals.ocrCells}  ocr rows ${totals.ocrRows}  workout fields ${totals.fields}  lap counts ${totals.exactLapCounts}`);
+console.log(`MULTI  workout fields ${totals.multiFields}  lap counts ${totals.multiExactLapCounts}`);
 
 const outDir = join(root, 'eval-results');
 mkdirSync(outDir, { recursive: true });
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const file = join(outDir, `${stamp}${args.label ? `-${args.label}` : ''}.json`);
-writeFileSync(file, JSON.stringify({ options, totals, results }, null, 2));
+writeFileSync(file, JSON.stringify({ options, totals, results, multiResults }, null, 2));
 console.log(`saved ${file}`);

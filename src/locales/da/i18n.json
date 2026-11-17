@@ -72,6 +72,7 @@
     "loading": "Indlæser OCR…",
     "recognizing": "Læser skærmen… {percent}%",
     "failed": "Der blev ikke fundet en resultattabel. Prøv et andet billede, eller indtast træningen manuelt.",
+    "moreFailed": "Der blev ikke fundet rækker i det billede. Splittene fra de tidligere billeder er bevaret; prøv igen.",
     "error": "Scanningen fejlede: {message}",
     "offline": "Du er offline, og tekstlæseren er endnu ikke hentet. Opret forbindelse én gang og prøv igen, eller indtast træningen manuelt."
   },
@@ -80,6 +81,8 @@
     "details": "Træning",
     "splits": "Splits",
     "computedSummary": "Totalen blev ikke fundet på skærmen, så den er beregnet ud fra rækkerne.",
+    "moreRows": "Splittene giver endnu ikke totalen. Tryk på pil ned på monitoren for at vise de næste rækker, og scan dem så.",
+    "scanMoreRows": "Scan flere rækker",
     "name": "Navn",
     "notes": "Noter",
     "start": "Starttidspunkt",
