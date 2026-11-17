@@ -5,11 +5,12 @@ import CameraCapture from './components/CameraCapture.vue';
 import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
-import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry, type HistoryStorage } from './core/history';
+import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
+import { applyTheme, clearAppData, loadTheme, saveTheme, THEMES, type Theme } from './core/settings';
 import { formatTime } from './core/time';
 import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
 
-type Stage = 'guide' | 'capture' | 'history' | 'camera' | 'scanning' | 'review';
+type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
 type FitModule = typeof import('./core/fitExport');
 
@@ -44,7 +45,7 @@ const computedSummary = ref(false);
 const progressText = ref('');
 const progress = ref<number | null>(null);
 
-const storage: HistoryStorage | null = (() => {
+const storage: Storage | null = (() => {
   try {
     return localStorage;
   } catch {
@@ -54,12 +55,27 @@ const storage: HistoryStorage | null = (() => {
 const history = ref<HistoryEntry[]>(storage ? loadHistory(storage) : []);
 const historyId = ref<string | null>(null);
 const reviewOrigin = ref<Tab>('capture');
-const tabbed = computed(() => stage.value === 'capture' || stage.value === 'history');
+const tabbed = computed(() => stage.value === 'capture' || stage.value === 'history' || stage.value === 'settings');
+
+const theme = ref<Theme>(loadTheme(storage));
+
+watch(theme, (value) => {
+  if (storage) saveTheme(storage, value);
+  applyTheme(document, value);
+});
+
+function clearData() {
+  if (!storage || !window.confirm(t('settings.clearConfirm'))) return;
+  clearAppData(storage);
+  history.value = [];
+  theme.value = 'system';
+}
 const reviewBackLabel = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('export.newScan')));
 const navTitle = computed(() => {
   if (stage.value === 'review') return t('review.title');
   if (stage.value === 'guide') return t('guide.title');
   if (stage.value === 'history') return t('history.title');
+  if (stage.value === 'settings') return t('settings.title');
   return t('app.title');
 });
 
@@ -296,21 +312,6 @@ async function share() {
             <span class="row-label">{{ t('capture.manual') }}</span>
           </button>
         </div>
-      </section>
-
-      <section v-else-if="stage === 'history'" class="history">
-        <p v-if="!history.length" class="history-empty">{{ t('history.empty') }}</p>
-        <div v-else class="group">
-          <div v-for="entry in history" :key="entry.id" class="group-row">
-            <button type="button" class="history-open" @click="openEntry(entry.id)">
-              <span class="row-label">
-                {{ entrySummary(entry) }}
-                <span class="row-detail">{{ entryDate(entry) }}</span>
-              </span>
-            </button>
-            <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry.id)">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
-            </button>
 
         <button v-if="cameraSupported" type="button" class="fab" @click="openCamera">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -319,14 +320,63 @@ async function share() {
           </svg>
           {{ t('capture.camera') }}
         </button>
+      </section>
+
+      <section v-else-if="stage === 'history'" class="history">
+        <p v-if="!history.length" class="history-empty">{{ t('history.empty') }}</p>
+        <div v-else class="group">
+          <div v-for="entry in history" :key="entry.id" class="group-row">
+            <button type="button" class="history-open" @click="openEntry(entry.id)">
+              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 4 8-8" /><path d="M15 8h5v5" /></svg>
+              <span class="row-label">
+                {{ entrySummary(entry) }}
+                <span class="row-detail">{{ entryDate(entry) }}</span>
+              </span>
+            </button>
+            <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry.id)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+            </button>
           </div>
+        </div>
+      </section>
+
+      <section v-else-if="stage === 'settings'" class="settings">
+        <h2 class="group-header">{{ t('settings.appearance') }}</h2>
+        <div class="group">
+          <div class="group-row settings-theme">
+            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3a9 9 0 0 0 0 18z" /></svg>
+            <span class="row-label">{{ t('settings.theme') }}</span>
+            <div class="segmented" role="radiogroup" :aria-label="t('settings.theme')">
+              <button
+                v-for="option in THEMES"
+                :key="option"
+                type="button"
+                role="radio"
+                :aria-checked="theme === option"
+                @click="theme = option"
+              >
+                <svg v-if="theme === option" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg>
+                {{ t(`settings.themes.${option}`) }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="group-header">{{ t('settings.data') }}</h2>
+        <div class="group">
+          <button type="button" class="group-row tappable settings-danger" @click="clearData">
+            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+            <span class="row-label">
+              {{ t('settings.clear') }}
+              <span class="row-detail">{{ t('settings.clearDetail', history.length) }}</span>
+            </span>
+          </button>
         </div>
       </section>
 
       <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
         <div v-if="photoUrl" class="scan-photo">
           <img :src="photoUrl" :alt="t('review.photo')" />
-              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 4 8-8" /><path d="M15 8h5v5" /></svg>
           <span class="scan-line" aria-hidden="true"></span>
         </div>
         <div class="progress" :class="{ indeterminate: progress === null }" role="progressbar" :aria-valuenow="progress === null ? undefined : Math.round(progress * 100)" aria-valuemin="0" aria-valuemax="100">
@@ -372,6 +422,15 @@ async function share() {
           </svg>
         </span>
         <span>{{ t('history.title') }}</span>
+      </button>
+      <button type="button" class="tab" :aria-current="stage === 'settings' ? 'page' : undefined" @click="stage = 'settings'">
+        <span class="tab-indicator">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1" />
+          </svg>
+        </span>
+        <span>{{ t('settings.title') }}</span>
       </button>
     </nav>
 

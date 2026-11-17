@@ -1,10 +1,16 @@
 import { createApp } from 'vue';
 import App from './App.vue';
+import { applyTheme, loadTheme } from './core/settings';
 import { i18n } from './i18n';
 import { prefetchOcrAssets } from './ocr/assets';
 import './style.css';
 
 document.documentElement.lang = i18n.global.locale.value;
+try {
+  applyTheme(document, loadTheme(localStorage));
+} catch {
+  applyTheme(document, 'system');
+}
 createApp(App).use(i18n).mount('#app');
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

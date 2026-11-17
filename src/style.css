@@ -526,6 +526,50 @@ button svg {
   text-align: left;
 }
 
+.settings-theme {
+  flex-wrap: wrap;
+  padding-block: 12px 16px;
+}
+
+.segmented {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.segmented button {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 8px;
+  gap: 6px;
+  border-radius: 0;
+  background: none;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--border);
+}
+
+.segmented button[aria-checked='true'] {
+  background: var(--teal-soft);
+  color: var(--on-teal-soft);
+}
+
+.segmented svg {
+  width: 18px;
+  height: 18px;
+}
+
+.settings-danger {
+  --tone: var(--danger-soft);
+  --on-tone: var(--on-danger-soft);
+}
+
 .row-detail {
   display: block;
   color: var(--muted);

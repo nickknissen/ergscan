@@ -84,6 +84,20 @@
     "summary": "{distance} m · {time}",
     "remove": "Slet træningen fra {date}"
   },
+  "settings": {
+    "title": "Indstillinger",
+    "appearance": "Udseende",
+    "theme": "Tema",
+    "themes": {
+      "system": "System",
+      "light": "Lyst",
+      "dark": "Mørkt"
+    },
+    "data": "Data",
+    "clear": "Ryd data",
+    "clearDetail": "Nulstiller indstillinger | Sletter 1 gemt træning og nulstiller indstillinger | Sletter {count} gemte træninger og nulstiller indstillinger",
+    "clearConfirm": "Slet alle gemte træninger og nulstil indstillinger? Det kan ikke fortrydes."
+  },
   "export": {
     "download": "Download FIT",
     "share": "Del FIT",

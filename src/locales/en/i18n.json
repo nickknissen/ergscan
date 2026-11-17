@@ -84,6 +84,20 @@
     "summary": "{distance} m · {time}",
     "remove": "Delete the workout from {date}"
   },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "data": "Data",
+    "clear": "Clear data",
+    "clearDetail": "Resets settings | Deletes 1 saved workout and resets settings | Deletes {count} saved workouts and resets settings",
+    "clearConfirm": "Delete all saved workouts and reset settings? This can't be undone."
+  },
   "export": {
     "download": "Download FIT",
     "share": "Share FIT",
