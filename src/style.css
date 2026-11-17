@@ -1854,7 +1854,6 @@ tr.rest .cell {
     justify-content: flex-start;
     gap: 12px;
     padding: calc(var(--navbar-height) + 24px + env(safe-area-inset-top)) 0 0 env(safe-area-inset-left);
-    background: var(--surface);
   }
 
   .tab {
