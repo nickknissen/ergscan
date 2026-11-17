@@ -392,7 +392,7 @@ async function share() {
 
       <section v-else-if="stage === 'history'" class="history">
         <div v-if="!history.length" class="history-empty">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6l-2.5 2.5" /><path d="M3.5 4v4.5H8M12 7.5V12l3 2" /></svg>
           <h2>{{ t('history.emptyTitle') }}</h2>
           <p>{{ t('history.empty') }}</p>
           <button type="button" class="primary" @click="stage = 'capture'">{{ t('history.scanFirst') }}</button>
@@ -489,8 +489,8 @@ async function share() {
       <button type="button" class="tab" :aria-current="stage === 'capture' || stage === 'guide' ? 'page' : undefined" @click="goTo('capture')">
         <span class="tab-indicator">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-            <circle cx="12" cy="13" r="3.5" />
+            <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+            <path d="M8 9h8M8 15h5M4 12h16" />
           </svg>
         </span>
         <span>{{ t('tabs.scan') }}</span>
@@ -498,8 +498,8 @@ async function share() {
       <button type="button" class="tab" :aria-current="stage === 'history' ? 'page' : undefined" @click="goTo('history')">
         <span class="tab-indicator">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" />
+            <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6l-2.5 2.5" />
+            <path d="M3.5 4v4.5H8M12 7.5V12l3 2" />
           </svg>
         </span>
         <span>{{ t('history.title') }}</span>
@@ -507,8 +507,8 @@ async function share() {
       <button type="button" class="tab" :aria-current="stage === 'settings' ? 'page' : undefined" @click="goTo('settings')">
         <span class="tab-indicator">
           <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10.3 2.1L13.7 2.1L13.9 4.6L15.9 5.5L17.8 3.8L20.2 6.2L18.5 8.1L19.4 10.1L21.9 10.3L21.9 13.7L19.4 13.9L18.5 15.9L20.2 17.8L17.8 20.2L15.9 18.5L13.9 19.4L13.7 21.9L10.3 21.9L10.1 19.4L8.1 18.5L6.2 20.2L3.8 17.8L5.5 15.9L4.6 13.9L2.1 13.7L2.1 10.3L4.6 10.1L5.5 8.1L3.8 6.2L6.2 3.8L8.1 5.5L10.1 4.6z" />
             <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1" />
           </svg>
         </span>
         <span>{{ t('settings.title') }}</span>
