@@ -7,7 +7,12 @@ import {
   clearAppData,
   estimatedMaxHeartRate,
   HIDE_INTRO_KEY,
+  LIST_PANE_KEY,
+  LIST_WIDTH,
+  listPaneKey,
   loadAccent,
+  loadListPane,
+  saveListPane,
   loadHeartRate,
   loadIntroHidden,
   loadTheme,
@@ -177,5 +182,37 @@ describe('clearAppData', () => {
     });
     clearAppData(storage);
     expect([...storage.data.keys()]).toEqual(['other.app']);
+  });
+});
+
+describe('list pane', () => {
+  it('defaults to the initial width, expanded', () => {
+    expect(loadListPane(memoryStorage())).toEqual({ width: LIST_WIDTH.initial, collapsed: false });
+    expect(loadListPane(memoryStorage({ [LIST_PANE_KEY]: 'junk' }))).toEqual({ width: LIST_WIDTH.initial, collapsed: false });
+    expect(loadListPane(null)).toEqual({ width: LIST_WIDTH.initial, collapsed: false });
+  });
+
+  it('round-trips width and collapse, clamping stored widths', () => {
+    const storage = memoryStorage();
+    saveListPane(storage, { width: 400, collapsed: true });
+    expect(loadListPane(storage)).toEqual({ width: 400, collapsed: true });
+    expect(loadListPane(memoryStorage({ [LIST_PANE_KEY]: '9999' })).width).toBe(LIST_WIDTH.max);
+  });
+
+  it('forgets the key when back to the default layout', () => {
+    const storage = memoryStorage({ [LIST_PANE_KEY]: '400' });
+    saveListPane(storage, { width: LIST_WIDTH.initial, collapsed: false });
+    expect(storage.data.has(LIST_PANE_KEY)).toBe(false);
+  });
+
+  it('resizes with arrows, jumps with Home and End and collapses with Enter', () => {
+    const pane = { width: 340, collapsed: false };
+    expect(listPaneKey(pane, 'ArrowRight')).toEqual({ width: 356, collapsed: false });
+    expect(listPaneKey(pane, 'ArrowLeft')).toEqual({ width: 324, collapsed: false });
+    expect(listPaneKey({ width: 470, collapsed: false }, 'ArrowRight')!.width).toBe(LIST_WIDTH.max);
+    expect(listPaneKey(pane, 'Home')!.width).toBe(LIST_WIDTH.min);
+    expect(listPaneKey(pane, 'End')!.width).toBe(LIST_WIDTH.max);
+    expect(listPaneKey(pane, 'Enter')).toEqual({ width: 340, collapsed: true });
+    expect(listPaneKey(pane, 'a')).toBeNull();
   });
 });

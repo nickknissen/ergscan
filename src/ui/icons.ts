@@ -15,6 +15,8 @@ import edit from '@material-symbols/svg-400/rounded/edit.svg?raw';
 import historyFill from '@material-symbols/svg-400/rounded/history-fill.svg?raw';
 import history from '@material-symbols/svg-400/rounded/history.svg?raw';
 import keyboardArrowDown from '@material-symbols/svg-400/rounded/keyboard_arrow_down.svg?raw';
+import leftPanelClose from '@material-symbols/svg-400/rounded/left_panel_close.svg?raw';
+import leftPanelOpen from '@material-symbols/svg-400/rounded/left_panel_open.svg?raw';
 import menuBook from '@material-symbols/svg-400/rounded/menu_book.svg?raw';
 import monitorHeart from '@material-symbols/svg-400/rounded/monitor_heart.svg?raw';
 import moreVert from '@material-symbols/svg-400/rounded/more_vert.svg?raw';
@@ -51,6 +53,8 @@ export const ICONS = {
   edit: pair(edit),
   history: pair(history, historyFill),
   keyboard_arrow_down: pair(keyboardArrowDown),
+  left_panel_close: pair(leftPanelClose),
+  left_panel_open: pair(leftPanelOpen),
   menu_book: pair(menuBook),
   monitor_heart: pair(monitorHeart),
   more_vert: pair(moreVert),

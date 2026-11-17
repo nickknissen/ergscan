@@ -16,20 +16,26 @@ import { draftKey, hasUnsavedChanges, loadHistory, parseEntry, removeFromHistory
 import { ACCENTS, accentSwatch, type Accent } from './core/palette';
 import {
   applyTheme,
+  clampListWidth,
   clearAppData,
   estimatedMaxHeartRate,
+  LIST_WIDTH,
+  listPaneKey,
   loadAccent,
   loadHeartRate,
   loadIntroHidden,
+  loadListPane,
   loadTheme,
   maxHeartRate,
   parseWholeNumber,
   saveAccent,
   saveHeartRate,
   saveIntroHidden,
+  saveListPane,
   saveTheme,
   THEMES,
   type HeartRateSettings,
+  type ListPane,
   type Theme,
 } from './core/settings';
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
@@ -238,6 +244,7 @@ async function clearData() {
   accent.value = 'default';
   introHidden.value = false;
   heartRate.value = { measuredMax: null, age: null };
+  listPane.value = { width: LIST_WIDTH.initial, collapsed: false };
 }
 const transition = ref<ScreenTransition>('fade-through');
 watch(stage, (to, from) => (transition.value = screenTransition(from, to)), { flush: 'sync' });
@@ -500,6 +507,37 @@ const layout = computed(() => ({
 const showListDetail = computed(() => listDetail(layout.value));
 const showHistoryPane = computed(() => historyPane(layout.value));
 const historyTab = computed(() => stage.value === 'history' || showListDetail.value);
+
+const listPane = ref<ListPane>(loadListPane(storage));
+watch(listPane, (value) => storage && saveListPane(storage, value));
+let resizeStart: { x: number; width: number } | null = null;
+
+function onDividerKeydown(event: KeyboardEvent) {
+  const next = listPaneKey(listPane.value, event.key);
+  if (!next) return;
+  event.preventDefault();
+  listPane.value = next;
+  if (next.collapsed) void nextTick(() => document.querySelector<HTMLElement>('.pane-toggle')?.focus());
+}
+
+function onDividerPointerDown(event: PointerEvent) {
+  if (event.button !== 0) return;
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  resizeStart = { x: event.clientX, width: listPane.value.collapsed ? LIST_WIDTH.min : listPane.value.width };
+}
+
+function onDividerPointerMove(event: PointerEvent) {
+  if (!resizeStart) return;
+  listPane.value = { width: clampListWidth(resizeStart.width + event.clientX - resizeStart.x), collapsed: false };
+}
+
+function onDividerPointerUp() {
+  resizeStart = null;
+}
+
+function toggleListPane() {
+  listPane.value = { ...listPane.value, collapsed: !listPane.value.collapsed };
+}
 const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan')));
 const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
 const cameraError = ref('');
@@ -753,10 +791,46 @@ async function share() {
       </div>
     </header>
 
-    <main class="screen" :class="[`screen-${stage}`, { 'screen-split': showHistoryPane }]">
-      <aside v-if="showHistoryPane" class="history-pane" :aria-label="t('history.title')">
+    <main
+      class="screen"
+      :class="[`screen-${stage}`, { 'screen-split': showHistoryPane, 'list-collapsed': showHistoryPane && listPane.collapsed }]"
+      :style="showHistoryPane ? { '--list-width': `${listPane.width}px` } : undefined"
+    >
+      <aside v-if="showHistoryPane" v-show="!listPane.collapsed" id="history-pane" class="history-pane" :aria-label="t('history.title')">
         <HistoryList :entries="history" :current="stage === 'review' ? historyId : null" @open="selectEntry" @remove="removeEntries" />
       </aside>
+      <div v-if="showHistoryPane" class="pane-divider">
+        <button
+          type="button"
+          class="icon pane-toggle"
+          :aria-label="listPane.collapsed ? t('history.expand') : t('history.collapse')"
+          :title="listPane.collapsed ? t('history.expand') : t('history.collapse')"
+          aria-controls="history-pane"
+          :aria-expanded="!listPane.collapsed"
+          @click="toggleListPane"
+        >
+          <MdIcon :name="listPane.collapsed ? 'left_panel_open' : 'left_panel_close'" />
+        </button>
+        <div
+          v-if="!listPane.collapsed"
+          class="pane-handle"
+          role="separator"
+          tabindex="0"
+          aria-orientation="vertical"
+          aria-controls="history-pane"
+          :aria-label="t('history.resize')"
+          :title="t('history.resize')"
+          :aria-valuemin="LIST_WIDTH.min"
+          :aria-valuemax="LIST_WIDTH.max"
+          :aria-valuenow="listPane.width"
+          @keydown="onDividerKeydown"
+          @pointerdown="onDividerPointerDown"
+          @pointermove="onDividerPointerMove"
+          @pointerup="onDividerPointerUp"
+          @pointercancel="onDividerPointerUp"
+          @dblclick="listPane = { width: LIST_WIDTH.initial, collapsed: false }"
+        ></div>
+      </div>
 
       <Transition :name="transition" mode="out-in" @after-enter="onScreenEnter">
         <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />

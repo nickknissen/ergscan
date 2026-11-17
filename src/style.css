@@ -2122,10 +2122,60 @@ tr.rest .cell {
 
   .screen.screen-split {
     display: grid;
-    grid-template-columns: 340px minmax(0, 1fr);
-    gap: 24px;
+    grid-template-columns: var(--list-width, 340px) 24px minmax(0, 1fr);
     align-items: start;
     max-width: 1280px;
+  }
+
+  .screen.screen-split.list-collapsed {
+    grid-template-columns: 0 48px minmax(0, 1fr);
+  }
+
+  .screen-split > .history-pane {
+    grid-column: 1;
+  }
+
+  .screen-split > section {
+    grid-column: 3;
+    min-width: 0;
+  }
+
+  .pane-divider {
+    position: sticky;
+    top: calc(var(--navbar-height) + env(safe-area-inset-top) + 16px);
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    height: calc(100dvh - var(--navbar-height) - env(safe-area-inset-top) - 32px);
+  }
+
+  .pane-handle {
+    position: relative;
+    flex: 1;
+    width: 16px;
+    border-radius: 8px;
+    cursor: col-resize;
+    touch-action: none;
+  }
+
+  .pane-handle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 48px;
+    border-radius: 2px;
+    background: var(--outline-variant);
+    transform: translate(-50%, -50%);
+  }
+
+  .pane-handle:hover::before,
+  .pane-handle:focus-visible::before,
+  .pane-handle:active::before {
+    background: var(--on-surface);
   }
 
   .history-pane {
