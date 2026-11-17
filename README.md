@@ -1,5 +1,7 @@
 # ErgScan
 
+![ErgScan reads a photo of a PM5 results screen, shows the splits for review and shares them as a FIT file](.github/readme-demo.gif)
+
 An open-source progressive web app that reads the results screen of a Concept2
 PM4 or PM5 monitor from a photo and exports the workout as a FIT file you can upload to
 Strava, Garmin Connect, intervals.icu or any other tool that accepts FIT.
@@ -93,7 +95,7 @@ docker run -p 8080:80 ergscan
 | `src/ui/` | Framework-free UI behavior: icons, menus, ripples, transitions, confirm dialogs |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
 | `testdata/` | Labelled results-screen images for tests and `npm run eval` |
-| `scripts/` | Build helpers and the OCR evaluation script |
+| `scripts/` | Build helpers, the OCR evaluation script and the README animation (`node scripts/readme-demo/render.mjs`, needs Chrome and ffmpeg) |
 
 ### Adding a language
 

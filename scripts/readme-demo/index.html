@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ErgScan demo</title>
+<style>
+  @font-face {
+    font-family: 'Roboto Flex';
+    src: url('../../node_modules/@fontsource-variable/roboto-flex/files/roboto-flex-latin-wght-normal.woff2') format('woff2');
+    font-weight: 100 1000;
+  }
+  :root {
+    --primary: #aec6ff;
+    --primary-container: #00439a;
+    --on-primary-container: #d8e2ff;
+    --surface: #111318;
+    --surface-container: #1e1f25;
+    --surface-container-high: #282a2f;
+    --on-surface: #e2e2e9;
+    --on-surface-variant: #c4c6d0;
+    --tertiary: #e6bbe1;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: #0a0b0f; }
+  body { font-family: 'Roboto Flex', system-ui, sans-serif; color: var(--on-surface); }
+  #stage {
+    position: relative; width: 960px; height: 600px; overflow: hidden;
+    background:
+      radial-gradient(520px 420px at 760px 330px, rgba(0, 67, 154, .55), transparent 70%),
+      radial-gradient(420px 320px at 120px 80px, rgba(174, 198, 255, .08), transparent 70%),
+      var(--surface);
+  }
+  .abs { position: absolute; }
+
+  #brand { left: 56px; top: 44px; display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 600; letter-spacing: .2px; }
+  #brand img { width: 36px; height: 36px; }
+
+  .caption { left: 56px; top: 196px; width: 500px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--primary); }
+  .headline { margin-top: 10px; font-size: 40px; line-height: 1.12; font-weight: 650; letter-spacing: -.4px; }
+  .sub { margin-top: 14px; font-size: 19px; line-height: 1.45; color: var(--on-surface-variant); max-width: 470px; }
+
+  #bars { left: 56px; top: 520px; display: flex; gap: 8px; }
+  .bar { width: 52px; height: 4px; border-radius: 2px; background: rgba(226, 226, 233, .16); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 100%; background: var(--primary); transform-origin: left; transform: scaleX(0); }
+
+  #phone {
+    left: 622px; top: 22px; width: 266px; height: 555px; border-radius: 40px; padding: 9px;
+    background: linear-gradient(145deg, #3a3d45, #1b1d22 40%, #2a2c33);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .06) inset;
+  }
+  #screen { position: relative; width: 248px; height: 537px; border-radius: 31px; overflow: hidden; background: var(--surface); }
+  #screen > * { position: absolute; left: 0; top: 0; }
+  .shot { width: 248px; height: 537px; }
+
+  #camera { width: 248px; height: 537px; background: #000; }
+  #camTitle { left: 16px; top: 22px; font-size: 13px; color: #fff; opacity: .85; }
+  #photoWrap { position: absolute; left: 0; top: 70px; width: 248px; height: 331px; overflow: hidden; }
+  #photo { width: 248px; height: 331px; display: block; transform-origin: 50% 50%; }
+  #dim { border-radius: 6px; box-shadow: 0 0 0 600px rgba(0, 0, 0, .5); }
+  .corner { width: 22px; height: 22px; border: 0 solid var(--primary); }
+  #c0 { border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 6px; }
+  #c1 { border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 6px; }
+  #c2 { border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 6px; }
+  #c3 { border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 6px; }
+  #scan { height: 26px; background: linear-gradient(to bottom, transparent, rgba(174, 198, 255, .35) 80%, #d8e2ff 96%, transparent); }
+  #progress {
+    position: absolute; left: 24px; top: 424px; width: 200px; height: 30px; border-radius: 15px;
+    background: rgba(30, 31, 37, .92); font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--on-surface);
+  }
+  #spinner { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--primary); border-right-color: transparent; }
+  #shutter { position: absolute; left: 96px; top: 470px; width: 56px; height: 56px; border-radius: 50%; border: 4px solid #fff; }
+  #shutter i { position: absolute; inset: 4px; border-radius: 50%; background: #fff; }
+  #flash { width: 248px; height: 537px; background: #fff; opacity: 0; }
+
+  #rowHL { border-radius: 4px; border: 2px solid var(--primary); box-shadow: 0 0 14px rgba(174, 198, 255, .55); }
+  #ripple { border-radius: 50%; background: rgba(255, 255, 255, .9); }
+
+  #fit {
+    width: 270px; height: 64px; border-radius: 16px; padding: 0 16px; display: flex; align-items: center; gap: 14px;
+    background: var(--primary-container); color: var(--on-primary-container); box-shadow: 0 14px 40px rgba(0, 0, 0, .45);
+    transform-origin: 0 0; font-size: 15px; font-weight: 600;
+  }
+  #fit svg { flex: none; }
+  #fit small { display: block; font-size: 12px; font-weight: 450; opacity: .8; margin-top: 2px; }
+  .chip {
+    top: 444px; height: 40px; border-radius: 20px; padding: 0 16px 0 10px; display: flex; align-items: center; gap: 8px;
+    background: var(--surface-container-high); font-size: 15px; font-weight: 550; white-space: nowrap;
+  }
+  .chip b { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #002e6b; display: grid; place-items: center; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="brand" class="abs"><img src="../../public/icon.svg" alt="">ErgScan</div>
+
+  <div class="caption abs" id="cap0">
+    <div class="kicker">Concept2 PM5 &amp; PM4</div>
+    <div class="headline">Finished your row?</div>
+    <div class="sub">ErgScan turns a photo of the results screen into a workout file.</div>
+  </div>
+  <div class="caption abs" id="cap1">
+    <div class="kicker">1 &middot; Scan</div>
+    <div class="headline">Snap the results screen</div>
+    <div class="sub">It finds the display and reads every split with OCR, right on your phone.</div>
+  </div>
+  <div class="caption abs" id="cap2">
+    <div class="kicker">2 &middot; Review</div>
+    <div class="headline">Check every split</div>
+    <div class="sub">Fix anything the OCR got wrong. Rest intervals are detected for you.</div>
+  </div>
+  <div class="caption abs" id="cap3">
+    <div class="kicker">3 &middot; Export</div>
+    <div class="headline">Share a FIT file</div>
+    <div class="sub">One lap per split, with pace, stroke rate, power and heart rate.</div>
+  </div>
+  <div class="caption abs" id="cap4">
+    <div class="kicker">Private by design</div>
+    <div class="headline">Your photo never leaves the device</div>
+    <div class="sub">Free, open source, and works offline as an installable web app.</div>
+  </div>
+
+  <div id="bars" class="abs">
+    <div class="bar"><i></i></div><div class="bar"><i></i></div><div class="bar"><i></i></div>
+  </div>
+
+  <div id="fit" class="abs">
+    <svg width="34" height="40" viewBox="0 0 34 40"><path d="M3 3h19l9 9v25H3z" fill="#d8e2ff"/><path d="M22 3v9h9" fill="#aec6ff"/><text x="17" y="31" text-anchor="middle" font-family="Roboto Flex, sans-serif" font-size="10" font-weight="800" fill="#00439a">FIT</text></svg>
+    <div>ergscan-20261110-1200.fit<small>Indoor rowing &middot; 8 laps &middot; 4000 m</small></div>
+  </div>
+  <div class="chip abs" id="chip0"><b>&#10003;</b>Strava</div>
+  <div class="chip abs" id="chip1"><b>&#10003;</b>Garmin Connect</div>
+  <div class="chip abs" id="chip2"><b>&#10003;</b>intervals.icu</div>
+
+  <div id="phone" class="abs">
+    <div id="screen">
+      <img id="home" class="shot" src="home.png" alt="">
+      <div id="camera">
+        <div id="camTitle" class="abs">Take a photo of the results screen</div>
+        <div id="photoWrap">
+          <img id="photo" src="../../testdata/pm5-intervals-8x500m.jpeg" alt="">
+        </div>
+        <div id="dim" class="abs"></div>
+        <div id="scan" class="abs"></div>
+        <div id="c0" class="corner abs"></div><div id="c1" class="corner abs"></div>
+        <div id="c2" class="corner abs"></div><div id="c3" class="corner abs"></div>
+        <div id="progress"><span id="spinner"></span><span id="progressText">Reading the screen&hellip; 0%</span></div>
+        <div id="shutter"><i></i></div>
+      </div>
+      <img id="review" class="shot" src="review.png" alt="">
+      <img id="saved" class="shot" src="saved.png" alt="">
+      <div id="rowHL"></div>
+      <div id="ripple"></div>
+      <div id="flash"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DURATION = 15.6;
+  const S = 248 / 780;
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x) => Math.min(1, Math.max(0, x));
+  const seg = (t, a, b) => clamp((t - a) / (b - a));
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const lerp = (a, b, p) => a + (b - a) * p;
+  const set = (el, styles) => Object.assign(($(el) || el).style, styles);
+
+  const CAPTIONS = [[0.15, 2.4], [2.4, 6.6], [6.6, 9.9], [9.9, 13.2], [13.2, 15.45]];
+  const PHOTO_RECT = { x: 0, y: 70, w: 248, h: 331 };
+  const LCD_RECT = { x: 3, y: 70 + 68, w: 223, h: 217 };
+
+  function caption(i, t) {
+    const [a, b] = CAPTIONS[i];
+    const pin = easeOut(seg(t, a, a + 0.55));
+    const pout = easeInOut(seg(t, b - 0.35, b));
+    set('cap' + i, { opacity: pin * (1 - pout), transform: `translateY(${(1 - pin) * 22 - pout * 14}px)` });
+  }
+
+  function ripple(t, at, x, y) {
+    const p = seg(t, at, at + 0.5);
+    const r = lerp(8, 70, easeOut(p));
+    const visible = t >= at - 0.12 && p < 1;
+    const press = seg(t, at - 0.12, at);
+    set('ripple', {
+      left: `${x - r}px`, top: `${y - r}px`, width: `${2 * r}px`, height: `${2 * r}px`,
+      opacity: visible ? (p > 0 ? 0.32 * (1 - p) : 0.35 * press) : 0,
+    });
+    return visible;
+  }
+
+  function rect(el, r) {
+    set(el, { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` });
+  }
+
+  function renderAt(t) {
+    t = ((t % DURATION) + DURATION) % DURATION;
+    CAPTIONS.forEach((_, i) => caption(i, t));
+
+    const barsIn = easeOut(seg(t, 2.4, 2.9)) * (1 - seg(t, 13.0, 13.4));
+    set('bars', { opacity: barsIn });
+    [[2.4, 6.6], [6.6, 9.9], [9.9, 13.2]].forEach(([a, b], i) => {
+      document.querySelectorAll('.bar i')[i].style.transform = `scaleX(${seg(t, a, b)})`;
+    });
+
+    const camIn = easeOut(seg(t, 2.25, 2.6));
+    const reviewIn = easeInOut(seg(t, 6.35, 6.85));
+    const savedIn = seg(t, 9.45, 9.7);
+    const homeBack = seg(t, 15.1, 15.6);
+    set('camera', { opacity: camIn * (1 - homeBack), transform: `scale(${lerp(1.06, 1, camIn)})` });
+    set('review', { transform: `translateY(${(1 - reviewIn) * 100}%)`, opacity: t < 6.3 ? 0 : 1 - homeBack });
+    set('saved', { opacity: savedIn * (1 - homeBack) });
+    set('home', { opacity: t < 3 || homeBack > 0 ? 1 : 0 });
+
+    const live = t < 2.95;
+    const wob = live ? Math.sin(t * 7) * 2.2 : 0;
+    const flash = t >= 2.95 ? 1 - seg(t, 2.95, 3.3) : 0;
+    set('flash', { opacity: 0.85 * flash });
+    const g = easeInOut(seg(t, 4.1, 5.6));
+    set('photo', {
+      transform: `translate(${wob}px, ${Math.cos(t * 5) * (live ? 1.6 : 0)}px) scale(${live ? 1.04 : 1})`,
+      filter: `grayscale(${g}) contrast(${1 + 1.6 * g}) brightness(${1 + 0.12 * g})`,
+    });
+    set('shutter', { opacity: 1 - seg(t, 3.1, 3.4), transform: `scale(${1 - 0.12 * (t > 2.8 && t < 3.1 ? 1 : 0)})` });
+
+    const find = easeInOut(seg(t, 3.25, 4.0));
+    const showCorners = t >= 3.15;
+    const box = {
+      x: lerp(PHOTO_RECT.x + 10, LCD_RECT.x, find), y: lerp(PHOTO_RECT.y + 10, LCD_RECT.y, find),
+      w: lerp(PHOTO_RECT.w - 20, LCD_RECT.w, find), h: lerp(PHOTO_RECT.h - 20, LCD_RECT.h, find),
+    };
+    const cornersOpacity = showCorners ? seg(t, 3.15, 3.35) : 0;
+    const cs = 22;
+    [[box.x, box.y], [box.x + box.w - cs, box.y], [box.x, box.y + box.h - cs], [box.x + box.w - cs, box.y + box.h - cs]]
+      .forEach(([x, y], i) => set('c' + i, { left: `${x}px`, top: `${y}px`, opacity: cornersOpacity }));
+    rect('dim', box);
+    set('dim', { opacity: 0.9 * easeOut(seg(t, 3.6, 4.1)) });
+
+    const scanP = seg(t, 4.1, 5.9);
+    const pass = (scanP * 2) % 1;
+    set('scan', {
+      left: `${LCD_RECT.x + 3}px`, width: `${LCD_RECT.w - 6}px`,
+      top: `${LCD_RECT.y + pass * (LCD_RECT.h - 26)}px`,
+      opacity: scanP > 0 && scanP < 1 ? Math.min(1, Math.sin(pass * Math.PI) * 3) : 0,
+    });
+    const prog = seg(t, 4.0, 6.1);
+    set('progress', { opacity: easeOut(seg(t, 3.7, 4.0)), transform: `translateY(${(1 - easeOut(seg(t, 3.7, 4.0))) * 10}px)` });
+    $('progressText').textContent = `Reading the screen… ${Math.round(100 * easeInOut(prog))}%`;
+    set('spinner', { transform: `rotate(${t * 540}deg)` });
+
+    const rows = [795, 957, 1057, 1157, 1257, 1357, 1457];
+    const hl = seg(t, 7.0, 8.7);
+    const idx = Math.min(rows.length - 1, Math.floor(hl * rows.length));
+    const frac = hl * rows.length - idx;
+    const hlVisible = t > 7.0 && t < 8.9;
+    const y0 = rows[idx];
+    const y1 = rows[Math.min(rows.length - 1, idx + 1)];
+    set('rowHL', {
+      left: `${44 * S}px`, width: `${(676 - 44) * S}px`, height: `${95 * S}px`,
+      top: `${lerp(y0, y1, easeInOut(clamp(frac * 1.6 - 0.6))) * S - 1}px`,
+      opacity: hlVisible ? Math.min(seg(t, 7.0, 7.2), 1 - seg(t, 8.7, 8.9)) : 0,
+    });
+
+    if (!ripple(t, 1.75, 546 * S, 1440 * S) && !ripple(t, 9.15, 693 * S, 64 * S)) ripple(t, 10.45, 607 * S, 1600 * S);
+
+    const fly = easeInOut(seg(t, 10.6, 11.35));
+    const fitVisible = t > 10.55 && t < 13.2;
+    const fromX = 631 + 607 * S - 40, fromY = 31 + 1600 * S - 20;
+    const toX = 56, toY = 356;
+    const arc = Math.sin(fly * Math.PI) * -60;
+    set('fit', {
+      left: `${lerp(fromX, toX, fly)}px`, top: `${lerp(fromY, toY, fly) + arc}px`,
+      transform: `scale(${lerp(0.3, 1, easeOut(seg(t, 10.6, 11.2)))})`,
+      opacity: fitVisible ? seg(t, 10.55, 10.75) * (1 - seg(t, 12.85, 13.2)) : 0,
+    });
+    const chipX = [56, 56 + 112, 56 + 112 + 178];
+    chipX.forEach((x, i) => {
+      const p = easeOut(seg(t, 11.45 + i * 0.22, 11.85 + i * 0.22));
+      const out = seg(t, 12.85, 13.2);
+      set('chip' + i, { left: `${x}px`, opacity: p * (1 - out), transform: `translateY(${(1 - p) * 14}px) scale(${lerp(0.9, 1, p)})` });
+    });
+  }
+
+  window.renderAt = renderAt;
+  window.DEMO_DURATION = DURATION;
+  window.demoReady = Promise.all([
+    document.fonts.load('600 20px "Roboto Flex"'),
+    ...[...document.images].map((img) => img.decode()),
+  ]).then(() => document.fonts.ready);
+
+  renderAt(0);
+  if (!location.search.includes('capture')) {
+    const start = performance.now();
+    const loop = (now) => { renderAt((now - start) / 1000); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  }
+</script>
+</body>
+</html>
