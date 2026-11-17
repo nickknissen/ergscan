@@ -511,8 +511,10 @@ button svg {
   margin-bottom: 0;
 }
 
-.history {
-  margin-top: 32px;
+.history-empty {
+  margin: 48px 16px;
+  color: var(--muted);
+  text-align: center;
 }
 
 .history-open {
@@ -948,6 +950,54 @@ tr.rest .cell {
 .toolbar-actions button {
   flex: 1;
   padding: 0 12px;
+}
+
+/* ---------- Floating tab bar ---------- */
+
+.shell-tabbed .screen {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 10;
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--bar);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 0.5px solid var(--separator);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.16);
+  transform: translateX(-50%);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tab {
+  flex-direction: column;
+  gap: 2px;
+  min-width: 96px;
+  min-height: 52px;
+  padding: 4px 18px;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tab svg {
+  width: 24px;
+  height: 24px;
+}
+
+.tab[aria-current='page'] {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 /* ---------- Wider screens ---------- */

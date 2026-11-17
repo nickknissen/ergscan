@@ -75,8 +75,12 @@
     "calories": "Cal",
     "rest": "Rest"
   },
+  "tabs": {
+    "scan": "Scan"
+  },
   "history": {
     "title": "History",
+    "empty": "Workouts you scan or enter are saved here.",
     "summary": "{distance} m · {time}",
     "remove": "Delete the workout from {date}"
   },

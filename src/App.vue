@@ -9,7 +9,8 @@ import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry, type 
 import { formatTime } from './core/time';
 import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
 
-type Stage = 'guide' | 'capture' | 'camera' | 'scanning' | 'review';
+type Stage = 'guide' | 'capture' | 'history' | 'camera' | 'scanning' | 'review';
+type Tab = 'capture' | 'history';
 type FitModule = typeof import('./core/fitExport');
 
 const { t, locale } = useI18n();
@@ -52,6 +53,15 @@ const storage: HistoryStorage | null = (() => {
 })();
 const history = ref<HistoryEntry[]>(storage ? loadHistory(storage) : []);
 const historyId = ref<string | null>(null);
+const reviewOrigin = ref<Tab>('capture');
+const tabbed = computed(() => stage.value === 'capture' || stage.value === 'history');
+const reviewBackLabel = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('export.newScan')));
+const navTitle = computed(() => {
+  if (stage.value === 'review') return t('review.title');
+  if (stage.value === 'guide') return t('guide.title');
+  if (stage.value === 'history') return t('history.title');
+  return t('app.title');
+});
 
 watch(
   [workout, extraColumn],
@@ -71,10 +81,17 @@ function openEntry(id: string) {
   const entry = storage && loadHistory(storage).find((e) => e.id === id);
   if (!entry) return;
   reset();
+  reviewOrigin.value = 'history';
   historyId.value = entry.id;
   workout.value = entry.workout;
   extraColumn.value = entry.extraColumn;
   stage.value = 'review';
+}
+
+function leaveReview() {
+  const origin = reviewOrigin.value;
+  reset();
+  stage.value = origin;
 }
 
 function deleteEntry(id: string) {
@@ -109,6 +126,7 @@ function reset() {
   if (photoUrl.value) URL.revokeObjectURL(photoUrl.value);
   photoUrl.value = null;
   historyId.value = null;
+  reviewOrigin.value = 'capture';
   workout.value = null;
   extraColumn.value = null;
   rawText.value = '';
@@ -219,19 +237,19 @@ async function share() {
     @failed="onCameraFailed"
   />
 
-  <div v-else class="shell">
+  <div v-else class="shell" :class="{ 'shell-tabbed': tabbed }">
     <header class="navbar">
       <div class="navbar-side">
-        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="t('export.newScan')" @click="reset">
+        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="reviewBackLabel" @click="leaveReview">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-          <span>{{ t('export.newScan') }}</span>
+          <span>{{ reviewBackLabel }}</span>
         </button>
         <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('app.title')" @click="closeGuide">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
           <span>{{ t('app.title') }}</span>
         </button>
       </div>
-      <h1 class="navbar-title">{{ stage === 'review' ? t('review.title') : stage === 'guide' ? t('guide.title') : t('app.title') }}</h1>
+      <h1 class="navbar-title">{{ navTitle }}</h1>
       <div class="navbar-side"></div>
     </header>
 
@@ -300,24 +318,24 @@ async function share() {
             </button>
           </div>
         </div>
+      </section>
 
-        <section v-if="history.length" class="history">
-          <h2 class="group-header">{{ t('history.title') }}</h2>
-          <div class="group">
-            <div v-for="entry in history" :key="entry.id" class="group-row">
-              <button type="button" class="history-open" @click="openEntry(entry.id)">
-                <span class="row-label">
-                  {{ entrySummary(entry) }}
-                  <span class="row-detail">{{ entryDate(entry) }}</span>
-                </span>
-                <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
-              </button>
-              <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry.id)">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
-              </button>
-            </div>
+      <section v-else-if="stage === 'history'" class="history">
+        <p v-if="!history.length" class="history-empty">{{ t('history.empty') }}</p>
+        <div v-else class="group">
+          <div v-for="entry in history" :key="entry.id" class="group-row">
+            <button type="button" class="history-open" @click="openEntry(entry.id)">
+              <span class="row-label">
+                {{ entrySummary(entry) }}
+                <span class="row-detail">{{ entryDate(entry) }}</span>
+              </span>
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            </button>
+            <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry.id)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+            </button>
           </div>
-        </section>
+        </div>
       </section>
 
       <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
@@ -349,6 +367,23 @@ async function share() {
         </details>
       </section>
     </main>
+
+    <nav v-if="tabbed" class="tabbar">
+      <button type="button" class="tab" :aria-current="stage === 'capture' ? 'page' : undefined" @click="stage = 'capture'">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+          <circle cx="12" cy="13" r="3.5" />
+        </svg>
+        <span>{{ t('tabs.scan') }}</span>
+      </button>
+      <button type="button" class="tab" :aria-current="stage === 'history' ? 'page' : undefined" @click="stage = 'history'">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span>{{ t('history.title') }}</span>
+      </button>
+    </nav>
 
     <footer v-if="stage === 'review' && workout" class="toolbar">
       <p v-if="!canExport" class="toolbar-hint">{{ t('export.invalid') }}</p>
