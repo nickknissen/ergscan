@@ -2006,8 +2006,117 @@ tr.rest .cell {
   }
 }
 
+@media (min-width: 600px) {
+  .monitor-choices {
+    flex-direction: row;
+  }
+
+  .monitor-choice {
+    flex: 1;
+  }
+}
+
 @media (min-width: 720px) {
   .screen {
     padding-top: 32px;
+  }
+}
+
+@media (min-width: 840px) {
+  .screen-guide,
+  .screen-history,
+  .screen-settings {
+    max-width: 1040px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .history .group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .screen-history {
+    max-width: 1280px;
+  }
+
+  .shell-tabbed {
+    padding-left: calc(240px + env(safe-area-inset-left));
+  }
+
+  .tabbar {
+    width: calc(240px + env(safe-area-inset-left));
+    align-items: stretch;
+    gap: 0;
+    padding: calc(var(--navbar-height) + 40px + env(safe-area-inset-top)) 12px 0 calc(12px + env(safe-area-inset-left));
+  }
+
+  .tab {
+    position: relative;
+    isolation: isolate;
+    max-width: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 16px;
+    border-radius: 28px;
+    background-image: linear-gradient(color-mix(in srgb, currentColor var(--state), transparent) 0 0);
+    font: var(--label-large);
+    transition: --state var(--duration-short) linear;
+  }
+
+  .tab-indicator {
+    position: static;
+    isolation: auto;
+    width: 24px;
+    height: 24px;
+    background-image: none;
+  }
+
+  .tab-indicator::before {
+    border-radius: 28px;
+  }
+
+  .tab[aria-current='page'] {
+    color: var(--on-secondary-container);
+  }
+
+  .tab:active,
+  .tab:focus-visible {
+    --state: 10%;
+  }
+
+  .shell-tabbed .fab {
+    width: auto;
+    gap: 12px;
+    padding: 0 20px 0 16px;
+  }
+
+  .shell-tabbed .fab-label,
+  .shell-tabbed .fab-collapsed .fab-label {
+    position: static;
+    width: auto;
+    height: auto;
+    max-width: 240px;
+    clip-path: none;
+    opacity: 1;
+  }
+}
+
+@media (min-width: 1200px) and (hover: hover) {
+  .tab:hover {
+    --state: 8%;
   }
 }

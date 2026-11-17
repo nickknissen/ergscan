@@ -607,96 +607,100 @@ async function share() {
         </section>
 
         <section v-else-if="stage === 'settings'" class="settings">
-          <h2 class="group-header">{{ t('settings.appearance') }}</h2>
-          <div class="group">
-            <div class="group-row settings-theme">
-              <MdIcon name="contrast" class="row-icon" />
-              <span class="row-label">{{ t('settings.theme') }}</span>
-              <div class="segmented" role="radiogroup" :aria-label="t('settings.theme')">
-                <button
-                  v-for="option in THEMES"
-                  :key="option"
-                  type="button"
-                  role="radio"
-                  :aria-checked="theme === option"
-                  @click="theme = option"
-                >
-                  <MdIcon v-if="theme === option" name="check" />
-                  {{ t(`settings.themes.${option}`) }}
-                </button>
+          <div class="settings-section">
+            <h2 class="group-header">{{ t('settings.appearance') }}</h2>
+            <div class="group">
+              <div class="group-row settings-theme">
+                <MdIcon name="contrast" class="row-icon" />
+                <span class="row-label">{{ t('settings.theme') }}</span>
+                <div class="segmented" role="radiogroup" :aria-label="t('settings.theme')">
+                  <button
+                    v-for="option in THEMES"
+                    :key="option"
+                    type="button"
+                    role="radio"
+                    :aria-checked="theme === option"
+                    @click="theme = option"
+                  >
+                    <MdIcon v-if="theme === option" name="check" />
+                    {{ t(`settings.themes.${option}`) }}
+                  </button>
+                </div>
               </div>
-            </div>
-            <div class="group-row settings-theme">
-              <MdIcon name="palette" class="row-icon" />
-              <span class="row-label">{{ t('settings.color') }}</span>
-              <div class="swatches" role="radiogroup" :aria-label="t('settings.color')">
-                <button
-                  v-for="{ option, colors } in swatches"
-                  :key="option"
-                  type="button"
-                  role="radio"
-                  class="swatch"
-                  :aria-checked="accent === option"
-                  :aria-label="t(`settings.accents.${option}`)"
-                  :style="{ '--swatch-1': colors[0], '--swatch-2': colors[1], '--swatch-3': colors[2] }"
-                  @click="accent = option"
-                >
-                  <MdIcon v-if="accent === option" name="check" />
-                </button>
+              <div class="group-row settings-theme">
+                <MdIcon name="palette" class="row-icon" />
+                <span class="row-label">{{ t('settings.color') }}</span>
+                <div class="swatches" role="radiogroup" :aria-label="t('settings.color')">
+                  <button
+                    v-for="{ option, colors } in swatches"
+                    :key="option"
+                    type="button"
+                    role="radio"
+                    class="swatch"
+                    :aria-checked="accent === option"
+                    :aria-label="t(`settings.accents.${option}`)"
+                    :style="{ '--swatch-1': colors[0], '--swatch-2': colors[1], '--swatch-3': colors[2] }"
+                    @click="accent = option"
+                  >
+                    <MdIcon v-if="accent === option" name="check" />
+                  </button>
+                </div>
               </div>
+              <label class="group-row tappable">
+                <MdIcon name="view_day" class="row-icon" />
+                <span class="row-label">
+                  {{ t('settings.showIntro') }}
+                  <span class="row-detail">{{ t('settings.showIntroDetail') }}</span>
+                </span>
+                <input v-model="showIntro" type="checkbox" role="switch" class="switch" />
+              </label>
             </div>
-            <label class="group-row tappable">
-              <MdIcon name="view_day" class="row-icon" />
-              <span class="row-label">
-                {{ t('settings.showIntro') }}
-                <span class="row-detail">{{ t('settings.showIntroDetail') }}</span>
-              </span>
-              <input v-model="showIntro" type="checkbox" role="switch" class="switch" />
-            </label>
           </div>
 
-          <h2 class="group-header">{{ t('settings.heartRate') }}</h2>
-          <div class="group">
-            <label class="group-row">
-              <MdIcon name="monitor_heart" class="row-icon" />
-              <span class="row-label">
-                {{ t('settings.maxHr') }}
-                <span class="row-detail">{{ t('settings.maxHrDetail') }}</span>
-              </span>
-              <input
-                :value="heartRate.measuredMax ?? ''"
-                class="settings-number"
-                inputmode="numeric"
-                autocomplete="off"
-                :placeholder="ageEstimate === null ? undefined : String(ageEstimate)"
-                @change="setHeartRate('measuredMax', $event)"
-              />
-            </label>
-            <label class="group-row">
-              <MdIcon name="cake" class="row-icon" />
-              <span class="row-label">
-                {{ t('settings.age') }}
-                <span class="row-detail">{{ ageDetail }}</span>
-              </span>
-              <input
-                :value="heartRate.age ?? ''"
-                class="settings-number"
-                inputmode="numeric"
-                autocomplete="off"
-                @change="setHeartRate('age', $event)"
-              />
-            </label>
-          </div>
+          <div class="settings-section">
+            <h2 class="group-header">{{ t('settings.heartRate') }}</h2>
+            <div class="group">
+              <label class="group-row">
+                <MdIcon name="monitor_heart" class="row-icon" />
+                <span class="row-label">
+                  {{ t('settings.maxHr') }}
+                  <span class="row-detail">{{ t('settings.maxHrDetail') }}</span>
+                </span>
+                <input
+                  :value="heartRate.measuredMax ?? ''"
+                  class="settings-number"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  :placeholder="ageEstimate === null ? undefined : String(ageEstimate)"
+                  @change="setHeartRate('measuredMax', $event)"
+                />
+              </label>
+              <label class="group-row">
+                <MdIcon name="cake" class="row-icon" />
+                <span class="row-label">
+                  {{ t('settings.age') }}
+                  <span class="row-detail">{{ ageDetail }}</span>
+                </span>
+                <input
+                  :value="heartRate.age ?? ''"
+                  class="settings-number"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  @change="setHeartRate('age', $event)"
+                />
+              </label>
+            </div>
 
-          <h2 class="group-header">{{ t('settings.data') }}</h2>
-          <div class="group">
-            <button type="button" class="group-row tappable settings-danger" @click="clearData">
-              <MdIcon name="delete_forever" class="row-icon" />
-              <span class="row-label">
-                {{ t('settings.clear') }}
-                <span class="row-detail">{{ t('settings.clearDetail', history.length) }}</span>
-              </span>
-            </button>
+            <h2 class="group-header">{{ t('settings.data') }}</h2>
+            <div class="group">
+              <button type="button" class="group-row tappable settings-danger" @click="clearData">
+                <MdIcon name="delete_forever" class="row-icon" />
+                <span class="row-label">
+                  {{ t('settings.clear') }}
+                  <span class="row-detail">{{ t('settings.clearDetail', history.length) }}</span>
+                </span>
+              </button>
+            </div>
           </div>
         </section>
 
