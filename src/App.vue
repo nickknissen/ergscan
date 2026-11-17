@@ -9,6 +9,7 @@ import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
 import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { applyTheme, clearAppData, loadIntroHidden, loadTheme, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
+import { parseRoute, routeHash } from './core/route';
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
@@ -38,12 +39,14 @@ function markGuideSeen() {
   }
 }
 
-const GUIDE_HASH = '#/guide';
+const GUIDE_HASH = routeHash({ page: 'guide' });
 const baseUrl = () => location.pathname + location.search;
 
-if (location.hash !== GUIDE_HASH && !guideSeen()) window.history.replaceState(null, '', GUIDE_HASH);
+const initialRoute = parseRoute(location.hash);
+if (initialRoute.page === 'home' && !guideSeen()) window.history.replaceState(null, '', GUIDE_HASH);
 const stage = ref<Stage>(location.hash === GUIDE_HASH ? 'guide' : 'capture');
 let stageAfterBack: Stage | null = null;
+let ignoreNextPop = false;
 
 function openGuide() {
   window.history.pushState({ guide: true }, '', GUIDE_HASH);
@@ -68,11 +71,20 @@ function closeGuide() {
 }
 
 window.addEventListener('popstate', () => {
-  if (location.hash === GUIDE_HASH) {
+  if (ignoreNextPop) {
+    ignoreNextPop = false;
+    return;
+  }
+  const route = parseRoute(location.hash);
+  if (stage.value === 'review' && route.page !== 'workout') {
+    void backFromReview();
+  } else if (route.page === 'guide') {
     stage.value = 'guide';
   } else if (stage.value === 'guide') {
     markGuideSeen();
     stage.value = stageAfterBack ?? 'capture';
+  } else if (route.page === 'workout' && stage.value !== 'review') {
+    if (route.id === null || !openEntry(route.id, false)) window.history.replaceState(null, '', baseUrl());
   }
   stageAfterBack = null;
 });
@@ -158,16 +170,23 @@ function startEntry() {
   historyId.value = crypto.randomUUID();
 }
 
-function openEntry(id: string) {
+function showReview(id: string | null) {
+  stage.value = 'review';
+  window.history.pushState({ workout: true }, '', routeHash({ page: 'workout', id }));
+}
+
+function openEntry(id: string, push = true): boolean {
   const entry = storage && loadHistory(storage).find((e) => e.id === id);
-  if (!entry) return;
+  if (!entry) return false;
   reset();
   reviewOrigin.value = 'history';
   historyId.value = entry.id;
   workout.value = entry.workout;
   extraColumn.value = entry.extraColumn;
   savedKey.value = draftKey(entry.workout, entry.extraColumn);
-  stage.value = 'review';
+  if (push) showReview(entry.id);
+  else stage.value = 'review';
+  return true;
 }
 
 function saveWorkout() {
@@ -176,16 +195,44 @@ function saveWorkout() {
   history.value = saveToHistory(storage, { id: historyId.value, workout: w, extraColumn: extraColumn.value });
   savedKey.value = draftKey(w, extraColumn.value);
   reviewOrigin.value = 'history';
+  window.history.replaceState(window.history.state, '', routeHash({ page: 'workout', id: historyId.value }));
 }
 
 const saved = computed(() => savedKey.value !== null && !unsaved.value);
 const canSave = computed(() => !saved.value && isExportable(workout.value, invalidCells.value));
 
-async function discardWorkout() {
-  if (unsaved.value && !(await confirmDialog(savedKey.value === null ? 'discardNew' : 'discardChanges'))) return;
+function confirmDiscard(): Promise<boolean> {
+  return confirmDialog(savedKey.value === null ? 'discardNew' : 'discardChanges');
+}
+
+function closeReview() {
   const origin = reviewOrigin.value;
   reset();
   stage.value = origin;
+}
+
+function leaveReview() {
+  closeReview();
+  if (window.history.state?.workout) {
+    ignoreNextPop = true;
+    window.history.back();
+  } else {
+    window.history.replaceState(null, '', baseUrl());
+  }
+}
+
+async function discardWorkout() {
+  if (unsaved.value && !(await confirmDiscard())) return;
+  leaveReview();
+}
+
+async function backFromReview() {
+  if (!unsaved.value) {
+    closeReview();
+    return;
+  }
+  window.history.pushState({ workout: true }, '', routeHash({ page: 'workout', id: savedKey.value === null ? null : historyId.value }));
+  if (await confirmDiscard()) leaveReview();
 }
 
 async function deleteEntry(entry: HistoryEntry) {
@@ -293,14 +340,18 @@ async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
     workout.value = newWorkout();
     notice.value = t('scan.error', { message: error instanceof Error ? error.message : String(error) });
   }
-  stage.value = 'review';
+  showReview(null);
 }
 
 function enterManually() {
   reset();
   startEntry();
   workout.value = newWorkout();
-  stage.value = 'review';
+  showReview(null);
+}
+
+if (initialRoute.page === 'workout' && (initialRoute.id === null || !openEntry(initialRoute.id, false))) {
+  window.history.replaceState(null, '', baseUrl());
 }
 
 function fitFile(): File {
