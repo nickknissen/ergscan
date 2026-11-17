@@ -65,13 +65,15 @@
     "busy": "The camera is in use by another app. Close it and try again, or choose a photo instead.",
     "starting": "Starting camera…",
     "stalled": "The camera isn't responding. If your browser is asking for permission, allow it, then try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "switch": "Switch camera"
   },
   "scan": {
     "loading": "Loading the OCR engine…",
     "recognizing": "Reading the screen… {percent}%",
     "failed": "No results table was found. Try another photo or enter the workout manually.",
-    "error": "Scanning failed: {message}"
+    "error": "Scanning failed: {message}",
+    "offline": "You're offline and the text reader hasn't been downloaded yet. Connect once and try again, or enter the workout manually."
   },
   "review": {
     "title": "Check the results",
@@ -93,7 +95,10 @@
     "back": "Back to {screen}",
     "save": "Save",
     "saved": "Saved",
-    "more": "More options"
+    "more": "More options",
+    "print": "Print",
+    "undo": "Undo",
+    "redo": "Redo"
   },
   "columns": {
     "time": "Time",
@@ -134,7 +139,13 @@
     "open": "Edit",
     "delete": "Delete",
     "pickTitle": "Pick a workout",
-    "pick": "Its splits open here, ready to edit, share or download."
+    "pick": "Its splits open here, ready to edit, share or download.",
+    "selected": "{count} selected",
+    "deleteSelected": "Delete selected",
+    "clearSelection": "Clear selection",
+    "resize": "Resize the list",
+    "collapse": "Hide the list",
+    "expand": "Show the list"
   },
   "settings": {
     "title": "Settings",
@@ -171,7 +182,8 @@
     "download": "Download FIT",
     "share": "Share FIT",
     "invalid": "Fill in the total time and distance to save the workout.",
-    "saveFirst": "Save the workout to share or download the FIT file."
+    "saveFirst": "Save the workout to share or download the FIT file.",
+    "savedAs": "Saved as {name}"
   },
   "dialog": {
     "cancel": "Cancel",
@@ -190,6 +202,11 @@
       "body": "The workout from {date} will be deleted. This can't be undone.",
       "confirm": "Delete"
     },
+    "removeMany": {
+      "title": "Delete workouts?",
+      "body": "The {count} selected workouts will be deleted. This can't be undone.",
+      "confirm": "Delete"
+    },
     "clear": {
       "title": "Clear all data?",
       "body": "All saved workouts will be deleted and settings reset. This can't be undone.",
@@ -200,5 +217,9 @@
     "available": "A new version of ErgScan is available.",
     "later": "Later",
     "reload": "Reload"
+  },
+  "drop": {
+    "overlay": "Drop the photo to scan it",
+    "extra": "Only the first image is scanned. | Only the first image is scanned; 1 other was ignored. | Only the first image is scanned; {count} others were ignored."
   }
 }

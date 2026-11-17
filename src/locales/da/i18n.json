@@ -65,13 +65,15 @@
     "busy": "Kameraet bruges af en anden app. Luk den og prøv igen, eller vælg et billede i stedet.",
     "starting": "Starter kameraet…",
     "stalled": "Kameraet svarer ikke. Hvis browseren beder om tilladelse, så tillad det og prøv igen.",
-    "retry": "Prøv igen"
+    "retry": "Prøv igen",
+    "switch": "Skift kamera"
   },
   "scan": {
     "loading": "Indlæser OCR…",
     "recognizing": "Læser skærmen… {percent}%",
     "failed": "Der blev ikke fundet en resultattabel. Prøv et andet billede, eller indtast træningen manuelt.",
-    "error": "Scanningen fejlede: {message}"
+    "error": "Scanningen fejlede: {message}",
+    "offline": "Du er offline, og tekstlæseren er endnu ikke hentet. Opret forbindelse én gang og prøv igen, eller indtast træningen manuelt."
   },
   "review": {
     "title": "Tjek resultaterne",
@@ -93,7 +95,10 @@
     "back": "Tilbage til {screen}",
     "save": "Gem",
     "saved": "Gemt",
-    "more": "Flere muligheder"
+    "more": "Flere muligheder",
+    "print": "Udskriv",
+    "undo": "Fortryd",
+    "redo": "Gentag"
   },
   "columns": {
     "time": "Tid",
@@ -134,7 +139,13 @@
     "open": "Rediger",
     "delete": "Slet",
     "pickTitle": "Vælg en træning",
-    "pick": "Dens splits åbnes her, klar til at redigere, dele eller downloade."
+    "pick": "Dens splits åbnes her, klar til at redigere, dele eller downloade.",
+    "selected": "{count} valgt",
+    "deleteSelected": "Slet valgte",
+    "clearSelection": "Ryd markering",
+    "resize": "Tilpas listens størrelse",
+    "collapse": "Skjul listen",
+    "expand": "Vis listen"
   },
   "settings": {
     "title": "Indstillinger",
@@ -171,7 +182,8 @@
     "download": "Download FIT",
     "share": "Del FIT",
     "invalid": "Udfyld totalens tid og distance for at gemme træningen.",
-    "saveFirst": "Gem træningen for at dele eller downloade FIT-filen."
+    "saveFirst": "Gem træningen for at dele eller downloade FIT-filen.",
+    "savedAs": "Gemt som {name}"
   },
   "dialog": {
     "cancel": "Annullér",
@@ -190,6 +202,11 @@
       "body": "Træningen fra {date} bliver slettet. Det kan ikke fortrydes.",
       "confirm": "Slet"
     },
+    "removeMany": {
+      "title": "Vil du slette træningerne?",
+      "body": "De {count} valgte træninger bliver slettet. Det kan ikke fortrydes.",
+      "confirm": "Slet"
+    },
     "clear": {
       "title": "Vil du rydde alle data?",
       "body": "Alle gemte træninger bliver slettet, og indstillingerne nulstilles. Det kan ikke fortrydes.",
@@ -200,5 +217,9 @@
     "available": "Der er en ny version af ErgScan.",
     "later": "Senere",
     "reload": "Genindlæs"
+  },
+  "drop": {
+    "overlay": "Slip billedet for at scanne det",
+    "extra": "Kun det første billede scannes. | Kun det første billede scannes; 1 andet blev ignoreret. | Kun det første billede scannes; {count} andre blev ignoreret."
   }
 }
