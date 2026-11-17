@@ -241,12 +241,10 @@ async function share() {
     <header class="navbar">
       <div class="navbar-side">
         <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="reviewBackLabel" @click="leaveReview">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-          <span>{{ reviewBackLabel }}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
         </button>
         <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('app.title')" @click="closeGuide">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-          <span>{{ t('app.title') }}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
         </button>
       </div>
       <h1 class="navbar-title">{{ navTitle }}</h1>
@@ -258,65 +256,45 @@ async function share() {
 
       <section v-else-if="stage === 'capture'" class="capture">
         <div class="hero">
-          <img src="/icon.svg" alt="" class="hero-icon" width="88" height="88" />
+          <img src="/icon.svg" alt="" class="hero-icon" width="56" height="56" />
           <p class="hero-tagline">{{ t('app.tagline') }}</p>
+          <p class="hero-hint">{{ t('capture.hint') }}</p>
+          <button type="button" class="tonal" @click="stage = 'guide'">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="3" width="14" height="18" rx="2" />
+              <path d="M9 8h6M9 12h6M9 16h3" />
+            </svg>
+            {{ t('guide.open') }}
+          </button>
         </div>
 
         <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
 
         <div class="group">
-          <div class="tip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
-            <p>{{ t('capture.hint') }}</p>
-          </div>
-          <button type="button" class="group-row tappable accent" @click="stage = 'guide'">
+          <label v-if="!cameraSupported || cameraError" class="group-row tappable">
             <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="5" y="3" width="14" height="18" rx="2" />
-              <path d="M9 8h6M9 12h6M9 16h3" />
-            </svg>
-            <span class="row-label">{{ t('guide.open') }}</span>
-            <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
-          </button>
-        </div>
-
-        <div class="capture-actions">
-          <button v-if="cameraSupported" type="button" class="primary large" @click="openCamera">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
               <circle cx="12" cy="13" r="3.5" />
             </svg>
-            {{ t('capture.camera') }}
+            <span class="row-label">{{ t('capture.takePhoto') }}</span>
+            <input type="file" accept="image/*" capture="environment" hidden @change="onImage" />
+          </label>
+          <label class="group-row tappable">
+            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="5" width="16" height="14" rx="2" />
+              <circle cx="9" cy="10" r="1.5" />
+              <path d="M20 16l-5-5-8 8" />
+            </svg>
+            <span class="row-label">{{ t('capture.chooseImage') }}</span>
+            <input type="file" accept="image/*" hidden @change="onImage" />
+          </label>
+          <button type="button" class="group-row tappable" @click="enterManually">
+            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 20h4L19 9l-4-4L4 16z" />
+              <path d="M13 7l4 4" />
+            </svg>
+            <span class="row-label">{{ t('capture.manual') }}</span>
           </button>
-
-          <div class="group">
-            <label v-if="!cameraSupported || cameraError" class="group-row tappable">
-              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-                <circle cx="12" cy="13" r="3.5" />
-              </svg>
-              <span class="row-label">{{ t('capture.takePhoto') }}</span>
-              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
-              <input type="file" accept="image/*" capture="environment" hidden @change="onImage" />
-            </label>
-            <label class="group-row tappable">
-              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4" y="5" width="16" height="14" rx="2" />
-                <circle cx="9" cy="10" r="1.5" />
-                <path d="M20 16l-5-5-8 8" />
-              </svg>
-              <span class="row-label">{{ t('capture.chooseImage') }}</span>
-              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
-              <input type="file" accept="image/*" hidden @change="onImage" />
-            </label>
-            <button type="button" class="group-row tappable" @click="enterManually">
-              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 20h4L19 9l-4-4L4 16z" />
-                <path d="M13 7l4 4" />
-              </svg>
-              <span class="row-label">{{ t('capture.manual') }}</span>
-              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
-            </button>
-          </div>
         </div>
       </section>
 
@@ -329,11 +307,18 @@ async function share() {
                 {{ entrySummary(entry) }}
                 <span class="row-detail">{{ entryDate(entry) }}</span>
               </span>
-              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
             </button>
             <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry.id)">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
             </button>
+
+        <button v-if="cameraSupported" type="button" class="fab" @click="openCamera">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+            <circle cx="12" cy="13" r="3.5" />
+          </svg>
+          {{ t('capture.camera') }}
+        </button>
           </div>
         </div>
       </section>
@@ -341,6 +326,7 @@ async function share() {
       <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
         <div v-if="photoUrl" class="scan-photo">
           <img :src="photoUrl" :alt="t('review.photo')" />
+              <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 4 8-8" /><path d="M15 8h5v5" /></svg>
           <span class="scan-line" aria-hidden="true"></span>
         </div>
         <div class="progress" :class="{ indeterminate: progress === null }" role="progressbar" :aria-valuenow="progress === null ? undefined : Math.round(progress * 100)" aria-valuemin="0" aria-valuemax="100">
@@ -370,17 +356,21 @@ async function share() {
 
     <nav v-if="tabbed" class="tabbar">
       <button type="button" class="tab" :aria-current="stage === 'capture' ? 'page' : undefined" @click="stage = 'capture'">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-          <circle cx="12" cy="13" r="3.5" />
-        </svg>
+        <span class="tab-indicator">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+            <circle cx="12" cy="13" r="3.5" />
+          </svg>
+        </span>
         <span>{{ t('tabs.scan') }}</span>
       </button>
       <button type="button" class="tab" :aria-current="stage === 'history' ? 'page' : undefined" @click="stage = 'history'">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v5l3 2" />
-        </svg>
+        <span class="tab-indicator">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+        </span>
         <span>{{ t('history.title') }}</span>
       </button>
     </nav>
