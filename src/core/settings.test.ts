@@ -80,12 +80,12 @@ function fakeDocument() {
     { media: '(prefers-color-scheme: light)', content: '' },
   ];
   const style = {
-    colorScheme: '',
     setProperty: (name: string, value: string) => void properties.set(name, value),
     removeProperty: (name: string) => void properties.delete(name),
   };
-  const doc = { documentElement: { style }, querySelectorAll: () => metas } as unknown as Document;
-  return { doc, properties, metas, style };
+  const dataset: Record<string, string> = {};
+  const doc = { documentElement: { style, dataset }, querySelectorAll: () => metas } as unknown as Document;
+  return { doc, properties, metas, dataset };
 }
 
 describe('applyTheme', () => {
@@ -98,12 +98,20 @@ describe('applyTheme', () => {
   });
 
   it('drops the overrides when going back to default', () => {
-    const { doc, properties, metas, style } = fakeDocument();
+    const { doc, properties, metas, dataset } = fakeDocument();
     applyTheme(doc, 'dark', 'red');
     applyTheme(doc, 'dark');
     expect(properties.size).toBe(0);
-    expect(style.colorScheme).toBe('dark');
+    expect(dataset.theme).toBe('dark');
     expect(metas.map((m) => m.content)).toEqual(['#111318', '#111318']);
+  });
+
+  it('picks the scheme with a data attribute so the lowered light-dark() in the build follows it', () => {
+    const { doc, dataset } = fakeDocument();
+    applyTheme(doc, 'light');
+    expect(dataset.theme).toBe('light');
+    applyTheme(doc, 'system');
+    expect('theme' in dataset).toBe(false);
   });
 });
 

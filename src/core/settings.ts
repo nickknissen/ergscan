@@ -96,9 +96,11 @@ export function estimatedMaxHeartRate(age: number): number | null {
 }
 
 export function applyTheme(doc: Document, theme: Theme, accent: Accent = 'default'): void {
-  const style = doc.documentElement.style;
+  const root = doc.documentElement;
+  const style = root.style;
   const palette = accentPalette(accent);
-  style.colorScheme = theme === 'system' ? '' : theme;
+  if (theme === 'system') delete root.dataset.theme;
+  else root.dataset.theme = theme;
   for (const property of TOKEN_PROPERTIES) style.removeProperty(property);
   if (palette) for (const [property, value] of paletteProperties(palette)) style.setProperty(property, value);
   for (const meta of doc.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
