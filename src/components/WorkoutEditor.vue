@@ -3,6 +3,7 @@ import { computed, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
+import { handleCellKeydown } from '../ui/keyboardNav';
 import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
 import MdIcon from './MdIcon.vue';
 import MdSelect from './MdSelect.vue';
@@ -105,7 +106,7 @@ function recalculate() {
             <th class="col-tight"></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody @keydown="handleCellKeydown($event, '.cell')">
           <tr class="row-caption">
             <th :colspan="extraColumn ? 7 : 6" scope="rowgroup">{{ t('review.total') }}</th>
           </tr>

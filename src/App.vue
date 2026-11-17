@@ -35,6 +35,7 @@ import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type Tab
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
+import { handleRadioKeydown } from './ui/keyboardNav';
 import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
 
@@ -616,13 +617,19 @@ async function share() {
               <div class="group-row settings-theme">
                 <MdIcon name="contrast" class="row-icon" />
                 <span class="row-label">{{ t('settings.theme') }}</span>
-                <div class="segmented" role="radiogroup" :aria-label="t('settings.theme')">
+                <div
+                  class="segmented"
+                  role="radiogroup"
+                  :aria-label="t('settings.theme')"
+                  @keydown="handleRadioKeydown($event, THEMES, theme, (value) => (theme = value))"
+                >
                   <button
                     v-for="option in THEMES"
                     :key="option"
                     type="button"
                     role="radio"
                     :aria-checked="theme === option"
+                    :tabindex="theme === option ? 0 : -1"
                     @click="theme = option"
                   >
                     <MdIcon v-if="theme === option" name="check" />
@@ -633,7 +640,12 @@ async function share() {
               <div class="group-row settings-theme">
                 <MdIcon name="palette" class="row-icon" />
                 <span class="row-label">{{ t('settings.color') }}</span>
-                <div class="swatches" role="radiogroup" :aria-label="t('settings.color')">
+                <div
+                  class="swatches"
+                  role="radiogroup"
+                  :aria-label="t('settings.color')"
+                  @keydown="handleRadioKeydown($event, ACCENTS, accent, (value) => (accent = value))"
+                >
                   <button
                     v-for="{ option, colors } in swatches"
                     :key="option"
@@ -641,6 +653,7 @@ async function share() {
                     role="radio"
                     class="swatch"
                     :aria-checked="accent === option"
+                    :tabindex="accent === option ? 0 : -1"
                     :aria-label="t(`settings.accents.${option}`)"
                     :style="{ '--swatch-1': colors[0], '--swatch-2': colors[1], '--swatch-3': colors[2] }"
                     @click="accent = option"
