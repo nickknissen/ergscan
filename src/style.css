@@ -1162,6 +1162,39 @@ tr.rest .cell {
 
 /* ---------- Wider screens ---------- */
 
+@media (min-width: 600px) {
+  .shell-tabbed {
+    padding-left: calc(80px + env(safe-area-inset-left));
+  }
+
+  .shell-tabbed .screen {
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+
+  .tabbar {
+    top: 0;
+    right: auto;
+    width: calc(80px + env(safe-area-inset-left));
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: calc(var(--navbar-height) + 24px + env(safe-area-inset-top)) 0 0 env(safe-area-inset-left);
+  }
+
+  .tab {
+    flex: none;
+    min-height: 56px;
+    padding: 0;
+  }
+
+  .fab {
+    position: static;
+    align-self: flex-start;
+    margin-bottom: 16px;
+    box-shadow: none;
+  }
+}
+
 @media (min-width: 720px) {
   .screen {
     padding-top: 32px;

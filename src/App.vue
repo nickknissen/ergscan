@@ -303,6 +303,14 @@ async function share() {
 
         <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
 
+        <button v-if="cameraSupported" type="button" class="fab" @click="openCamera">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+            <circle cx="12" cy="13" r="3.5" />
+          </svg>
+          {{ t('capture.camera') }}
+        </button>
+
         <div class="group">
           <button v-if="!cameraSupported || cameraError" type="button" class="group-row tappable" @click="photoInput?.click()">
             <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -327,14 +335,6 @@ async function share() {
             <span class="row-label">{{ t('capture.manual') }}</span>
           </button>
         </div>
-
-        <button v-if="cameraSupported" type="button" class="fab" @click="openCamera">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-            <circle cx="12" cy="13" r="3.5" />
-          </svg>
-          {{ t('capture.camera') }}
-        </button>
       </section>
 
       <section v-else-if="stage === 'history'" class="history">
