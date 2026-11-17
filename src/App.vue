@@ -26,16 +26,52 @@ function guideSeen(): boolean {
   }
 }
 
-function closeGuide() {
+function markGuideSeen() {
   try {
     localStorage.setItem(GUIDE_SEEN_KEY, '1');
   } catch {
     // Storage unavailable: the guide simply shows again next time.
   }
-  stage.value = 'capture';
 }
 
-const stage = ref<Stage>(guideSeen() ? 'capture' : 'guide');
+const GUIDE_HASH = '#/guide';
+const baseUrl = () => location.pathname + location.search;
+
+if (location.hash !== GUIDE_HASH && !guideSeen()) window.history.replaceState(null, '', GUIDE_HASH);
+const stage = ref<Stage>(location.hash === GUIDE_HASH ? 'guide' : 'capture');
+let stageAfterBack: Stage | null = null;
+
+function openGuide() {
+  window.history.pushState({ guide: true }, '', GUIDE_HASH);
+  stage.value = 'guide';
+}
+
+function goTo(next: Stage) {
+  if (stage.value === 'guide' && next !== 'guide') {
+    markGuideSeen();
+    if (window.history.state?.guide) {
+      stageAfterBack = next;
+      window.history.back();
+      return;
+    }
+    window.history.replaceState(null, '', baseUrl());
+  }
+  stage.value = next;
+}
+
+function closeGuide() {
+  goTo('capture');
+}
+
+window.addEventListener('popstate', () => {
+  if (location.hash === GUIDE_HASH) {
+    stage.value = 'guide';
+  } else if (stage.value === 'guide') {
+    markGuideSeen();
+    stage.value = stageAfterBack ?? 'capture';
+  }
+  stageAfterBack = null;
+});
 const workout = ref<Workout | null>(null);
 const extraColumn = ref<ExtraColumn | null>(null);
 const photoUrl = ref<string | null>(null);
@@ -55,7 +91,7 @@ const storage: Storage | null = (() => {
 const history = ref<HistoryEntry[]>(storage ? loadHistory(storage) : []);
 const historyId = ref<string | null>(null);
 const reviewOrigin = ref<Tab>('capture');
-const tabbed = computed(() => stage.value === 'capture' || stage.value === 'history' || stage.value === 'settings');
+const tabbed = computed(() => ['capture', 'guide', 'history', 'settings'].includes(stage.value));
 
 const theme = ref<Theme>(loadTheme(storage));
 
@@ -276,7 +312,7 @@ async function share() {
         <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="reviewBackLabel" @click="leaveReview">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
         </button>
-        <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('app.title')" @click="closeGuide">
+        <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('review.back', { screen: t('tabs.scan') })" @click="closeGuide">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
         </button>
       </div>
@@ -292,7 +328,7 @@ async function share() {
           <img src="/icon.svg" alt="" class="hero-icon" width="56" height="56" />
           <p class="hero-tagline">{{ t('app.tagline') }}</p>
           <p class="hero-hint">{{ t('capture.hint') }}</p>
-          <button type="button" class="tonal" @click="stage = 'guide'">
+          <button type="button" class="tonal" @click="openGuide">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <rect x="5" y="3" width="14" height="18" rx="2" />
               <path d="M9 8h6M9 12h6M9 16h3" />
@@ -425,7 +461,7 @@ async function share() {
     </main>
 
     <nav v-if="tabbed" class="tabbar">
-      <button type="button" class="tab" :aria-current="stage === 'capture' ? 'page' : undefined" @click="stage = 'capture'">
+      <button type="button" class="tab" :aria-current="stage === 'capture' || stage === 'guide' ? 'page' : undefined" @click="goTo('capture')">
         <span class="tab-indicator">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
@@ -434,7 +470,7 @@ async function share() {
         </span>
         <span>{{ t('tabs.scan') }}</span>
       </button>
-      <button type="button" class="tab" :aria-current="stage === 'history' ? 'page' : undefined" @click="stage = 'history'">
+      <button type="button" class="tab" :aria-current="stage === 'history' ? 'page' : undefined" @click="goTo('history')">
         <span class="tab-indicator">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="9" />
@@ -443,7 +479,7 @@ async function share() {
         </span>
         <span>{{ t('history.title') }}</span>
       </button>
-      <button type="button" class="tab" :aria-current="stage === 'settings' ? 'page' : undefined" @click="stage = 'settings'">
+      <button type="button" class="tab" :aria-current="stage === 'settings' ? 'page' : undefined" @click="goTo('settings')">
         <span class="tab-indicator">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="3" />
