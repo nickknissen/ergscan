@@ -9,6 +9,7 @@ export interface ScreenDate {
 
 export interface ParsedScan {
   date?: ScreenDate | null;
+  dragFactor: number | null;
   splitDistance: 500 | 1000;
   extraColumn: ExtraColumn | null;
   summary: WorkoutRow;
@@ -30,9 +31,14 @@ export function parsePm5Text(text: string): ParsedScan | null {
   let headerSeen = false;
   let titleRestDs: number | null = null;
   let date: ScreenDate | null = null;
+  let dragFactor: number | null = null;
   const parsed: ParsedLine[] = [];
 
-  for (const line of lines) {
+  for (const raw of lines) {
+    const drag = takeDragFactor(raw);
+    if (drag) dragFactor ??= drag.value;
+    const line = drag ? drag.rest : raw;
+    if (!line) continue;
     const rest = headerSeen ? null : /(\d{1,2}:\d{2})r\b/.exec(line);
     if (rest) titleRestDs = parseTime(rest[1]!);
     if (!headerSeen) date ??= readDate(line);
@@ -65,7 +71,7 @@ export function parsePm5Text(text: string): ParsedScan | null {
     if (screenSummary) repairSummaryTime(summary, rows, splitDistance);
     for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
     const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
-    return { date, splitDistance, extraColumn, summary, summaryFromScreen: screenSummary !== null, rows: withRest };
+    return { date, dragFactor, splitDistance, extraColumn, summary, summaryFromScreen: screenSummary !== null, rows: withRest };
   };
   if (rest.length === 0) return finish(first, []);
   if ((headerSeen && (!exceededBy(first, rest) || metersAddUp(first, rest))) || isSummaryOf(first, rest)) return finish(first, rest);
@@ -134,6 +140,25 @@ function readDate(line: string): ScreenDate | null {
   return { year: Number(m[3]), month: best.index + 1, day };
 }
 
+const MIN_DRAG_FACTOR = 50;
+const MAX_DRAG_FACTOR = 300;
+
+/**
+ * Takes a "Drag Factor: 125" label out of a line. The value is null when it is unreadable or implausible;
+ * the rest of the line is returned so a header or row OCR merged onto it still parses.
+ */
+function takeDragFactor(line: string): { value: number | null; rest: string } | null {
+  const m = /\bdrag\s*fa[a-z]*[^\w\n]*([\dOoDIlLSB]{2,3}\b)?/i.exec(line);
+  if (!m) return null;
+  const rest = (line.slice(0, m.index) + ' ' + line.slice(m.index + m[0].length)).trim();
+  const value = m[1] === undefined ? null : Number(fixOcrDigits(m[1]));
+  return { value: value !== null && value >= MIN_DRAG_FACTOR && value <= MAX_DRAG_FACTOR ? value : null, rest };
+}
+
+function fixOcrDigits(text: string): string {
+  return text.replace(/[OoDIlLSB]/g, (c) => OCR_DIGIT_FIXES[c] ?? c);
+}
+
 function interleaveRest(rows: WorkoutRow[], restDs: number): WorkoutRow[] {
   return rows.flatMap((row) => [row, { ...emptyRow(), durationDs: restDs, isRest: true }]);
 }
@@ -186,8 +211,7 @@ function cleanToken(piece: string): Token {
   const rest = /^[rR]/.test(text);
   if (rest) text = text.slice(1);
   if (!/\d/.test(text)) return { text, rest };
-  text = text
-    .replace(/[OoDIlLSB]/g, (c) => OCR_DIGIT_FIXES[c] ?? c)
+  text = fixOcrDigits(text)
     .replace(/(\d)[i;](\d)/g, '$1:$2')
     .replace(/[A-Za-z]+$/, '')
     .replace(/^(\d{1,2})\.(\d{2})\.(\d)$/, '$1:$2.$3')

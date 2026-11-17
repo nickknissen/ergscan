@@ -31,6 +31,7 @@ describe('moveExtraColumn', () => {
     const workout: Workout = {
       startTime: new Date(),
       splitDistance: 500,
+      dragFactor: null,
       summary: row({ heartRate: 203 }),
       rows: [row({ heartRate: 197 }), row({ isRest: true })],
     };
@@ -63,6 +64,7 @@ describe('isExportable', () => {
   const workout = (durationDs: number | null, distanceM: number | null): Workout => ({
     startTime: new Date(),
     splitDistance: 500,
+    dragFactor: null,
     summary: row({ durationDs, distanceM }),
     rows: [],
   });
@@ -80,7 +82,7 @@ describe('isExportable', () => {
 });
 
 describe('isBlank', () => {
-  const blank = (): Workout => ({ startTime: new Date(), splitDistance: 500, summary: emptyRow(), rows: [] });
+  const blank = (): Workout => ({ startTime: new Date(), splitDistance: 500, dragFactor: null, summary: emptyRow(), rows: [] });
 
   it('is true for an untouched manual entry', () => {
     expect(isBlank(blank())).toBe(true);
@@ -89,5 +91,6 @@ describe('isBlank', () => {
   it('is false once any total or row has been added', () => {
     expect(isBlank({ ...blank(), summary: row({ rate: 24 }) })).toBe(false);
     expect(isBlank({ ...blank(), rows: [emptyRow()] })).toBe(false);
+    expect(isBlank({ ...blank(), dragFactor: 125 })).toBe(false);
   });
 });

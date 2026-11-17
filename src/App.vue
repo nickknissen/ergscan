@@ -544,7 +544,7 @@ const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'functio
 const cameraError = ref('');
 
 function newWorkout(): Workout {
-  return { startTime: new Date(), splitDistance: 500, summary: emptyRow(), rows: [] };
+  return { startTime: new Date(), splitDistance: 500, dragFactor: null, summary: emptyRow(), rows: [] };
 }
 
 function reset() {
@@ -613,7 +613,7 @@ async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
       const { scan } = outcome;
       const elapsedDs = scan.rows.length > 0 ? scan.rows.reduce((a, r) => a + (r.durationDs ?? 0), 0) : (scan.summary.durationDs ?? 0);
       const startTime = startTimeFor(scan.date, photoTime, elapsedDs);
-      workout.value = { startTime, splitDistance: scan.splitDistance, summary: scan.summary, rows: scan.rows };
+      workout.value = { startTime, splitDistance: scan.splitDistance, dragFactor: scan.dragFactor, summary: scan.summary, rows: scan.rows };
       extraColumn.value = outcome.scan.extraColumn;
       computedSummary.value = !outcome.scan.summaryFromScreen;
     } else {

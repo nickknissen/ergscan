@@ -14,6 +14,7 @@ export interface WorkoutRow {
 export interface Workout {
   startTime: Date;
   splitDistance: 500 | 1000;
+  dragFactor: number | null;
   summary: WorkoutRow;
   rows: WorkoutRow[];
 }
@@ -37,7 +38,7 @@ export function isExportable(workout: Workout | null, invalidCells: number): boo
 
 export function isBlank(workout: Workout): boolean {
   const { isRest: _, ...summary } = workout.summary;
-  return workout.rows.length === 0 && Object.values(summary).every((v) => v === null);
+  return workout.rows.length === 0 && workout.dragFactor === null && Object.values(summary).every((v) => v === null);
 }
 
 export function splitFor(durationDs: number, distanceM: number, splitDistance: number): number {

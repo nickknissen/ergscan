@@ -40,6 +40,7 @@ describe('scoreWorkout', () => {
   it('scores summary and lap fields against the facts', () => {
     const scan = {
       splitDistance: 500 as const,
+      dragFactor: null,
       extraColumn: null,
       summaryFromScreen: true,
       summary: row({ durationDs: 2400, distanceM: 1000, rate: 24 }),

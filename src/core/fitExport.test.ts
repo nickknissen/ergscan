@@ -17,9 +17,24 @@ function decode(bytes: Uint8Array) {
   };
 }
 
+function decodeDeveloperFields(bytes: Uint8Array) {
+  const names = new Map<number, string>();
+  const decoder = new Decoder(Stream.fromByteArray(bytes));
+  const { messages, errors } = decoder.read({
+    fieldDescriptionListener: (key, _, description) => void names.set(key, description.fieldName!),
+  });
+  expect(errors).toEqual([]);
+  return {
+    fieldDescriptions: (messages.fieldDescriptionMesgs ?? []).map(({ fieldName, nativeMesgNum }) => ({ fieldName, nativeMesgNum })),
+    sessions: (messages.sessionMesgs ?? []).map((s) =>
+      Object.fromEntries(Object.entries(s.developerFields ?? {}).map(([key, value]) => [names.get(Number(key)), value])),
+    ),
+  };
+}
+
 function workoutFrom(text: string): Workout {
   const scan = parsePm5Text(text)!;
-  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, summary: scan.summary, rows: scan.rows };
+  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, dragFactor: null, summary: scan.summary, rows: scan.rows };
 }
 
 describe('workoutToFit', () => {
@@ -67,6 +82,19 @@ describe('workoutToFit', () => {
     expect(m.lapMesgs[2]!.avgHeartRate).toBe(155);
     expect(m.sessionMesgs[0]).toMatchObject({ totalElapsedTime: 300, totalDistance: 1000, avgHeartRate: 150 });
     expect(m.recordMesgs.at(-1)!.distance).toBe(1000);
+  });
+
+  it('carries the drag factor as a developer field on the session', () => {
+    const workout = { ...workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24'), dragFactor: 125 };
+    const { fieldDescriptions, sessions } = decodeDeveloperFields(workoutToFit(workout));
+    expect(fieldDescriptions).toEqual([{ fieldName: 'Drag Factor', nativeMesgNum: 18 }]);
+    expect(sessions).toEqual([{ 'Drag Factor': 125 }]);
+  });
+
+  it('writes no developer data without a drag factor', () => {
+    const { fieldDescriptions, sessions } = decodeDeveloperFields(workoutToFit(workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24')));
+    expect(fieldDescriptions).toEqual([]);
+    expect(sessions).toEqual([{}]);
   });
 
   it('falls back to the summary as a single lap when there are no split rows', () => {

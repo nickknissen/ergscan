@@ -1710,6 +1710,12 @@ table.has-extra {
   font-variant-numeric: tabular-nums;
 }
 
+.cell.row-value {
+  width: 8ch;
+  padding: 0 12px;
+  font: inherit;
+}
+
 .cell.invalid,
 .cell.invalid:focus {
   border-bottom: 2px solid var(--error);

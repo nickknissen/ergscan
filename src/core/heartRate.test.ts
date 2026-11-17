@@ -7,7 +7,7 @@ function row(durationDs: number | null, heartRate: number | null, isRest = false
 }
 
 function workout(summary: WorkoutRow, rows: WorkoutRow[] = []): Workout {
-  return { startTime: new Date(2026, 0, 1), splitDistance: 500, summary, rows };
+  return { startTime: new Date(2026, 0, 1), splitDistance: 500, dragFactor: null, summary, rows };
 }
 
 describe('heartRateZones', () => {

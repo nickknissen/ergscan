@@ -83,6 +83,11 @@ function entryDate(entry: HistoryEntry): string {
   return entryDateLabel(entry.workout.startTime, locale.value);
 }
 
+function entryDetail(entry: HistoryEntry): string {
+  const { dragFactor } = entry.workout;
+  return dragFactor === null ? entryDate(entry) : t('history.detailWithDrag', { date: entryDate(entry), value: dragFactor });
+}
+
 function entrySummary(entry: HistoryEntry): string {
   const { distanceM, durationDs } = entry.workout.summary;
   return t('history.summary', { distance: distanceM, time: formatTime(durationDs ?? 0) });
@@ -115,7 +120,7 @@ function entrySummary(entry: HistoryEntry): string {
           <MdIcon :name="selection.selected.includes(entry.id) ? 'check' : 'rowing'" class="row-icon" />
           <span class="row-label">
             {{ entrySummary(entry) }}
-            <span class="row-detail">{{ entryDate(entry) }}</span>
+            <span class="row-detail">{{ entryDetail(entry) }}</span>
           </span>
         </button>
         <button

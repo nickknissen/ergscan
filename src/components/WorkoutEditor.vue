@@ -90,6 +90,10 @@ function recalculate() {
         <span :id="`${id}-extra`" class="row-label">{{ t('review.extraColumn') }}</span>
         <MdSelect v-model="extraSelection" :options="extraSelectOptions" :labelledby="`${id}-extra`" />
       </div>
+      <label class="group-row">
+        <span class="row-label">{{ t('review.dragFactor') }}</span>
+        <NumberCell v-model="workout.dragFactor" class="row-value" :label="t('review.dragFactor')" />
+      </label>
     </div>
 
     <h2 class="group-header">{{ t('review.splits') }}</h2>

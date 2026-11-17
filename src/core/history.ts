@@ -23,11 +23,12 @@ export function loadHistory(storage: HistoryStorage): HistoryEntry[] {
 }
 
 export function parseEntry(item: unknown): HistoryEntry | null {
-  const entry = item as { id?: unknown; workout?: { startTime?: unknown; rows?: unknown }; extraColumn?: ExtraColumn | null };
+  const entry = item as { id?: unknown; workout?: { startTime?: unknown; rows?: unknown; dragFactor?: unknown }; extraColumn?: ExtraColumn | null };
   if (typeof entry?.id !== 'string' || !entry.workout || !Array.isArray(entry.workout.rows)) return null;
   const startTime = new Date(entry.workout.startTime as string);
   if (Number.isNaN(startTime.getTime())) return null;
-  return { id: entry.id, workout: { ...(entry.workout as Workout), startTime }, extraColumn: entry.extraColumn ?? null };
+  const dragFactor = typeof entry.workout.dragFactor === 'number' ? entry.workout.dragFactor : null;
+  return { id: entry.id, workout: { ...(entry.workout as Workout), startTime, dragFactor }, extraColumn: entry.extraColumn ?? null };
 }
 
 export function saveToHistory(storage: HistoryStorage, entry: HistoryEntry): HistoryEntry[] {

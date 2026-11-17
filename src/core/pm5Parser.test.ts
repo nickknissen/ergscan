@@ -2,6 +2,41 @@ import { describe, expect, it } from 'vitest';
 import { parsePm5Text } from './pm5Parser';
 
 describe('parsePm5Text', () => {
+  it('reads the drag factor when the screen shows it', () => {
+    const scan = parsePm5Text(`
+      View Detail
+      2000m row
+      Drag Factor: 12S
+      time    meter   /500m  s/m
+      7:30.0  2000    1:52.5  28
+      1:53.0  500     1:53.0  27
+      1:52.5  500     1:52.5  28
+    `);
+    expect(scan!.dragFactor).toBe(125);
+    expect(scan!.rows).toHaveLength(2);
+  });
+
+  it('reads a drag factor that OCR ran together or merged with the header', () => {
+    const scan = parsePm5Text(`
+      DragFactor125 time meter /1000m s/m
+      30:00.0 7500 4:00.0 22
+      15:00.0 3750 4:00.0 22
+      15:00.0 3750 4:00.0 22
+    `);
+    expect(scan!.dragFactor).toBe(125);
+    expect(scan!.splitDistance).toBe(1000);
+    expect(scan!.summaryFromScreen).toBe(true);
+  });
+
+  it('leaves the drag factor empty when the screen does not show it or it is implausible', () => {
+    const body = `
+      time    meter   /500m  s/m
+      7:30.0  2000    1:52.5  28
+    `;
+    expect(parsePm5Text(body)!.dragFactor).toBeNull();
+    expect(parsePm5Text(`drag factor 9\n${body}`)!.dragFactor).toBeNull();
+  });
+
   it('parses a 2000m piece with 500m splits and detects the summary row', () => {
     const scan = parsePm5Text(`
       View Detail

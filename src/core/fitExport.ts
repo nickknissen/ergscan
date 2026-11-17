@@ -1,4 +1,16 @@
-import { Encoder, type ActivityMesg, type Encodable, type EventMesg, type FileIdMesg, type LapMesg, type Mesg, type RecordMesg, type SessionMesg } from '@garmin/fitsdk';
+import {
+  Encoder,
+  type ActivityMesg,
+  type DeveloperDataIdMesg,
+  type Encodable,
+  type EventMesg,
+  type FieldDescriptionMesg,
+  type FileIdMesg,
+  type LapMesg,
+  type Mesg,
+  type RecordMesg,
+  type SessionMesg,
+} from '@garmin/fitsdk';
 import { wattsForSplit, type Workout, type WorkoutRow } from './workout';
 
 const MesgNum = {
@@ -8,7 +20,28 @@ const MesgNum = {
   RECORD: 20,
   EVENT: 21,
   ACTIVITY: 34,
+  FIELD_DESCRIPTION: 206,
+  DEVELOPER_DATA_ID: 207,
 } as const;
+
+/** FIT has no standard drag factor field, so it travels as an ErgScan developer field on the session. */
+const DRAG_FACTOR_FIELD = {
+  key: 0,
+  developerDataId: {
+    mesgNum: MesgNum.DEVELOPER_DATA_ID,
+    applicationId: [217, 42, 26, 12, 15, 91, 66, 212, 142, 158, 187, 84, 176, 190, 105, 47],
+    developerDataIndex: 0,
+    applicationVersion: 1,
+  } satisfies Encodable<DeveloperDataIdMesg>,
+  fieldDescription: {
+    mesgNum: MesgNum.FIELD_DESCRIPTION,
+    developerDataIndex: 0,
+    fieldDefinitionNumber: 0,
+    fitBaseTypeId: 0x84, // uint16
+    fieldName: 'Drag Factor',
+    nativeMesgNum: MesgNum.SESSION,
+  } satisfies Encodable<FieldDescriptionMesg>,
+};
 
 const FIT = {
   fileActivity: 4,
@@ -46,6 +79,12 @@ export function workoutToFit(workout: Workout): Uint8Array {
     serialNumber: 1,
     timeCreated: start,
   });
+  if (workout.dragFactor !== null) {
+    const { key, developerDataId, fieldDescription } = DRAG_FACTOR_FIELD;
+    encoder.addDeveloperField(key, developerDataId, fieldDescription);
+    write<DeveloperDataIdMesg>(encoder, developerDataId);
+    write<FieldDescriptionMesg>(encoder, fieldDescription);
+  }
   write<EventMesg>(encoder, {
     mesgNum: MesgNum.EVENT,
     timestamp: start,
@@ -123,6 +162,7 @@ export function workoutToFit(workout: Workout): Uint8Array {
     avgPower: powerOf(summary, workout.splitDistance) ?? undefined,
     avgHeartRate: summary.heartRate ?? undefined,
     totalCalories: summary.calories ?? undefined,
+    developerFields: workout.dragFactor === null ? undefined : { [DRAG_FACTOR_FIELD.key]: workout.dragFactor },
   });
   write<ActivityMesg>(encoder, {
     mesgNum: MesgNum.ACTIVITY,

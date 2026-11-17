@@ -24,7 +24,7 @@ function memoryStorage(initial?: string): HistoryStorage & { data: Map<string, s
 function entry(id: string, start: string): HistoryEntry {
   return {
     id,
-    workout: { startTime: new Date(start), splitDistance: 500, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [] },
+    workout: { startTime: new Date(start), splitDistance: 500, dragFactor: null, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [] },
     extraColumn: 'watts',
   };
 }
@@ -36,6 +36,19 @@ describe('history', () => {
     const [loaded] = loadHistory(storage);
     expect(loaded!.workout.startTime).toBeInstanceOf(Date);
     expect(loaded).toEqual(entry('a', '2026-11-16T07:00:00Z'));
+  });
+
+  it('keeps the drag factor with the workout', () => {
+    const storage = memoryStorage();
+    const withDrag = entry('a', '2026-11-16T07:00:00Z');
+    withDrag.workout.dragFactor = 125;
+    saveToHistory(storage, withDrag);
+    expect(loadHistory(storage)[0]!.workout.dragFactor).toBe(125);
+  });
+
+  it('loads workouts saved before the drag factor existed with no drag factor', () => {
+    const old = '[{"id":"a","workout":{"startTime":"2026-11-16T07:00:00Z","splitDistance":500,"summary":{},"rows":[]},"extraColumn":null}]';
+    expect(loadHistory(memoryStorage(old))[0]!.workout.dragFactor).toBeNull();
   });
 
   it('replaces an entry with the same id instead of duplicating it', () => {
