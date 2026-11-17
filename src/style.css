@@ -1747,6 +1747,12 @@ tr.rest .cell {
   font: var(--body-medium);
 }
 
+.settings-number {
+  width: 6ch;
+  flex: none;
+  text-align: right;
+}
+
 /* ---------- Navigation bar ---------- */
 
 .shell-tabbed .screen {

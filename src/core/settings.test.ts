@@ -2,13 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { accentPalette } from './palette';
 import {
   ACCENT_KEY,
+  AGE_KEY,
   applyTheme,
   clearAppData,
+  estimatedMaxHeartRate,
   HIDE_INTRO_KEY,
   loadAccent,
+  loadHeartRate,
   loadIntroHidden,
   loadTheme,
+  MAX_HR_KEY,
+  maxHeartRate,
+  parseWholeNumber,
   saveAccent,
+  saveHeartRate,
   saveIntroHidden,
   saveTheme,
   THEME_KEY,
@@ -112,6 +119,43 @@ describe('intro visibility', () => {
     expect(loadIntroHidden(storage)).toBe(true);
     saveIntroHidden(storage, false);
     expect(storage.data.has(HIDE_INTRO_KEY)).toBe(false);
+  });
+});
+
+describe('heart rate', () => {
+  it('has neither max HR nor age by default or when stored values are not whole numbers', () => {
+    expect(loadHeartRate(memoryStorage())).toEqual({ measuredMax: null, age: null });
+    expect(loadHeartRate(memoryStorage({ [MAX_HR_KEY]: 'fast', [AGE_KEY]: '-3' }))).toEqual({ measuredMax: null, age: null });
+    expect(loadHeartRate(null)).toEqual({ measuredMax: null, age: null });
+  });
+
+  it('round-trips both values and clears the keys when emptied', () => {
+    const storage = memoryStorage();
+    saveHeartRate(storage, { measuredMax: 192, age: 40 });
+    expect(loadHeartRate(storage)).toEqual({ measuredMax: 192, age: 40 });
+    saveHeartRate(storage, { measuredMax: null, age: null });
+    expect(storage.data.size).toBe(0);
+  });
+
+  it('estimates max HR as 220 minus age', () => {
+    expect(maxHeartRate({ measuredMax: null, age: 40 })).toBe(180);
+    expect(estimatedMaxHeartRate(40)).toBe(180);
+  });
+
+  it('accepts only positive whole numbers as input', () => {
+    expect(parseWholeNumber(' 185 ')).toBe(185);
+    expect(parseWholeNumber('0')).toBeNull();
+    expect(parseWholeNumber('18.5')).toBeNull();
+    expect(parseWholeNumber('')).toBeNull();
+  });
+
+  it('prefers a measured max HR over the age estimate', () => {
+    expect(maxHeartRate({ measuredMax: 195, age: 40 })).toBe(195);
+  });
+
+  it('has no max HR when nothing is given', () => {
+    expect(maxHeartRate({ measuredMax: null, age: null })).toBeNull();
+    expect(maxHeartRate({ measuredMax: null, age: 220 })).toBeNull();
   });
 });
 

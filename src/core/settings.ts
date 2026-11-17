@@ -51,6 +51,50 @@ export function saveIntroHidden(storage: Pick<Storage, 'setItem' | 'removeItem'>
   }
 }
 
+export const MAX_HR_KEY = 'ergscan.maxHr';
+export const AGE_KEY = 'ergscan.age';
+
+export interface HeartRateSettings {
+  measuredMax: number | null;
+  age: number | null;
+}
+
+export function parseWholeNumber(text: string): number | null {
+  const trimmed = text.trim();
+  return /^\d+$/.test(trimmed) && Number(trimmed) > 0 ? Number(trimmed) : null;
+}
+
+function loadWholeNumber(storage: Pick<Storage, 'getItem'> | null, key: string): number | null {
+  return parseWholeNumber(storage?.getItem(key) ?? '');
+}
+
+export function loadHeartRate(storage: Pick<Storage, 'getItem'> | null): HeartRateSettings {
+  return { measuredMax: loadWholeNumber(storage, MAX_HR_KEY), age: loadWholeNumber(storage, AGE_KEY) };
+}
+
+export function saveHeartRate(storage: Pick<Storage, 'setItem' | 'removeItem'>, settings: HeartRateSettings): void {
+  try {
+    for (const [key, value] of [
+      [MAX_HR_KEY, settings.measuredMax],
+      [AGE_KEY, settings.age],
+    ] as const) {
+      if (value === null) storage.removeItem(key);
+      else storage.setItem(key, String(value));
+    }
+  } catch {
+    // Storage full or blocked: the values still apply for this session.
+  }
+}
+
+export function maxHeartRate(settings: HeartRateSettings): number | null {
+  if (settings.measuredMax !== null) return settings.measuredMax;
+  return settings.age === null ? null : estimatedMaxHeartRate(settings.age);
+}
+
+export function estimatedMaxHeartRate(age: number): number | null {
+  return age >= 220 ? null : 220 - age;
+}
+
 export function applyTheme(doc: Document, theme: Theme, accent: Accent = 'default'): void {
   const style = doc.documentElement.style;
   const palette = accentPalette(accent);

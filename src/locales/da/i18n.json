@@ -137,9 +137,16 @@
     },
     "showIntro": "Vis introduktion på Scan",
     "showIntroDetail": "Velkomstkortet med fototippet",
+    "heartRate": "Puls",
+    "maxHr": "Maksimal puls",
+    "maxHrDetail": "Målt, i slag pr. minut. Lad feltet stå tomt for at estimere den ud fra din alder",
+    "age": "Alder",
+    "ageDetail": "Estimerer maks. puls som 220 minus din alder",
+    "ageEstimate": "Estimeret maks. puls: {bpm} slag/min",
+    "ageUnused": "Bruges ikke, mens en målt maksimal puls er angivet",
     "data": "Data",
     "clear": "Ryd data",
-    "clearDetail": "Ingen gemte træninger. Nulstiller tema og introduktion og viser vejledningen igen | Sletter 1 gemt træning, nulstiller tema og introduktion og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller tema og introduktion og viser vejledningen igen"
+    "clearDetail": "Ingen gemte træninger. Nulstiller tema, introduktion og puls og viser vejledningen igen | Sletter 1 gemt træning, nulstiller tema, introduktion og puls og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller tema, introduktion og puls og viser vejledningen igen"
   },
   "export": {
     "download": "Download FIT",

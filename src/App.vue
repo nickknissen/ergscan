@@ -11,7 +11,24 @@ import { fitFileName, startTimeFor } from './core/dates';
 import { clearDraft, loadDraft, saveDraft } from './core/draft';
 import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { ACCENTS, accentSwatch, type Accent } from './core/palette';
-import { applyTheme, clearAppData, loadAccent, loadIntroHidden, loadTheme, saveAccent, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
+import {
+  applyTheme,
+  clearAppData,
+  estimatedMaxHeartRate,
+  loadAccent,
+  loadHeartRate,
+  loadIntroHidden,
+  loadTheme,
+  maxHeartRate,
+  parseWholeNumber,
+  saveAccent,
+  saveHeartRate,
+  saveIntroHidden,
+  saveTheme,
+  THEMES,
+  type HeartRateSettings,
+  type Theme,
+} from './core/settings';
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
@@ -173,6 +190,26 @@ const showIntro = computed({
   },
 });
 
+const heartRate = ref<HeartRateSettings>(loadHeartRate(storage));
+const maxHr = computed(() => maxHeartRate(heartRate.value));
+const ageEstimate = computed(() => (heartRate.value.age === null ? null : estimatedMaxHeartRate(heartRate.value.age)));
+
+const ageDetail = computed(() => {
+  if (heartRate.value.measuredMax !== null && heartRate.value.age !== null) return t('settings.ageUnused');
+  return ageEstimate.value === null ? t('settings.ageDetail') : t('settings.ageEstimate', { bpm: ageEstimate.value });
+});
+
+watch(heartRate, (value) => {
+  if (storage) saveHeartRate(storage, value);
+});
+
+function setHeartRate(key: keyof HeartRateSettings, event: Event) {
+  const input = event.target as HTMLInputElement;
+  const value = parseWholeNumber(input.value);
+  if (value !== null || input.value.trim() === '') heartRate.value = { ...heartRate.value, [key]: value };
+  input.value = String(heartRate.value[key] ?? '');
+}
+
 const dialog = createConfirm();
 
 function confirmDialog(key: string, params: Record<string, string> = {}): Promise<boolean> {
@@ -186,6 +223,7 @@ async function clearData() {
   theme.value = 'system';
   accent.value = 'default';
   introHidden.value = false;
+  heartRate.value = { measuredMax: null, age: null };
 }
 const transition = ref<ScreenTransition>('fade-through');
 watch(stage, (to, from) => (transition.value = screenTransition(from, to)), { flush: 'sync' });
@@ -612,6 +650,39 @@ async function share() {
                 <span class="row-detail">{{ t('settings.showIntroDetail') }}</span>
               </span>
               <input v-model="showIntro" type="checkbox" role="switch" class="switch" />
+            </label>
+          </div>
+
+          <h2 class="group-header">{{ t('settings.heartRate') }}</h2>
+          <div class="group">
+            <label class="group-row">
+              <MdIcon name="monitor_heart" class="row-icon" />
+              <span class="row-label">
+                {{ t('settings.maxHr') }}
+                <span class="row-detail">{{ t('settings.maxHrDetail') }}</span>
+              </span>
+              <input
+                :value="heartRate.measuredMax ?? ''"
+                class="settings-number"
+                inputmode="numeric"
+                autocomplete="off"
+                :placeholder="ageEstimate === null ? undefined : String(ageEstimate)"
+                @change="setHeartRate('measuredMax', $event)"
+              />
+            </label>
+            <label class="group-row">
+              <MdIcon name="cake" class="row-icon" />
+              <span class="row-label">
+                {{ t('settings.age') }}
+                <span class="row-detail">{{ ageDetail }}</span>
+              </span>
+              <input
+                :value="heartRate.age ?? ''"
+                class="settings-number"
+                inputmode="numeric"
+                autocomplete="off"
+                @change="setHeartRate('age', $event)"
+              />
             </label>
           </div>
 
