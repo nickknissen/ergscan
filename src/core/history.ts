@@ -1,3 +1,4 @@
+import { asFeeling } from './feeling';
 import { isBlank, type ExtraColumn, type Workout } from './workout';
 
 export interface HistoryEntry {
@@ -25,7 +26,7 @@ export function loadHistory(storage: HistoryStorage): HistoryEntry[] {
 export function parseEntry(item: unknown): HistoryEntry | null {
   const entry = item as {
     id?: unknown;
-    workout?: { startTime?: unknown; rows?: unknown; dragFactor?: unknown; name?: unknown; notes?: unknown };
+    workout?: { startTime?: unknown; rows?: unknown; dragFactor?: unknown; name?: unknown; notes?: unknown; feeling?: unknown };
     extraColumn?: ExtraColumn | null;
   };
   if (typeof entry?.id !== 'string' || !entry.workout || !Array.isArray(entry.workout.rows)) return null;
@@ -40,6 +41,7 @@ export function parseEntry(item: unknown): HistoryEntry | null {
       dragFactor: typeof workout.dragFactor === 'number' ? workout.dragFactor : null,
       name: typeof workout.name === 'string' ? workout.name : null,
       notes: typeof workout.notes === 'string' ? workout.notes : null,
+      feeling: asFeeling(workout.feeling),
     },
     extraColumn: entry.extraColumn ?? null,
   };

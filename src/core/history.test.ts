@@ -24,7 +24,7 @@ function memoryStorage(initial?: string): HistoryStorage & { data: Map<string, s
 function entry(id: string, start: string): HistoryEntry {
   return {
     id,
-    workout: { startTime: new Date(start), splitDistance: 500, dragFactor: null, name: null, notes: null, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [] },
+    workout: { startTime: new Date(start), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [] },
     extraColumn: 'watts',
   };
 }
@@ -55,9 +55,23 @@ describe('history', () => {
     expect(loadHistory(storage)[0]!.workout).toMatchObject({ name: 'Test day', notes: 'Felt strong' });
   });
 
-  it('loads workouts saved before the drag factor, name and notes existed without them', () => {
+  it('keeps how the workout felt', () => {
+    const storage = memoryStorage();
+    const rated = entry('a', '2026-11-16T07:00:00Z');
+    rated.workout.feeling = 4;
+    saveToHistory(storage, rated);
+    expect(loadHistory(storage)[0]!.workout.feeling).toBe(4);
+  });
+
+  it('loads a feeling outside the five steps as unrated', () => {
+    const stored = (feeling: unknown) =>
+      JSON.stringify([{ id: 'a', workout: { startTime: '2026-11-16T07:00:00Z', splitDistance: 500, summary: {}, rows: [], feeling }, extraColumn: null }]);
+    for (const bad of [0, 6, 2.5, '3', null]) expect(loadHistory(memoryStorage(stored(bad)))[0]!.workout.feeling, String(bad)).toBeNull();
+  });
+
+  it('loads workouts saved before the drag factor, name, notes and feeling existed without them', () => {
     const old = '[{"id":"a","workout":{"startTime":"2026-11-16T07:00:00Z","splitDistance":500,"summary":{},"rows":[]},"extraColumn":null}]';
-    expect(loadHistory(memoryStorage(old))[0]!.workout).toMatchObject({ dragFactor: null, name: null, notes: null });
+    expect(loadHistory(memoryStorage(old))[0]!.workout).toMatchObject({ dragFactor: null, name: null, notes: null, feeling: null });
   });
 
   it('replaces an entry with the same id instead of duplicating it', () => {

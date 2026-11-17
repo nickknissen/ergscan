@@ -1,3 +1,5 @@
+import type { Feeling } from './feeling';
+
 export type ExtraColumn = 'heartRate' | 'watts' | 'calories';
 
 export interface WorkoutRow {
@@ -17,6 +19,7 @@ export interface Workout {
   dragFactor: number | null;
   name: string | null;
   notes: string | null;
+  feeling: Feeling | null;
   summary: WorkoutRow;
   rows: WorkoutRow[];
 }
@@ -40,8 +43,8 @@ export function isExportable(workout: Workout | null, invalidCells: number): boo
 
 export function isBlank(workout: Workout): boolean {
   const { isRest: _, ...summary } = workout.summary;
-  const { rows, dragFactor, name, notes } = workout;
-  return rows.length === 0 && dragFactor === null && !name && !notes && Object.values(summary).every((v) => v === null);
+  const { rows, dragFactor, name, notes, feeling } = workout;
+  return rows.length === 0 && dragFactor === null && !name && !notes && feeling === null && Object.values(summary).every((v) => v === null);
 }
 
 export function splitFor(durationDs: number, distanceM: number, splitDistance: number): number {

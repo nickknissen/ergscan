@@ -85,6 +85,7 @@
     "scanMoreRows": "Scan flere rækker",
     "name": "Navn",
     "notes": "Noter",
+    "feeling": "Hvordan havde du det?",
     "start": "Starttidspunkt",
     "splitDistance": "Split pr.",
     "extraColumn": "Sidste kolonne",
@@ -229,5 +230,12 @@
   "drop": {
     "overlay": "Slip billedet for at scanne det",
     "extra": "Kun det første billede scannes. | Kun det første billede scannes; 1 andet blev ignoreret. | Kun det første billede scannes; {count} andre blev ignoreret."
+  },
+  "feelings": {
+    "1": "Udmattet",
+    "2": "Træt",
+    "3": "Okay",
+    "4": "Godt",
+    "5": "Strålende"
   }
 }
