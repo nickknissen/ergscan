@@ -46,8 +46,9 @@ export function hasUnsavedChanges(workout: Workout, extraColumn: ExtraColumn | n
   return savedKey === null ? !isBlank(workout) : draftKey(workout, extraColumn) !== savedKey;
 }
 
-export function removeFromHistory(storage: HistoryStorage, id: string): HistoryEntry[] {
-  return write(storage, loadHistory(storage).filter((e) => e.id !== id));
+export function removeFromHistory(storage: HistoryStorage, ids: string | readonly string[]): HistoryEntry[] {
+  const remove = typeof ids === 'string' ? [ids] : ids;
+  return write(storage, loadHistory(storage).filter((e) => !remove.includes(e.id)));
 }
 
 function write(storage: HistoryStorage, entries: HistoryEntry[]): HistoryEntry[] {

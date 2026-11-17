@@ -877,9 +877,34 @@ button svg {
   padding: 0 4px 0 0;
 }
 
-.history-list .group-row:has([aria-current='true']) {
+.history-list .group-row:has([aria-current='true']),
+.history-list .group-row.history-selected {
   background-color: var(--secondary-container);
   color: var(--on-secondary-container);
+}
+
+.selection-bar {
+  position: sticky;
+  top: calc(var(--navbar-height) + env(safe-area-inset-top));
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--shape-large);
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+}
+
+.history-pane .selection-bar {
+  top: 0;
+}
+
+.selection-count {
+  flex: 1;
+  font: var(--title-small);
 }
 
 .history-open {

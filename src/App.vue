@@ -416,10 +416,17 @@ async function backFromReview() {
   if (await confirmDiscard()) leaveReview();
 }
 
-async function deleteEntry(entry: HistoryEntry) {
-  if (!storage || !(await confirmDialog('remove', { date: entryDateLabel(entry.workout.startTime, locale.value) }))) return;
-  history.value = removeFromHistory(storage, entry.id);
-  if (stage.value === 'review' && historyId.value === entry.id) leaveReview();
+async function removeEntries(entries: HistoryEntry[]) {
+  const [first] = entries;
+  if (!storage || !first) return;
+  const confirmed =
+    entries.length === 1
+      ? await confirmDialog('remove', { date: entryDateLabel(first.workout.startTime, locale.value) })
+      : await confirmDialog('removeMany', { count: String(entries.length) });
+  if (!confirmed) return;
+  const ids = entries.map((e) => e.id);
+  history.value = removeFromHistory(storage, ids);
+  if (stage.value === 'review' && historyId.value !== null && ids.includes(historyId.value)) leaveReview();
 }
 
 async function selectEntry(entry: HistoryEntry) {
@@ -748,7 +755,7 @@ async function share() {
 
     <main class="screen" :class="[`screen-${stage}`, { 'screen-split': showHistoryPane }]">
       <aside v-if="showHistoryPane" class="history-pane" :aria-label="t('history.title')">
-        <HistoryList :entries="history" :selected="stage === 'review' ? historyId : null" @open="selectEntry" @remove="deleteEntry" />
+        <HistoryList :entries="history" :current="stage === 'review' ? historyId : null" @open="selectEntry" @remove="removeEntries" />
       </aside>
 
       <Transition :name="transition" mode="out-in" @after-enter="onScreenEnter">
@@ -799,7 +806,7 @@ async function share() {
             <h2>{{ t('history.pickTitle') }}</h2>
             <p>{{ t('history.pick') }}</p>
           </div>
-          <HistoryList v-else :entries="history" :selected="null" @open="selectEntry" @remove="deleteEntry" />
+          <HistoryList v-else :entries="history" :current="null" @open="selectEntry" @remove="removeEntries" />
         </section>
 
         <section v-else-if="stage === 'settings'" class="settings">

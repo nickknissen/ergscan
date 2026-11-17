@@ -71,6 +71,15 @@ describe('history', () => {
     expect(loadHistory(storage).map((e) => e.id)).toEqual(['b']);
   });
 
+  it('removes several entries at once', () => {
+    const storage = memoryStorage();
+    saveToHistory(storage, entry('a', '2026-11-16T07:00:00Z'));
+    saveToHistory(storage, entry('b', '2026-11-15T07:00:00Z'));
+    saveToHistory(storage, entry('c', '2026-11-14T07:00:00Z'));
+    expect(removeFromHistory(storage, ['a', 'c']).map((e) => e.id)).toEqual(['b']);
+    expect(loadHistory(storage).map((e) => e.id)).toEqual(['b']);
+  });
+
   it('ignores corrupt or malformed storage', () => {
     expect(loadHistory(memoryStorage('not json'))).toEqual([]);
     expect(loadHistory(memoryStorage('{}'))).toEqual([]);
