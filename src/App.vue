@@ -7,6 +7,7 @@ import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import MdMenu from './components/MdMenu.vue';
 import PmGuide from './components/PmGuide.vue';
+import UpdatePrompt from './components/UpdatePrompt.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
 import { clearDraft, loadDraft, saveDraft } from './core/draft';
@@ -752,6 +753,8 @@ async function share() {
         </button>
       </Transition>
     </main>
+
+    <UpdatePrompt />
 
     <nav v-if="tabbed" class="tabbar">
       <button type="button" class="tab" :aria-current="stage === 'capture' || stage === 'guide' ? 'page' : undefined" @click="goTo('capture')">

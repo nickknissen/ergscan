@@ -16,7 +16,7 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'icon.svg'],
       manifest: {
         name: en.app.title,
@@ -35,6 +35,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,ico}', '**/roboto-flex-latin*.woff2'],
         globIgnores: ['tesseract/**'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,

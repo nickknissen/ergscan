@@ -576,6 +576,54 @@ button svg {
   }
 }
 
+/* ---------- Snackbar ---------- */
+
+.snackbar {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 4px 8px 4px 16px;
+  border-radius: var(--shape-small);
+  background: var(--surface-container-highest);
+  color: var(--on-surface);
+  font: var(--body-medium);
+  box-shadow: var(--elevation-3);
+}
+
+.shell-tabbed .snackbar {
+  bottom: calc(168px + env(safe-area-inset-bottom));
+}
+
+.snackbar-text {
+  flex: 1;
+  padding: 10px 0;
+}
+
+.snackbar-action {
+  flex: none;
+  padding: 0 12px;
+}
+
+.snackbar-enter-active,
+.snackbar-leave-active {
+  transition:
+    opacity var(--duration-short) var(--ease-standard),
+    transform var(--duration-short) var(--ease-standard);
+}
+
+.snackbar-enter-from,
+.snackbar-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
 .fab svg {
   width: 24px;
   height: 24px;

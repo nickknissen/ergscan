@@ -190,5 +190,10 @@
       "body": "Alle gemte træninger bliver slettet, og indstillingerne nulstilles. Det kan ikke fortrydes.",
       "confirm": "Ryd"
     }
+  },
+  "update": {
+    "available": "Der er en ny version af ErgScan.",
+    "later": "Senere",
+    "reload": "Genindlæs"
   }
 }

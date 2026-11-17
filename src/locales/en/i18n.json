@@ -190,5 +190,10 @@
       "body": "All saved workouts will be deleted and settings reset. This can't be undone.",
       "confirm": "Clear"
     }
+  },
+  "update": {
+    "available": "A new version of ErgScan is available.",
+    "later": "Later",
+    "reload": "Reload"
   }
 }
