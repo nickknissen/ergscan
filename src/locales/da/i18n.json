@@ -13,7 +13,26 @@
   "guide": {
     "title": "Find resultatet",
     "open": "Sådan får du resultatskærmen frem",
-    "monitor": "Concept2 PM4/PM5",
+    "pick": {
+      "question": "Hvilken monitor har du?",
+      "hint": "Menuerne er lidt forskellige på de to modeller, så trinene passer til din.",
+      "change": "Skift"
+    },
+    "monitors": {
+      "pm5": {
+        "name": "Concept2 PM5",
+        "look": "Sort monitor med knapperne Units, Display og Menu under skærmen",
+        "menu": "Menu",
+        "memoryPath": "Memory › List by Date › 🔍"
+      },
+      "pm4": {
+        "name": "Concept2 PM4",
+        "look": "Grå monitor med knapperne Change Units, Change Display og Menu {'|'} Back",
+        "menu": "Menu {'|'} Back",
+        "memoryPath": "More Options › Memory › List by Date › 🔍",
+        "memoryNote": "PM4 gemmer kun de 10 seneste træninger, så åbn resultatet før din næste træning."
+      }
+    },
     "intro": "ErgScan læser resultattabellen med totalen og dine splits. Følg disse trin på monitoren, så det er den tabel, du fotograferer.",
     "setup": {
       "title": "Start en træning",
@@ -22,16 +41,12 @@
     },
     "finish": {
       "title": "Afslut korrekt",
-      "body": "En træning med fast distance eller tid slutter af sig selv, når nedtællingen når nul, så ro videre indtil da. Ved Just Row: stop med at ro, vent 6 sekunder og tryk én gang på Menu {'|'} Back. Ro mindst 1 minut eller 100 m, ellers bliver intet gemt.",
-      "warning": "Tryk ikke på Menu {'|'} Back midt i træningen eller i en pause: så afsluttes træningen."
+      "body": "En træning med fast distance eller tid slutter af sig selv, når nedtællingen når nul, så ro videre indtil da. Ved Just Row: stop med at ro, vent 6 sekunder og tryk én gang på {menu}. Ro mindst 1 minut eller 100 m, ellers bliver intet gemt.",
+      "warning": "Tryk ikke på {menu} midt i træningen eller i en pause: så afsluttes træningen."
     },
     "results": {
       "title": "Åbn resultatet",
       "body": "Åbn træningen fra hukommelsen via hovedmenuen. Find den med pilene (tjek dato og tid), og tryk på knappen med forstørrelsesglasset for at se totalen og alle splits.",
-      "paths": {
-        "pm5": { "monitor": "PM5", "path": "Memory › List by Date › 🔍" },
-        "pm4": { "monitor": "PM4", "path": "More Options › Memory › List by Date › 🔍" }
-      },
       "note": "Hvis monitoren slukker, så tryk på en knap for at vække den. Træningen ligger stadig i hukommelsen."
     },
     "photo": {

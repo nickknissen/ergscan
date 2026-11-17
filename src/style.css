@@ -412,6 +412,52 @@ button svg {
   color: var(--muted);
 }
 
+.guide-question {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.monitor-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.monitor-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 0;
+  padding: 18px 20px;
+  border-radius: 20px;
+  text-align: left;
+}
+
+.monitor-choice-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.monitor-choice-look {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.guide-monitor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guide-change {
+  min-height: 32px;
+  padding: 0 14px;
+  font-size: 0.8125rem;
+}
+
 .guide-badge {
   display: inline-block;
   padding: 6px 12px;
@@ -492,28 +538,6 @@ button svg {
   background: var(--surface-high);
   font-size: 0.875rem;
   font-weight: 500;
-}
-
-.step-body .step-path + .step-path {
-  margin-top: 6px;
-}
-
-.step-path-labelled {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.step-path-monitor {
-  flex: none;
-  min-width: 2.75em;
-  padding: 1px 6px;
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
 }
 
 .step-body .step-warning {

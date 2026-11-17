@@ -13,7 +13,26 @@
   "guide": {
     "title": "Get the right screen",
     "open": "How to get the results screen",
-    "monitor": "Concept2 PM4/PM5",
+    "pick": {
+      "question": "Which monitor do you have?",
+      "hint": "The menus differ a little between the two models, so the steps are made for yours.",
+      "change": "Change"
+    },
+    "monitors": {
+      "pm5": {
+        "name": "Concept2 PM5",
+        "look": "Black monitor with Units, Display and Menu buttons below the screen",
+        "menu": "Menu",
+        "memoryPath": "Memory › List by Date › 🔍"
+      },
+      "pm4": {
+        "name": "Concept2 PM4",
+        "look": "Grey monitor with Change Units, Change Display and Menu {'|'} Back buttons",
+        "menu": "Menu {'|'} Back",
+        "memoryPath": "More Options › Memory › List by Date › 🔍",
+        "memoryNote": "The PM4 only keeps the 10 most recent workouts, so open the results before your next session."
+      }
+    },
     "intro": "ErgScan reads the results table with the total and the splits. Follow these steps on the monitor so that table is what you photograph.",
     "setup": {
       "title": "Start a workout",
@@ -22,16 +41,12 @@
     },
     "finish": {
       "title": "Finish it properly",
-      "body": "A set distance or time workout ends by itself when the countdown reaches zero, so keep rowing until then. For Just Row, stop rowing, wait 6 seconds and press Menu {'|'} Back once. Row at least 1 minute or 100 m, or nothing is saved.",
-      "warning": "Don't press Menu {'|'} Back mid-workout or during a rest: it ends the workout."
+      "body": "A set distance or time workout ends by itself when the countdown reaches zero, so keep rowing until then. For Just Row, stop rowing, wait 6 seconds and press {menu} once. Row at least 1 minute or 100 m, or nothing is saved.",
+      "warning": "Don't press {menu} mid-workout or during a rest: it ends the workout."
     },
     "results": {
       "title": "Open the results",
       "body": "From the main menu, open the workout from memory. Find it with the arrows (check the date and time), then press the magnifying glass button to see the total and every split.",
-      "paths": {
-        "pm5": { "monitor": "PM5", "path": "Memory › List by Date › 🔍" },
-        "pm4": { "monitor": "PM4", "path": "More Options › Memory › List by Date › 🔍" }
-      },
       "note": "If the monitor goes dark, press a button to wake it. The workout stays in memory."
     },
     "photo": {
