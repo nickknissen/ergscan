@@ -319,6 +319,9 @@ const DOCUMENT_LISTENERS = [
 ] as const;
 
 onMounted(() => {
+  window.launchQueue?.setConsumer(async ({ files }) => {
+    if (files.length) await scanPicked(await Promise.all(files.map((handle) => handle.getFile())));
+  });
   window.addEventListener('scroll', onScroll, { passive: true });
   for (const [type, listener] of DOCUMENT_LISTENERS) document.addEventListener(type, listener as EventListener);
 });

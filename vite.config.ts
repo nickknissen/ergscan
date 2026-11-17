@@ -27,6 +27,8 @@ export default defineConfig({
         display: 'standalone',
         start_url: '.',
         scope: '.',
+        launch_handler: { client_mode: 'navigate-new' },
+        file_handlers: [{ action: '.', accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] } }],
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
