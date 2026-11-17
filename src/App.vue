@@ -550,7 +550,7 @@ const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'functio
 const cameraError = ref('');
 
 function newWorkout(): Workout {
-  return { startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, summary: emptyRow(), rows: [] };
+  return { startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: emptyRow(), rows: [] };
 }
 
 function reset() {

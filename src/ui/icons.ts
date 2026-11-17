@@ -1,3 +1,4 @@
+import type { Feeling } from '../core/feeling';
 import add from '@material-symbols/svg-400/rounded/add.svg?raw';
 import arrowBack from '@material-symbols/svg-400/rounded/arrow_back.svg?raw';
 import arrowDropDown from '@material-symbols/svg-400/rounded/arrow_drop_down.svg?raw';
@@ -27,6 +28,16 @@ import photoLibrary from '@material-symbols/svg-400/rounded/photo_library.svg?ra
 import print from '@material-symbols/svg-400/rounded/print.svg?raw';
 import redo from '@material-symbols/svg-400/rounded/redo.svg?raw';
 import rowing from '@material-symbols/svg-400/rounded/rowing.svg?raw';
+import sentimentDissatisfiedFill from '@material-symbols/svg-400/rounded/sentiment_dissatisfied-fill.svg?raw';
+import sentimentDissatisfied from '@material-symbols/svg-400/rounded/sentiment_dissatisfied.svg?raw';
+import sentimentNeutralFill from '@material-symbols/svg-400/rounded/sentiment_neutral-fill.svg?raw';
+import sentimentNeutral from '@material-symbols/svg-400/rounded/sentiment_neutral.svg?raw';
+import sentimentSatisfiedFill from '@material-symbols/svg-400/rounded/sentiment_satisfied-fill.svg?raw';
+import sentimentSatisfied from '@material-symbols/svg-400/rounded/sentiment_satisfied.svg?raw';
+import sentimentVeryDissatisfiedFill from '@material-symbols/svg-400/rounded/sentiment_very_dissatisfied-fill.svg?raw';
+import sentimentVeryDissatisfied from '@material-symbols/svg-400/rounded/sentiment_very_dissatisfied.svg?raw';
+import sentimentVerySatisfiedFill from '@material-symbols/svg-400/rounded/sentiment_very_satisfied-fill.svg?raw';
+import sentimentVerySatisfied from '@material-symbols/svg-400/rounded/sentiment_very_satisfied.svg?raw';
 import settingsFill from '@material-symbols/svg-400/rounded/settings-fill.svg?raw';
 import settings from '@material-symbols/svg-400/rounded/settings.svg?raw';
 import share from '@material-symbols/svg-400/rounded/share.svg?raw';
@@ -66,6 +77,11 @@ export const ICONS = {
   print: pair(print),
   redo: pair(redo),
   rowing: pair(rowing),
+  sentiment_dissatisfied: pair(sentimentDissatisfied, sentimentDissatisfiedFill),
+  sentiment_neutral: pair(sentimentNeutral, sentimentNeutralFill),
+  sentiment_satisfied: pair(sentimentSatisfied, sentimentSatisfiedFill),
+  sentiment_very_dissatisfied: pair(sentimentVeryDissatisfied, sentimentVeryDissatisfiedFill),
+  sentiment_very_satisfied: pair(sentimentVerySatisfied, sentimentVerySatisfiedFill),
   settings: pair(settings, settingsFill),
   share: pair(share),
   undo: pair(undo),
@@ -74,3 +90,12 @@ export const ICONS = {
 };
 
 export type IconName = keyof typeof ICONS;
+
+/** Faces for how a workout felt, from weary (1) to beaming (5). */
+export const FEELING_ICONS = {
+  1: 'sentiment_very_dissatisfied',
+  2: 'sentiment_dissatisfied',
+  3: 'sentiment_neutral',
+  4: 'sentiment_satisfied',
+  5: 'sentiment_very_satisfied',
+} as const satisfies Record<Feeling, IconName>;

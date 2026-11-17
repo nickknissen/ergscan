@@ -35,7 +35,7 @@ function decodeDeveloperFields(bytes: Uint8Array) {
 
 function workoutFrom(text: string): Workout {
   const scan = parsePm5Text(text)!;
-  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, dragFactor: null, name: null, notes: null, summary: scan.summary, rows: scan.rows };
+  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, dragFactor: null, name: null, notes: null, feeling: null, summary: scan.summary, rows: scan.rows };
 }
 
 describe('workoutToFit', () => {
@@ -110,6 +110,13 @@ describe('workoutToFit', () => {
     const [wkt] = decode(workoutToFit(workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24'))).workoutMesgs;
     expect(wkt!.wktName).toBe('1000m');
     expect(wkt!.wktDescription).toBeUndefined();
+  });
+
+  it('writes how the workout felt as the session workout feel, from 0 for weary to 100 for beaming', () => {
+    const feelOf = (feeling: Workout['feeling']) =>
+      decode(workoutToFit({ ...workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24'), feeling })).sessionMesgs[0]!.workoutFeel;
+    expect([1, 2, 3, 4, 5].map((f) => feelOf(f as Workout['feeling']))).toEqual([0, 25, 50, 75, 100]);
+    expect(feelOf(null)).toBeUndefined();
   });
 
   it('writes no developer data without a drag factor', () => {

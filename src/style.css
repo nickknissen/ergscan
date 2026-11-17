@@ -479,6 +479,38 @@ button svg {
   resize: vertical;
 }
 
+.feeling-row {
+  flex-wrap: wrap;
+  padding-block: 4px;
+}
+
+.feelings {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.feelings button[aria-pressed='true'] {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.history-feeling {
+  display: flex;
+  flex: none;
+  color: var(--on-surface-variant);
+}
+
+.history-selected .history-feeling,
+.history-open[aria-current] .history-feeling {
+  color: inherit;
+}
+
+.history-feeling svg {
+  width: 24px;
+  height: 24px;
+}
+
 .chevron {
   width: 24px;
   height: 24px;

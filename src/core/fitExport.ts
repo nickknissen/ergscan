@@ -12,6 +12,7 @@ import {
   type SessionMesg,
   type WorkoutMesg,
 } from '@garmin/fitsdk';
+import { workoutFeel } from './feeling';
 import { wattsForSplit, type Workout, type WorkoutRow } from './workout';
 import { suggestName } from './workoutName';
 
@@ -172,6 +173,7 @@ export function workoutToFit(workout: Workout): Uint8Array {
     avgPower: powerOf(summary, workout.splitDistance) ?? undefined,
     avgHeartRate: summary.heartRate ?? undefined,
     totalCalories: summary.calories ?? undefined,
+    workoutFeel: workout.feeling === null ? undefined : workoutFeel(workout.feeling),
     developerFields: workout.dragFactor === null ? undefined : { [DRAG_FACTOR_FIELD.key]: workout.dragFactor },
   });
   write<ActivityMesg>(encoder, {

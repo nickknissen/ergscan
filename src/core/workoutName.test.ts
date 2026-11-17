@@ -6,7 +6,7 @@ const work = (durationDs: number, distanceM: number): WorkoutRow => ({ ...emptyR
 const rest = (durationDs: number): WorkoutRow => ({ ...emptyRow(), durationDs, isRest: true });
 
 function workout(summary: WorkoutRow, rows: WorkoutRow[] = []): Workout {
-  return { startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, summary, rows };
+  return { startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary, rows };
 }
 
 describe('suggestName', () => {

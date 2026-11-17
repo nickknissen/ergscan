@@ -35,6 +35,8 @@ local storage, and the app keeps working offline once it has been opened.
   measured max heart rate or one estimated from your age.
 - Reads the drag factor and keeps it with the workout.
 - Name workouts and add notes; both are written into the FIT file.
+- Rate how you felt, from weary to beaming. The face shows in the history list
+  and goes into the FIT file as the session's workout feel.
 - History of saved workouts, kept on the device.
 - FIT export as an indoor rowing activity: one lap per split or interval, rest
   laps marked as rest, and per-lap distance, stroke rate, power and heart rate.

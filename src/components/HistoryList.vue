@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { entryDateLabel } from '../core/dates';
 import type { HistoryEntry } from '../core/history';
 import { formatTime } from '../core/time';
+import { FEELING_ICONS } from '../ui/icons';
 import { contextMenuPoint } from '../ui/menu';
 import { keepExisting, nextSelection, type Selection } from '../ui/selection';
 import { isTextField } from '../ui/shortcuts';
@@ -122,6 +123,15 @@ function entrySummary(entry: HistoryEntry): string {
           <span class="row-label">
             {{ entrySummary(entry) }}
             <span class="row-detail">{{ entryDetail(entry) }}</span>
+          </span>
+          <span
+            v-if="entry.workout.feeling !== null"
+            class="history-feeling"
+            role="img"
+            :aria-label="t(`feelings.${entry.workout.feeling}`)"
+            :title="t(`feelings.${entry.workout.feeling}`)"
+          >
+            <MdIcon :name="FEELING_ICONS[entry.workout.feeling]" />
           </span>
         </button>
         <button

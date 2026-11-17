@@ -2,8 +2,10 @@
 import { computed, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
+import { FEELINGS, type Feeling } from '../core/feeling';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
 import { suggestName } from '../core/workoutName';
+import { FEELING_ICONS } from '../ui/icons';
 import { handleCellKeydown } from '../ui/keyboardNav';
 import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
 import MdIcon from './MdIcon.vue';
@@ -52,6 +54,11 @@ const name = computed({
   get: () => workout.value.name ?? '',
   set: (value: string) => (workout.value.name = value || null),
 });
+
+/** Tapping the chosen face again clears the rating. */
+function toggleFeeling(feeling: Feeling) {
+  workout.value.feeling = workout.value.feeling === feeling ? null : feeling;
+}
 
 const notes = computed({
   get: () => workout.value.notes ?? '',
@@ -115,6 +122,23 @@ function recalculate() {
         <span class="row-label">{{ t('review.notes') }}</span>
         <textarea v-model="notes" class="row-notes" rows="3"></textarea>
       </label>
+      <div class="group-row feeling-row">
+        <span :id="`${id}-feeling`" class="row-label">{{ t('review.feeling') }}</span>
+        <div class="feelings" role="group" :aria-labelledby="`${id}-feeling`">
+          <button
+            v-for="feeling in FEELINGS"
+            :key="feeling"
+            type="button"
+            class="icon"
+            :aria-pressed="workout.feeling === feeling"
+            :aria-label="t(`feelings.${feeling}`)"
+            :title="t(`feelings.${feeling}`)"
+            @click="toggleFeeling(feeling)"
+          >
+            <MdIcon :name="FEELING_ICONS[feeling]" :filled="workout.feeling === feeling" />
+          </button>
+        </div>
+      </div>
     </div>
 
     <h2 class="group-header">{{ t('review.splits') }}</h2>
