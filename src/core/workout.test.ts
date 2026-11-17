@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyRow, moveExtraColumn, splitFor, sumRows, wattsForSplit, type Workout, type WorkoutRow } from './workout';
+import { emptyRow, isExportable, moveExtraColumn, splitFor, sumRows, wattsForSplit, type Workout, type WorkoutRow } from './workout';
 
 function row(partial: Partial<WorkoutRow>): WorkoutRow {
   return { ...emptyRow(), ...partial };
@@ -56,5 +56,25 @@ describe('sumRows', () => {
     expect(total.heartRate).toBe(155);
     expect(total.watts).toBeNull();
     expect(total.isRest).toBe(false);
+  });
+});
+
+describe('isExportable', () => {
+  const workout = (durationDs: number | null, distanceM: number | null): Workout => ({
+    startTime: new Date(),
+    splitDistance: 500,
+    summary: row({ durationDs, distanceM }),
+    rows: [],
+  });
+
+  it('needs a total time and distance', () => {
+    expect(isExportable(workout(4500, 2000), 0)).toBe(true);
+    expect(isExportable(workout(null, 2000), 0)).toBe(false);
+    expect(isExportable(workout(4500, null), 0)).toBe(false);
+    expect(isExportable(null, 0)).toBe(false);
+  });
+
+  it('is blocked while any cell holds text that could not be parsed', () => {
+    expect(isExportable(workout(4500, 2000), 1)).toBe(false);
   });
 });

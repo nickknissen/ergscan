@@ -820,6 +820,12 @@ select:focus {
   border-bottom: 2px solid var(--accent);
 }
 
+.field-error {
+  margin: -16px 4px 24px;
+  color: var(--danger);
+  font-size: 0.8125rem;
+}
+
 .table-wrap {
   overflow-x: auto;
   padding: 8px 6px;

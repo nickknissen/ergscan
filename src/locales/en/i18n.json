@@ -62,6 +62,8 @@
     "addRow": "Add row",
     "removeRow": "Remove row {number}",
     "recalculate": "Recalculate total from rows",
+    "timePlaceholder": "0:00.0",
+    "invalidCells": "Fix the highlighted cells. Enter times like 8:00.0 (or 8.00.0) and other values as whole numbers.",
     "rawText": "Recognized text",
     "photo": "Photo"
   },

@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
+import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
 import NumberCell from './NumberCell.vue';
 import TimeCell from './TimeCell.vue';
 
 const workout = defineModel<Workout>('workout', { required: true });
 const extraColumn = defineModel<ExtraColumn | null>('extraColumn', { required: true });
+const invalidCount = defineModel<number>('invalidCount', { default: 0 });
+
+const invalidCells = provideInvalidCells();
+watch(
+  () => invalidCells.size,
+  (size) => (invalidCount.value = size),
+  { immediate: true },
+);
 
 const { t } = useI18n();
 
@@ -120,6 +129,7 @@ function recalculate() {
         </tbody>
       </table>
     </div>
+    <p v-if="invalidCells.size" :id="CELL_HINT_ID" class="field-error" role="alert">{{ t('review.invalidCells') }}</p>
 
     <div class="group">
       <button type="button" class="group-row tappable accent" @click="addRow">

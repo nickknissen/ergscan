@@ -11,11 +11,14 @@ describe('parseTime', () => {
     [':30.0', 300],
     ['2:00', 1200],
     ['0:05.0', 50],
+    ['8.00.0', 4800],
+    ['1.02.03.4', 37234],
+    ['1.02.03', 37230],
   ])('parses %s to %i deciseconds', (text, ds) => {
     expect(parseTime(text)).toBe(ds);
   });
 
-  it.each(['', 'abc', '1:75.0', '1:60:00.0', '155.3', '1:5'])('rejects %s', (text) => {
+  it.each(['', 'abc', '1:75.0', '1:60:00.0', '155.3', '1:5', '7.30', '8.75.0'])('rejects %s', (text) => {
     expect(parseTime(text)).toBeNull();
   });
 });

@@ -62,6 +62,8 @@
     "addRow": "Tilføj række",
     "removeRow": "Fjern række {number}",
     "recalculate": "Genberegn total ud fra rækkerne",
+    "timePlaceholder": "0:00.0",
+    "invalidCells": "Ret de markerede felter. Skriv tider som 8:00.0 (eller 8.00.0) og andre værdier som hele tal.",
     "rawText": "Genkendt tekst",
     "photo": "Billede"
   },

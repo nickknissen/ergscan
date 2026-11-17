@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
 import PmGuide from './components/PmGuide.vue';
@@ -8,7 +8,7 @@ import { fitFileName, startTimeFor } from './core/dates';
 import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { applyTheme, clearAppData, loadTheme, saveTheme, THEMES, type Theme } from './core/settings';
 import { formatTime } from './core/time';
-import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
+import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
@@ -129,7 +129,8 @@ watch(stage, (value) => {
   if (value === 'review' && !fitModule.value) void import('./core/fitExport').then((m) => (fitModule.value = m));
 });
 
-const canExport = computed(() => Boolean(fitModule.value && workout.value?.summary.durationDs && workout.value.summary.distanceM));
+const invalidCells = ref(0);
+const canExport = computed(() => Boolean(fitModule.value) && isExportable(workout.value, invalidCells.value));
 const canShare = computed(() => typeof navigator.canShare === 'function');
 const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
 const cameraError = ref('');
@@ -157,6 +158,13 @@ async function onImage(event: Event) {
   input.value = '';
   if (!file) return;
   await scanBlob(file, new Date(file.lastModified || Date.now()), false);
+}
+
+const photoInput = useTemplateRef<HTMLInputElement>('photoInput');
+const imageInput = useTemplateRef<HTMLInputElement>('imageInput');
+
+function chooseImage() {
+  imageInput.value?.click();
 }
 
 function openCamera() {
@@ -246,6 +254,9 @@ async function share() {
 </script>
 
 <template>
+  <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" />
+  <input ref="imageInput" type="file" accept="image/*" hidden @change="onImage" />
+
   <CameraCapture
     v-if="stage === 'camera'"
     @capture="(image) => scanBlob(image, new Date(), true)"
@@ -287,23 +298,21 @@ async function share() {
         <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
 
         <div class="group">
-          <label v-if="!cameraSupported || cameraError" class="group-row tappable">
+          <button v-if="!cameraSupported || cameraError" type="button" class="group-row tappable" @click="photoInput?.click()">
             <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
               <circle cx="12" cy="13" r="3.5" />
             </svg>
             <span class="row-label">{{ t('capture.takePhoto') }}</span>
-            <input type="file" accept="image/*" capture="environment" hidden @change="onImage" />
-          </label>
-          <label class="group-row tappable">
+          </button>
+          <button type="button" class="group-row tappable" @click="chooseImage">
             <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
               <rect x="4" y="5" width="16" height="14" rx="2" />
               <circle cx="9" cy="10" r="1.5" />
               <path d="M20 16l-5-5-8 8" />
             </svg>
             <span class="row-label">{{ t('capture.chooseImage') }}</span>
-            <input type="file" accept="image/*" hidden @change="onImage" />
-          </label>
+          </button>
           <button type="button" class="group-row tappable" @click="enterManually">
             <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 20h4L19 9l-4-4L4 16z" />
@@ -389,7 +398,7 @@ async function share() {
         <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
         <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
 
-        <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" />
+        <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
 
         <details v-if="photoUrl || rawText" class="group disclosure">
           <summary class="group-row tappable">
@@ -435,7 +444,7 @@ async function share() {
     </nav>
 
     <footer v-if="stage === 'review' && workout" class="toolbar">
-      <p v-if="!canExport" class="toolbar-hint">{{ t('export.invalid') }}</p>
+      <p v-if="!canExport" class="toolbar-hint">{{ invalidCells ? t('review.invalidCells') : t('export.invalid') }}</p>
       <div class="toolbar-actions">
         <button v-if="canShare" type="button" class="primary" :disabled="!canExport" @click="share">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M6 12v8h12v-8" /></svg>

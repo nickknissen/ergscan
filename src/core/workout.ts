@@ -31,6 +31,10 @@ export function emptyRow(): WorkoutRow {
   };
 }
 
+export function isExportable(workout: Workout | null, invalidCells: number): boolean {
+  return Boolean(workout?.summary.durationDs && workout.summary.distanceM) && invalidCells === 0;
+}
+
 export function splitFor(durationDs: number, distanceM: number, splitDistance: number): number {
   return Math.round((durationDs / distanceM) * splitDistance);
 }
