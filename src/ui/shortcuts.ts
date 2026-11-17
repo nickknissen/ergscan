@@ -1,4 +1,4 @@
-export type ShortcutAction = 'back' | 'save' | 'open';
+export type ShortcutAction = 'back' | 'save' | 'open' | 'undo' | 'redo';
 
 interface KeyLike {
   key: string;
@@ -21,7 +21,13 @@ const NON_TEXT_INPUTS = ['button', 'checkbox', 'color', 'file', 'image', 'radio'
 
 export function appShortcut(event: KeyLike, context: ShortcutContext): ShortcutAction | null {
   if (event.defaultPrevented) return null;
-  const command = (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
+  const modified = (event.ctrlKey || event.metaKey) && !event.altKey;
+  const command = modified && !event.shiftKey;
+  const key = event.key.toLowerCase();
+  if (modified && context.stage === 'review' && !context.editing && !context.overlayOpen) {
+    if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
+    if (key === 'y' && !event.shiftKey) return 'redo';
+  }
   if (command && event.key.toLowerCase() === 's' && context.stage === 'review') return 'save';
   if (command && event.key.toLowerCase() === 'o' && !context.overlayOpen && IMAGE_STAGES.includes(context.stage)) return 'open';
   if (event.key === 'Escape' && !context.editing && !context.overlayOpen && BACK_STAGES.includes(context.stage)) return 'back';

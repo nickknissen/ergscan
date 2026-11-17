@@ -12,7 +12,7 @@ import UpdatePrompt from './components/UpdatePrompt.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { entryDateLabel, fitFileName, startTimeFor } from './core/dates';
 import { clearDraft, loadDraft, saveDraft } from './core/draft';
-import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
+import { draftKey, hasUnsavedChanges, loadHistory, parseEntry, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { ACCENTS, accentSwatch, type Accent } from './core/palette';
 import {
   applyTheme,
@@ -34,6 +34,7 @@ import {
 } from './core/settings';
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
+import { createUndoStack } from './core/undo';
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
 import { historyPane, listDetail } from './ui/layout';
@@ -261,6 +262,8 @@ function onKeydown(event: KeyboardEvent) {
   if (!action) return;
   event.preventDefault();
   if (action === 'open') chooseImage();
+  else if (action === 'undo') applyUndo(undoStack.undo());
+  else if (action === 'redo') applyUndo(undoStack.redo());
   else if (action === 'save') void saveFromKeyboard();
   else if (stage.value === 'camera') stage.value = 'capture';
   else if (stage.value === 'guide') closeGuide();
@@ -439,9 +442,44 @@ const invalidCells = ref(0);
 const canExport = computed(() => Boolean(fitModule.value) && isExportable(workout.value, invalidCells.value));
 const canShare = computed(() => typeof navigator.canShare === 'function');
 const overflowItems = computed(() => [
+  ...(undoAvailable.value.undo ? [{ id: 'undo', label: t('review.undo'), icon: 'undo' as const }] : []),
+  ...(undoAvailable.value.redo ? [{ id: 'redo', label: t('review.redo'), icon: 'redo' as const }] : []),
   ...(saved.value && canShare.value ? [{ id: 'download', label: t('export.download'), icon: 'download' as const }] : []),
   { id: 'print', label: t('review.print'), icon: 'print' as const },
 ]);
+
+const undoStack = createUndoStack<string>();
+const undoAvailable = ref({ undo: false, redo: false });
+let undoEntry: string | null = null;
+
+function syncUndo() {
+  undoAvailable.value = { undo: undoStack.canUndo(), redo: undoStack.canRedo() };
+}
+
+watch(
+  [historyId, workout, extraColumn],
+  () => {
+    if (!workout.value) return;
+    const snapshot = draftKey(workout.value, extraColumn.value);
+    if (historyId.value !== undoEntry) {
+      undoEntry = historyId.value;
+      undoStack.reset(snapshot);
+    } else {
+      undoStack.record(snapshot);
+    }
+    syncUndo();
+  },
+  { deep: true },
+);
+
+function applyUndo(snapshot: string | null) {
+  const entry = snapshot && parseEntry({ id: 'undo', ...JSON.parse(snapshot) });
+  if (entry) {
+    workout.value = entry.workout;
+    extraColumn.value = entry.extraColumn;
+  }
+  syncUndo();
+}
 const largeWindow = useMediaQuery('(min-width: 1200px)');
 const reviewPanel = computed(() => largeWindow.value && Boolean(photoUrl.value || rawText.value));
 const wideWindow = useMediaQuery('(min-width: 840px)');
@@ -543,11 +581,19 @@ async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
   showReview(null);
 }
 
+let focusOnEnter: string | null = null;
+
 function enterManually() {
   reset();
   startEntry();
   workout.value = newWorkout();
+  focusOnEnter = 'tr.summary .cell';
   showReview(null);
+}
+
+function onScreenEnter() {
+  if (focusOnEnter) document.querySelector<HTMLElement>(focusOnEnter)?.focus();
+  focusOnEnter = null;
 }
 
 watch(
@@ -625,7 +671,9 @@ async function download() {
 }
 
 function onReviewMenu(id: string) {
-  if (id === 'download') void download();
+  if (id === 'undo') applyUndo(undoStack.undo());
+  else if (id === 'redo') applyUndo(undoStack.redo());
+  else if (id === 'download') void download();
   else if (id === 'print') window.print();
 }
 
@@ -703,7 +751,7 @@ async function share() {
         <HistoryList :entries="history" :selected="stage === 'review' ? historyId : null" @open="selectEntry" @remove="deleteEntry" />
       </aside>
 
-      <Transition :name="transition" mode="out-in">
+      <Transition :name="transition" mode="out-in" @after-enter="onScreenEnter">
         <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />
 
         <section v-else-if="stage === 'capture'" class="capture">

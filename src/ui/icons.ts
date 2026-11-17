@@ -22,10 +22,12 @@ import palette from '@material-symbols/svg-400/rounded/palette.svg?raw';
 import photoCamera from '@material-symbols/svg-400/rounded/photo_camera.svg?raw';
 import photoLibrary from '@material-symbols/svg-400/rounded/photo_library.svg?raw';
 import print from '@material-symbols/svg-400/rounded/print.svg?raw';
+import redo from '@material-symbols/svg-400/rounded/redo.svg?raw';
 import rowing from '@material-symbols/svg-400/rounded/rowing.svg?raw';
 import settingsFill from '@material-symbols/svg-400/rounded/settings-fill.svg?raw';
 import settings from '@material-symbols/svg-400/rounded/settings.svg?raw';
 import share from '@material-symbols/svg-400/rounded/share.svg?raw';
+import undo from '@material-symbols/svg-400/rounded/undo.svg?raw';
 import viewDay from '@material-symbols/svg-400/rounded/view_day.svg?raw';
 import warning from '@material-symbols/svg-400/rounded/warning.svg?raw';
 
@@ -56,9 +58,11 @@ export const ICONS = {
   photo_camera: pair(photoCamera),
   photo_library: pair(photoLibrary),
   print: pair(print),
+  redo: pair(redo),
   rowing: pair(rowing),
   settings: pair(settings, settingsFill),
   share: pair(share),
+  undo: pair(undo),
   view_day: pair(viewDay),
   warning: pair(warning),
 };

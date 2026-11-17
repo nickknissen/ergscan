@@ -31,6 +31,18 @@ describe('appShortcut', () => {
     expect(appShortcut(key('o', { ctrlKey: true }), { ...idle, stage: 'capture', overlayOpen: true })).toBeNull();
   });
 
+  it('undoes with Ctrl+Z and redoes with Ctrl+Shift+Z or Ctrl+Y on review', () => {
+    expect(appShortcut(key('z', { ctrlKey: true }), { ...idle, stage: 'review' })).toBe('undo');
+    expect(appShortcut(key('Z', { metaKey: true, shiftKey: true }), { ...idle, stage: 'review' })).toBe('redo');
+    expect(appShortcut(key('y', { ctrlKey: true }), { ...idle, stage: 'review' })).toBe('redo');
+  });
+
+  it('leaves undo to text fields, dialogs and other screens', () => {
+    expect(appShortcut(key('z', { ctrlKey: true }), { ...idle, stage: 'review', editing: true })).toBeNull();
+    expect(appShortcut(key('z', { ctrlKey: true }), { ...idle, stage: 'review', overlayOpen: true })).toBeNull();
+    expect(appShortcut(key('z', { ctrlKey: true }), { ...idle, stage: 'history' })).toBeNull();
+  });
+
   it('goes back with Esc from the camera, guide and review', () => {
     for (const stage of ['camera', 'guide', 'review']) expect(appShortcut(key('Escape'), { ...idle, stage })).toBe('back');
   });
