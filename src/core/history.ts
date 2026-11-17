@@ -19,13 +19,15 @@ export function loadHistory(storage: HistoryStorage): HistoryEntry[] {
     return [];
   }
   if (!Array.isArray(parsed)) return [];
-  return parsed.flatMap((item: unknown) => {
-    const entry = item as { id?: unknown; workout?: { startTime?: unknown; rows?: unknown }; extraColumn?: ExtraColumn | null };
-    if (typeof entry?.id !== 'string' || !entry.workout || !Array.isArray(entry.workout.rows)) return [];
-    const startTime = new Date(entry.workout.startTime as string);
-    if (Number.isNaN(startTime.getTime())) return [];
-    return [{ id: entry.id, workout: { ...(entry.workout as Workout), startTime }, extraColumn: entry.extraColumn ?? null }];
-  });
+  return parsed.flatMap((item: unknown) => parseEntry(item) ?? []);
+}
+
+export function parseEntry(item: unknown): HistoryEntry | null {
+  const entry = item as { id?: unknown; workout?: { startTime?: unknown; rows?: unknown }; extraColumn?: ExtraColumn | null };
+  if (typeof entry?.id !== 'string' || !entry.workout || !Array.isArray(entry.workout.rows)) return null;
+  const startTime = new Date(entry.workout.startTime as string);
+  if (Number.isNaN(startTime.getTime())) return null;
+  return { id: entry.id, workout: { ...(entry.workout as Workout), startTime }, extraColumn: entry.extraColumn ?? null };
 }
 
 export function saveToHistory(storage: HistoryStorage, entry: HistoryEntry): HistoryEntry[] {

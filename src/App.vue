@@ -8,6 +8,7 @@ import MdMenu from './components/MdMenu.vue';
 import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
+import { clearDraft, loadDraft, saveDraft } from './core/draft';
 import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { ACCENTS, accentSwatch, type Accent } from './core/palette';
 import { applyTheme, clearAppData, loadAccent, loadIntroHidden, loadTheme, saveAccent, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
@@ -140,6 +141,14 @@ const history = ref<HistoryEntry[]>(storage ? loadHistory(storage) : []);
 const historyId = ref<string | null>(null);
 const reviewOrigin = ref<Tab>('capture');
 const tabbed = computed(() => ['capture', 'guide', 'history', 'settings'].includes(stage.value));
+
+const session: Storage | null = (() => {
+  try {
+    return sessionStorage;
+  } catch {
+    return null;
+  }
+})();
 
 const theme = ref<Theme>(loadTheme(storage));
 const accent = ref<Accent>(loadAccent(storage));
@@ -393,7 +402,45 @@ function enterManually() {
   showReview(null);
 }
 
-if (initialRoute.page === 'workout' && (initialRoute.id === null || !openEntry(initialRoute.id, false))) {
+watch(
+  [stage, workout, extraColumn, savedKey, reviewOrigin],
+  () => {
+    if (!session) return;
+    if (stage.value !== 'review' || !workout.value || !historyId.value) {
+      clearDraft(session);
+      return;
+    }
+    saveDraft(session, {
+      id: historyId.value,
+      workout: workout.value,
+      extraColumn: extraColumn.value,
+      savedKey: savedKey.value,
+      origin: reviewOrigin.value,
+      rawText: rawText.value,
+      notice: notice.value,
+      computedSummary: computedSummary.value,
+    });
+  },
+  { deep: true },
+);
+
+function restoreDraft(id: string | null): boolean {
+  const draft = session && loadDraft(session, id);
+  if (!draft) return false;
+  reset();
+  historyId.value = draft.id;
+  workout.value = draft.workout;
+  extraColumn.value = draft.extraColumn;
+  savedKey.value = draft.savedKey;
+  reviewOrigin.value = draft.origin;
+  rawText.value = draft.rawText;
+  notice.value = draft.notice;
+  computedSummary.value = draft.computedSummary;
+  stage.value = 'review';
+  return true;
+}
+
+if (initialRoute.page === 'workout' && !restoreDraft(initialRoute.id) && (initialRoute.id === null || !openEntry(initialRoute.id, false))) {
   window.history.replaceState(null, '', baseUrl());
 }
 
