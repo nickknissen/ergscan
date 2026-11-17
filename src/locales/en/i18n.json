@@ -106,9 +106,11 @@
       "light": "Light",
       "dark": "Dark"
     },
+    "showIntro": "Show intro on Scan",
+    "showIntroDetail": "The welcome card with the photo tip",
     "data": "Data",
     "clear": "Clear data",
-    "clearDetail": "No saved workouts. Resets the theme and shows the guide again | Deletes 1 saved workout, resets the theme and shows the guide again | Deletes {count} saved workouts, resets the theme and shows the guide again",
+    "clearDetail": "No saved workouts. Resets the theme and intro, and shows the guide again | Deletes 1 saved workout, resets the theme and intro, and shows the guide again | Deletes {count} saved workouts, resets the theme and intro, and shows the guide again",
     "clearConfirm": "Delete all saved workouts and reset settings? This can't be undone."
   },
   "export": {

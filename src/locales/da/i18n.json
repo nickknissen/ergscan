@@ -106,9 +106,11 @@
       "light": "Lyst",
       "dark": "Mørkt"
     },
+    "showIntro": "Vis introduktion på Scan",
+    "showIntroDetail": "Velkomstkortet med fototippet",
     "data": "Data",
     "clear": "Ryd data",
-    "clearDetail": "Ingen gemte træninger. Nulstiller temaet og viser vejledningen igen | Sletter 1 gemt træning, nulstiller temaet og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller temaet og viser vejledningen igen",
+    "clearDetail": "Ingen gemte træninger. Nulstiller tema og introduktion og viser vejledningen igen | Sletter 1 gemt træning, nulstiller tema og introduktion og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller tema og introduktion og viser vejledningen igen",
     "clearConfirm": "Slet alle gemte træninger og nulstil indstillinger? Det kan ikke fortrydes."
   },
   "export": {

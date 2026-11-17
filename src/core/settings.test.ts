@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clearAppData, loadTheme, saveTheme, THEME_KEY } from './settings';
+import { clearAppData, HIDE_INTRO_KEY, loadIntroHidden, loadTheme, saveIntroHidden, saveTheme, THEME_KEY } from './settings';
 
 function memoryStorage(entries: Record<string, string> = {}) {
   const data = new Map(Object.entries(entries));
@@ -34,6 +34,21 @@ describe('theme', () => {
     const storage = memoryStorage({ [THEME_KEY]: 'dark' });
     saveTheme(storage, 'system');
     expect(storage.data.has(THEME_KEY)).toBe(false);
+  });
+});
+
+describe('intro visibility', () => {
+  it('shows the intro unless it was hidden', () => {
+    expect(loadIntroHidden(memoryStorage())).toBe(false);
+    expect(loadIntroHidden(null)).toBe(false);
+  });
+
+  it('remembers hiding and clears the key when shown again', () => {
+    const storage = memoryStorage();
+    saveIntroHidden(storage, true);
+    expect(loadIntroHidden(storage)).toBe(true);
+    saveIntroHidden(storage, false);
+    expect(storage.data.has(HIDE_INTRO_KEY)).toBe(false);
   });
 });
 

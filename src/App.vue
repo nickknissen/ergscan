@@ -6,7 +6,7 @@ import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
 import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
-import { applyTheme, clearAppData, loadTheme, saveTheme, THEMES, type Theme } from './core/settings';
+import { applyTheme, clearAppData, loadIntroHidden, loadTheme, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
 import { formatTime } from './core/time';
 import { emptyRow, isBlank, isExportable, type ExtraColumn, type Workout } from './core/workout';
 
@@ -100,11 +100,21 @@ watch(theme, (value) => {
   applyTheme(document, value);
 });
 
+const introHidden = ref(loadIntroHidden(storage));
+const showIntro = computed({
+  get: () => !introHidden.value,
+  set: (value: boolean) => {
+    introHidden.value = !value;
+    if (storage) saveIntroHidden(storage, !value);
+  },
+});
+
 function clearData() {
   if (!storage || !window.confirm(t('settings.clearConfirm'))) return;
   clearAppData(storage);
   history.value = [];
   theme.value = 'system';
+  introHidden.value = false;
 }
 const reviewBackLabel = computed(() =>
   t('review.back', { screen: reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan') }),
@@ -324,7 +334,7 @@ async function share() {
       <PmGuide v-if="stage === 'guide'" @done="closeGuide" />
 
       <section v-else-if="stage === 'capture'" class="capture">
-        <div class="hero">
+        <div v-if="showIntro" class="hero">
           <img src="/icon.svg" alt="" class="hero-icon" width="56" height="56" />
           <p class="hero-tagline">{{ t('app.tagline') }}</p>
           <p class="hero-hint">{{ t('capture.hint') }}</p>
@@ -348,6 +358,13 @@ async function share() {
         </button>
 
         <div class="group">
+          <button v-if="!showIntro" type="button" class="group-row tappable" @click="openGuide">
+            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="3" width="14" height="18" rx="2" />
+              <path d="M9 8h6M9 12h6M9 16h3" />
+            </svg>
+            <span class="row-label">{{ t('guide.open') }}</span>
+          </button>
           <button v-if="!cameraSupported || cameraError" type="button" class="group-row tappable" @click="photoInput?.click()">
             <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
@@ -416,6 +433,14 @@ async function share() {
               </button>
             </div>
           </div>
+          <label class="group-row tappable">
+            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M7 10h10M7 14h6" /></svg>
+            <span class="row-label">
+              {{ t('settings.showIntro') }}
+              <span class="row-detail">{{ t('settings.showIntroDetail') }}</span>
+            </span>
+            <input v-model="showIntro" type="checkbox" role="switch" class="switch" />
+          </label>
         </div>
 
         <h2 class="group-header">{{ t('settings.data') }}</h2>

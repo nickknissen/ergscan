@@ -19,6 +19,21 @@ export function saveTheme(storage: Pick<Storage, 'setItem' | 'removeItem'>, them
   }
 }
 
+export const HIDE_INTRO_KEY = 'ergscan.hideIntro';
+
+export function loadIntroHidden(storage: Pick<Storage, 'getItem'> | null): boolean {
+  return storage?.getItem(HIDE_INTRO_KEY) === '1';
+}
+
+export function saveIntroHidden(storage: Pick<Storage, 'setItem' | 'removeItem'>, hidden: boolean): void {
+  try {
+    if (hidden) storage.setItem(HIDE_INTRO_KEY, '1');
+    else storage.removeItem(HIDE_INTRO_KEY);
+  } catch {
+    // Storage full or blocked: the choice still applies for this session.
+  }
+}
+
 export function applyTheme(doc: Document, theme: Theme): void {
   doc.documentElement.style.colorScheme = theme === 'system' ? '' : theme;
   for (const meta of doc.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
