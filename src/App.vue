@@ -3,14 +3,14 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTem
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
 import HeartRateZones from './components/HeartRateZones.vue';
-import MdContextMenu from './components/MdContextMenu.vue';
+import HistoryList from './components/HistoryList.vue';
 import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import MdMenu from './components/MdMenu.vue';
 import PmGuide from './components/PmGuide.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
-import { fitFileName, startTimeFor } from './core/dates';
+import { entryDateLabel, fitFileName, startTimeFor } from './core/dates';
 import { clearDraft, loadDraft, saveDraft } from './core/draft';
 import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { ACCENTS, accentSwatch, type Accent } from './core/palette';
@@ -33,11 +33,10 @@ import {
   type Theme,
 } from './core/settings';
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
-import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
-import { contextMenuPoint } from './ui/menu';
+import { historyPane, listDetail } from './ui/layout';
 import { appShortcut, isTextField } from './ui/shortcuts';
 import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
@@ -104,7 +103,11 @@ function changeMonitor() {
   }
 }
 
-function goTo(next: TabStage) {
+async function goTo(next: TabStage) {
+  if (stage.value === 'review') {
+    if (unsaved.value && !(await confirmDiscard())) return;
+    leaveReview();
+  }
   if (stage.value === 'guide') {
     markGuideSeen();
     const depth: number = window.history.state?.guide ?? 0;
@@ -119,7 +122,7 @@ function goTo(next: TabStage) {
 }
 
 function closeGuide() {
-  goTo('capture');
+  void goTo('capture');
 }
 
 window.addEventListener('popstate', () => {
@@ -164,7 +167,7 @@ const storage: Storage | null = (() => {
 const history = ref<HistoryEntry[]>(storage ? loadHistory(storage) : []);
 const historyId = ref<string | null>(null);
 const reviewOrigin = ref<Tab>('capture');
-const tabbed = computed(() => ['capture', 'guide', 'history', 'settings'].includes(stage.value));
+const tabbed = computed(() => ['capture', 'guide', 'history', 'settings'].includes(stage.value) || showListDetail.value);
 
 const session: Storage | null = (() => {
   try {
@@ -359,39 +362,19 @@ async function backFromReview() {
 }
 
 async function deleteEntry(entry: HistoryEntry) {
-  if (!storage || !(await confirmDialog('remove', { date: entryDate(entry) }))) return;
+  if (!storage || !(await confirmDialog('remove', { date: entryDateLabel(entry.workout.startTime, locale.value) }))) return;
   history.value = removeFromHistory(storage, entry.id);
+  if (stage.value === 'review' && historyId.value === entry.id) leaveReview();
 }
 
-const entryMenu = useTemplateRef<InstanceType<typeof MdContextMenu>>('entryMenu');
-const entryMenuItems = computed(() => [
-  { id: 'open', label: t('history.open'), icon: 'edit' as const },
-  { id: 'delete', label: t('history.delete'), icon: 'delete' as const },
-]);
-let menuEntry: HistoryEntry | null = null;
-
-function openEntryMenu(event: MouseEvent, entry: HistoryEntry) {
-  const row = event.currentTarget as HTMLElement;
-  menuEntry = entry;
-  const point = contextMenuPoint({ x: event.clientX, y: event.clientY }, row.getBoundingClientRect());
-  entryMenu.value?.openAt(point, row.querySelector<HTMLElement>('.history-open'));
-}
-
-function onEntryMenu(id: string) {
-  const entry = menuEntry;
-  menuEntry = null;
-  if (!entry) return;
-  if (id === 'open') openEntry(entry.id);
-  else void deleteEntry(entry);
-}
-
-function entryDate(entry: HistoryEntry): string {
-  return entry.workout.startTime.toLocaleString(locale.value, { dateStyle: 'medium', timeStyle: 'short' });
-}
-
-function entrySummary(entry: HistoryEntry): string {
-  const { distanceM, durationDs } = entry.workout.summary;
-  return t('history.summary', { distance: distanceM, time: formatTime(durationDs ?? 0) });
+async function selectEntry(entry: HistoryEntry) {
+  if (stage.value !== 'review') {
+    openEntry(entry.id);
+    return;
+  }
+  if (historyId.value === entry.id || (unsaved.value && !(await confirmDiscard()))) return;
+  openEntry(entry.id, false);
+  window.history.replaceState(window.history.state, '', routeHash({ page: 'workout', id: entry.id }));
 }
 
 const fitModule = shallowRef<FitModule | null>(null);
@@ -406,6 +389,17 @@ const canShare = computed(() => typeof navigator.canShare === 'function');
 const overflowItems = computed(() => [{ id: 'download', label: t('export.download'), icon: 'download' as const }]);
 const largeWindow = useMediaQuery('(min-width: 1200px)');
 const reviewPanel = computed(() => largeWindow.value && Boolean(photoUrl.value || rawText.value));
+const wideWindow = useMediaQuery('(min-width: 840px)');
+const layout = computed(() => ({
+  wide: wideWindow.value,
+  stage: stage.value,
+  reviewOrigin: reviewOrigin.value,
+  sourcePanel: reviewPanel.value,
+  entries: history.value.length,
+}));
+const showListDetail = computed(() => listDetail(layout.value));
+const showHistoryPane = computed(() => historyPane(layout.value));
+const historyTab = computed(() => stage.value === 'history' || showListDetail.value);
 const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan')));
 const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
 const cameraError = ref('');
@@ -603,7 +597,11 @@ async function share() {
       </div>
     </header>
 
-    <main class="screen" :class="`screen-${stage}`">
+    <main class="screen" :class="[`screen-${stage}`, { 'screen-split': showHistoryPane }]">
+      <aside v-if="showHistoryPane" class="history-pane" :aria-label="t('history.title')">
+        <HistoryList :entries="history" :selected="stage === 'review' ? historyId : null" @open="selectEntry" @remove="deleteEntry" />
+      </aside>
+
       <Transition :name="transition" mode="out-in">
         <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />
 
@@ -647,21 +645,12 @@ async function share() {
             <p>{{ t('history.empty') }}</p>
             <button type="button" class="primary" @click="stage = 'capture'">{{ t('history.scanFirst') }}</button>
           </div>
-          <div v-else class="group">
-            <div v-for="entry in history" :key="entry.id" class="group-row" @contextmenu.prevent="openEntryMenu($event, entry)">
-              <button type="button" class="history-open" @click="openEntry(entry.id)">
-                <MdIcon name="rowing" class="row-icon" />
-                <span class="row-label">
-                  {{ entrySummary(entry) }}
-                  <span class="row-detail">{{ entryDate(entry) }}</span>
-                </span>
-              </button>
-              <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry)">
-                <MdIcon name="delete" />
-              </button>
-            </div>
+          <div v-else-if="showHistoryPane" class="history-empty">
+            <MdIcon name="rowing" />
+            <h2>{{ t('history.pickTitle') }}</h2>
+            <p>{{ t('history.pick') }}</p>
           </div>
-          <MdContextMenu ref="entryMenu" :label="t('history.actions')" :items="entryMenuItems" @select="onEntryMenu" />
+          <HistoryList v-else :entries="history" :selected="null" @open="selectEntry" @remove="deleteEntry" />
         </section>
 
         <section v-else-if="stage === 'settings'" class="settings">
@@ -849,9 +838,9 @@ async function share() {
         </span>
         <span>{{ t('tabs.scan') }}</span>
       </button>
-      <button type="button" class="tab" :aria-current="stage === 'history' ? 'page' : undefined" @click="goTo('history')">
+      <button type="button" class="tab" :aria-current="historyTab ? 'page' : undefined" @click="goTo('history')">
         <span class="tab-indicator">
-          <MdIcon name="history" :filled="stage === 'history'" />
+          <MdIcon name="history" :filled="historyTab" />
         </span>
         <span>{{ t('history.title') }}</span>
       </button>

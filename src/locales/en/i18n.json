@@ -132,7 +132,9 @@
     "remove": "Delete the workout from {date}",
     "actions": "Workout actions",
     "open": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "pickTitle": "Pick a workout",
+    "pick": "Its splits open here, ready to edit, share or download."
   },
   "settings": {
     "title": "Settings",

@@ -132,7 +132,9 @@
     "remove": "Slet træningen fra {date}",
     "actions": "Handlinger for træning",
     "open": "Rediger",
-    "delete": "Slet"
+    "delete": "Slet",
+    "pickTitle": "Vælg en træning",
+    "pick": "Dens splits åbnes her, klar til at redigere, dele eller downloade."
   },
   "settings": {
     "title": "Indstillinger",

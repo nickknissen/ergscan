@@ -842,8 +842,13 @@ button svg {
   margin: 0 0 8px;
 }
 
-.history .group-row {
+.history-list .group-row {
   padding: 0 4px 0 0;
+}
+
+.history-list .group-row:has([aria-current='true']) {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
 }
 
 .history-open {
@@ -2053,9 +2058,29 @@ tr.rest .cell {
     align-items: start;
   }
 
-  .history .group {
+  .history-list .group {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  .screen.screen-split {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    max-width: 1280px;
+  }
+
+  .history-pane {
+    position: sticky;
+    top: calc(var(--navbar-height) + env(safe-area-inset-top) + 16px);
+    max-height: calc(100dvh - var(--navbar-height) - env(safe-area-inset-top) - 32px);
+    overflow-y: auto;
+    border-radius: 20px;
+  }
+
+  .history-pane .group {
+    margin: 0;
   }
 }
 

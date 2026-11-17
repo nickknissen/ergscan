@@ -21,6 +21,10 @@ export function startTimeFor(screenDate: ScreenDate | null | undefined, photoTim
   return new Date(year, month - 1, day, 12, 0);
 }
 
+export function entryDateLabel(start: Date, locale: string): string {
+  return start.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 export function fitFileName(start: Date): string {
   return `ergscan-${start.getFullYear()}${pad(start.getMonth() + 1)}${pad(start.getDate())}-${pad(start.getHours())}${pad(start.getMinutes())}.fit`;
 }
