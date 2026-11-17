@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parsePm5Text } from './pm5Parser';
-import { mergeScans, rowsMissing } from './scanMerge';
+import { mergeScans, rowsMissing, withAddedRows } from './scanMerge';
 
 const HEADER = 'time meter /500m s/m';
 
@@ -87,6 +87,13 @@ describe('mergeScans', () => {
     expect(merged.rows).toHaveLength(15);
   });
 
+  it('puts the rows in order when the lower screen was photographed first', () => {
+    const merged = mergeScans(parse(DISTANCE_PAGE_2), parse(DISTANCE_PAGE_1));
+    expect(merged.rows).toHaveLength(15);
+    expect(merged.rows[0]!.durationDs).toBe(1286);
+    expect(merged.rows.every((r) => r.distanceM === 500)).toBe(true);
+  });
+
   it('appends every row when the photos do not overlap', () => {
     const merged = mergeScans(parse(DISTANCE_PAGE_1), parse(DISTANCE_PAGE_2.replace(/\n\s*2:14\.3 4000 2:14\.3 16/, '')));
     expect(merged.rows).toHaveLength(15);
@@ -94,10 +101,36 @@ describe('mergeScans', () => {
   });
 });
 
+describe('withAddedRows', () => {
+  it('takes the merged laps while the workout is as scanned', () => {
+    const first = parse(DISTANCE_PAGE_1);
+    const merged = mergeScans(first, parse(DISTANCE_PAGE_2));
+    expect(withAddedRows(first, first, merged)).toEqual({ summary: merged.summary, rows: merged.rows });
+  });
+
+  it('keeps rows and a total the user edited and appends only the new laps', () => {
+    const first = parse(DISTANCE_PAGE_1);
+    const merged = mergeScans(first, parse(DISTANCE_PAGE_2));
+    const edited = { summary: { ...first.summary, rate: 20 }, rows: first.rows.map((r, i) => (i === 0 ? { ...r, rate: 30 } : r)) };
+    const result = withAddedRows(edited, first, merged);
+    expect(result.summary.rate).toBe(20);
+    expect(result.rows).toHaveLength(15);
+    expect(result.rows[0]!.rate).toBe(30);
+    expect(result.rows.slice(8)).toEqual(merged.rows.slice(8));
+  });
+});
+
 describe('rowsMissing', () => {
   it('is true while the laps fall short of the total meters', () => {
     expect(rowsMissing(parse(DISTANCE_PAGE_1))).toBe(true);
     expect(rowsMissing(mergeScans(parse(DISTANCE_PAGE_1), parse(DISTANCE_PAGE_2)))).toBe(true);
+  });
+
+  it('is true while only a short final lap is missing', () => {
+    const lastPage = `${HEADER}\n36:20.4 8047 2:15.4 19\n2:12.4 7500 2:12.4 22\n2:13.0 8000 2:13.0 22`;
+    const all = mergeScans(mergeScans(parse(DISTANCE_PAGE_1), parse(DISTANCE_PAGE_2)), parse(lastPage));
+    expect(all.rows).toHaveLength(16);
+    expect(rowsMissing(all)).toBe(true);
   });
 
   it('is false once the laps add up to the total', () => {

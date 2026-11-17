@@ -42,7 +42,7 @@ import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type Tab
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createUndoStack } from './core/undo';
 import type { ParsedScan } from './core/pm5Parser';
-import { mergeScans, rowsMissing } from './core/scanMerge';
+import { mergeScans, rowsMissing, withAddedRows } from './core/scanMerge';
 import type { ScanOutcome } from './ocr/firstParsed';
 import { scanFailure } from './ocr/scanFailure';
 import { createConfirm } from './ui/confirm';
@@ -602,7 +602,15 @@ function onCameraFailed(message: string) {
   closeCamera();
 }
 
-const moreRows = computed(() => scanSoFar.value !== null && rowsMissing(scanSoFar.value));
+const moreRows = computed(() => {
+  const scan = scanSoFar.value;
+  const w = workout.value;
+  return scan !== null && w !== null && rowsMissing({ summaryFromScreen: scan.summaryFromScreen, summary: w.summary, rows: w.rows });
+});
+
+function stopAddingRows() {
+  addingRows = false;
+}
 
 function scanMoreRows() {
   addingRows = true;
@@ -634,9 +642,9 @@ async function addRowsFrom(image: Blob, framed: boolean, previous: ParsedScan) {
     rawText.value = [rawText.value, outcome.text].filter(Boolean).join('\n\n');
     if (outcome.scan && workout.value) {
       const merged = mergeScans(previous, outcome.scan);
+      workout.value = { ...workout.value, ...withAddedRows(workout.value, previous, merged) };
+      extraColumn.value ??= merged.extraColumn;
       scanSoFar.value = merged;
-      workout.value = { ...workout.value, splitDistance: merged.splitDistance, summary: merged.summary, rows: merged.rows };
-      extraColumn.value = merged.extraColumn;
     } else {
       notice.value = t('scan.moreFailed');
     }
@@ -799,7 +807,7 @@ async function share() {
 </script>
 
 <template>
-  <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" />
+  <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" @cancel="stopAddingRows" />
   <input ref="imageInput" type="file" accept="image/*" hidden @change="onImage" />
   <MdDialog :pending="dialog.pending.value" @settle="dialog.settle" />
 

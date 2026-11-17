@@ -40,7 +40,7 @@ export interface MultiFacts {
 }
 
 export const TESTDATA_DIR = import.meta.dirname;
-export const MULTI_DIR = join(TESTDATA_DIR, 'multi');
+const MULTI_DIR = join(TESTDATA_DIR, 'multi');
 
 function loadJson<T>(dir: string): { name: string; facts: T }[] {
   return readdirSync(dir)
