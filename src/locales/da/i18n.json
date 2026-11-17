@@ -93,9 +93,7 @@
     "back": "Tilbage til {screen}",
     "save": "Gem",
     "saved": "Gemt",
-    "discard": "Kassér",
-    "discardNew": "Vil du kassere træningen? Den er ikke gemt i Historik.",
-    "discardChanges": "Vil du kassere dine ændringer til træningen?"
+    "discard": "Kassér"
   },
   "columns": {
     "time": "Tid",
@@ -117,8 +115,7 @@
     "empty": "Scan eller indtast en træning, og tryk på Gem for at beholde den her.",
     "scanFirst": "Scan en træning",
     "summary": "{distance} m · {time}",
-    "remove": "Slet træningen fra {date}",
-    "removeConfirm": "Vil du slette træningen fra {date}? Det kan ikke fortrydes."
+    "remove": "Slet træningen fra {date}"
   },
   "settings": {
     "title": "Indstillinger",
@@ -133,13 +130,35 @@
     "showIntroDetail": "Velkomstkortet med fototippet",
     "data": "Data",
     "clear": "Ryd data",
-    "clearDetail": "Ingen gemte træninger. Nulstiller tema og introduktion og viser vejledningen igen | Sletter 1 gemt træning, nulstiller tema og introduktion og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller tema og introduktion og viser vejledningen igen",
-    "clearConfirm": "Slet alle gemte træninger og nulstil indstillinger? Det kan ikke fortrydes."
+    "clearDetail": "Ingen gemte træninger. Nulstiller tema og introduktion og viser vejledningen igen | Sletter 1 gemt træning, nulstiller tema og introduktion og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller tema og introduktion og viser vejledningen igen"
   },
   "export": {
     "download": "Download FIT",
     "share": "Del FIT",
     "invalid": "Udfyld totalens tid og distance for at gemme træningen.",
     "saveFirst": "Gem træningen for at dele eller downloade FIT-filen."
+  },
+  "dialog": {
+    "cancel": "Annullér",
+    "discardNew": {
+      "title": "Vil du kassere træningen?",
+      "body": "Den er ikke gemt i Historik.",
+      "confirm": "Kassér"
+    },
+    "discardChanges": {
+      "title": "Vil du kassere ændringerne?",
+      "body": "Dine ændringer til træningen går tabt.",
+      "confirm": "Kassér"
+    },
+    "remove": {
+      "title": "Vil du slette træningen?",
+      "body": "Træningen fra {date} bliver slettet. Det kan ikke fortrydes.",
+      "confirm": "Slet"
+    },
+    "clear": {
+      "title": "Vil du rydde alle data?",
+      "body": "Alle gemte træninger bliver slettet, og indstillingerne nulstilles. Det kan ikke fortrydes.",
+      "confirm": "Ryd"
+    }
   }
 }

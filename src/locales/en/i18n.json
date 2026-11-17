@@ -93,9 +93,7 @@
     "back": "Back to {screen}",
     "save": "Save",
     "saved": "Saved",
-    "discard": "Discard",
-    "discardNew": "Discard this workout? It hasn't been saved to History.",
-    "discardChanges": "Discard your changes to this workout?"
+    "discard": "Discard"
   },
   "columns": {
     "time": "Time",
@@ -117,8 +115,7 @@
     "empty": "Scan or enter a workout and tap Save to keep it here.",
     "scanFirst": "Scan a workout",
     "summary": "{distance} m · {time}",
-    "remove": "Delete the workout from {date}",
-    "removeConfirm": "Delete the workout from {date}? This can't be undone."
+    "remove": "Delete the workout from {date}"
   },
   "settings": {
     "title": "Settings",
@@ -133,13 +130,35 @@
     "showIntroDetail": "The welcome card with the photo tip",
     "data": "Data",
     "clear": "Clear data",
-    "clearDetail": "No saved workouts. Resets the theme and intro, and shows the guide again | Deletes 1 saved workout, resets the theme and intro, and shows the guide again | Deletes {count} saved workouts, resets the theme and intro, and shows the guide again",
-    "clearConfirm": "Delete all saved workouts and reset settings? This can't be undone."
+    "clearDetail": "No saved workouts. Resets the theme and intro, and shows the guide again | Deletes 1 saved workout, resets the theme and intro, and shows the guide again | Deletes {count} saved workouts, resets the theme and intro, and shows the guide again"
   },
   "export": {
     "download": "Download FIT",
     "share": "Share FIT",
     "invalid": "Fill in the total time and distance to save the workout.",
     "saveFirst": "Save the workout to share or download the FIT file."
+  },
+  "dialog": {
+    "cancel": "Cancel",
+    "discardNew": {
+      "title": "Discard workout?",
+      "body": "It hasn't been saved to History.",
+      "confirm": "Discard"
+    },
+    "discardChanges": {
+      "title": "Discard changes?",
+      "body": "Your edits to this workout will be lost.",
+      "confirm": "Discard"
+    },
+    "remove": {
+      "title": "Delete workout?",
+      "body": "The workout from {date} will be deleted. This can't be undone.",
+      "confirm": "Delete"
+    },
+    "clear": {
+      "title": "Clear all data?",
+      "body": "All saved workouts will be deleted and settings reset. This can't be undone.",
+      "confirm": "Clear"
+    }
   }
 }

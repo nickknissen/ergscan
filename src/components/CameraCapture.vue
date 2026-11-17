@@ -108,7 +108,7 @@ function capture() {
       </div>
       <div v-if="!ready" class="camera-status" role="status">
         <template v-if="state === 'starting'">
-          <span class="spinner" aria-hidden="true"></span>
+          <svg class="spinner" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20" /></svg>
           <p>{{ t('camera.starting') }}</p>
         </template>
         <template v-else>

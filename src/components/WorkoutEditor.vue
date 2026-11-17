@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
 import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
 import MdIcon from './MdIcon.vue';
+import MdSelect from './MdSelect.vue';
 import NumberCell from './NumberCell.vue';
 import TimeCell from './TimeCell.vue';
 
@@ -21,7 +22,19 @@ watch(
 
 const { t } = useI18n();
 
+const id = useId();
+
+const splitOptions = [
+  { value: 500, label: '500 m' },
+  { value: 1000, label: '1000 m' },
+];
+
 const extraOptions: ExtraColumn[] = ['heartRate', 'watts', 'calories'];
+
+const extraSelectOptions = computed(() => [
+  { value: '' as const, label: t('review.none') },
+  ...extraOptions.map((option) => ({ value: option, label: t(`columns.${option}`) })),
+]);
 
 const startInput = computed({
   get: () => toLocalInput(workout.value.startTime),
@@ -68,20 +81,14 @@ function recalculate() {
         <span class="row-label">{{ t('review.start') }}</span>
         <input v-model="startInput" class="row-value" type="datetime-local" />
       </label>
-      <label class="group-row">
-        <span class="row-label">{{ t('review.splitDistance') }}</span>
-        <select v-model.number="workout.splitDistance" class="row-value">
-          <option :value="500">500 m</option>
-          <option :value="1000">1000 m</option>
-        </select>
-      </label>
-      <label class="group-row">
-        <span class="row-label">{{ t('review.extraColumn') }}</span>
-        <select v-model="extraSelection" class="row-value">
-          <option value="">{{ t('review.none') }}</option>
-          <option v-for="option in extraOptions" :key="option" :value="option">{{ t(`columns.${option}`) }}</option>
-        </select>
-      </label>
+      <div class="group-row">
+        <span :id="`${id}-split`" class="row-label">{{ t('review.splitDistance') }}</span>
+        <MdSelect v-model="workout.splitDistance" :options="splitOptions" :labelledby="`${id}-split`" />
+      </div>
+      <div class="group-row">
+        <span :id="`${id}-extra`" class="row-label">{{ t('review.extraColumn') }}</span>
+        <MdSelect v-model="extraSelection" :options="extraSelectOptions" :labelledby="`${id}-extra`" />
+      </div>
     </div>
 
     <h2 class="group-header">{{ t('review.splits') }}</h2>
@@ -127,6 +134,7 @@ function recalculate() {
             <td class="center">
               <label class="check-hit">
                 <input v-model="row.isRest" type="checkbox" class="check" :aria-label="label(t('columns.rest'), row)" />
+                <MdIcon name="check" class="check-mark" />
               </label>
             </td>
             <td class="center">

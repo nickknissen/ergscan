@@ -2,6 +2,7 @@
 import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
+import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
@@ -10,6 +11,7 @@ import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHist
 import { applyTheme, clearAppData, loadIntroHidden, loadTheme, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
+import { createConfirm } from './ui/confirm';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
@@ -110,8 +112,14 @@ const showIntro = computed({
   },
 });
 
-function clearData() {
-  if (!storage || !window.confirm(t('settings.clearConfirm'))) return;
+const dialog = createConfirm();
+
+function confirmDialog(key: string, params: Record<string, string> = {}): Promise<boolean> {
+  return dialog.confirm({ title: t(`dialog.${key}.title`), body: t(`dialog.${key}.body`, params), confirm: t(`dialog.${key}.confirm`) });
+}
+
+async function clearData() {
+  if (!storage || !(await confirmDialog('clear'))) return;
   clearAppData(storage);
   history.value = [];
   theme.value = 'system';
@@ -155,16 +163,15 @@ function saveWorkout() {
 const saved = computed(() => savedKey.value !== null && !unsaved.value);
 const canSave = computed(() => !saved.value && isExportable(workout.value, invalidCells.value));
 
-function discardWorkout() {
-  const message = savedKey.value === null ? t('review.discardNew') : t('review.discardChanges');
-  if (unsaved.value && !window.confirm(message)) return;
+async function discardWorkout() {
+  if (unsaved.value && !(await confirmDialog(savedKey.value === null ? 'discardNew' : 'discardChanges'))) return;
   const origin = reviewOrigin.value;
   reset();
   stage.value = origin;
 }
 
-function deleteEntry(entry: HistoryEntry) {
-  if (!storage || !window.confirm(t('history.removeConfirm', { date: entryDate(entry) }))) return;
+async function deleteEntry(entry: HistoryEntry) {
+  if (!storage || !(await confirmDialog('remove', { date: entryDate(entry) }))) return;
   history.value = removeFromHistory(storage, entry.id);
 }
 
@@ -311,6 +318,7 @@ async function share() {
 <template>
   <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" />
   <input ref="imageInput" type="file" accept="image/*" hidden @change="onImage" />
+  <MdDialog :pending="dialog.pending.value" @settle="dialog.settle" />
 
   <CameraCapture
     v-if="stage === 'camera'"
@@ -356,7 +364,7 @@ async function share() {
 
         <button v-if="cameraSupported" type="button" class="fab" @click="openCamera">
           <MdIcon name="photo_camera" />
-          {{ t('capture.camera') }}
+          <span class="fab-label">{{ t('capture.camera') }}</span>
         </button>
 
         <div class="group">
