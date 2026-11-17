@@ -37,7 +37,8 @@ import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/w
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
 import { historyPane, listDetail } from './ui/layout';
-import { appShortcut, isTextField } from './ui/shortcuts';
+import { carriesFiles, downloadUrlData, pickImage } from './ui/imageInput';
+import { appShortcut, IMAGE_STAGES, isTextField } from './ui/shortcuts';
 import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
 
@@ -156,6 +157,7 @@ const notice = ref('');
 const computedSummary = ref(false);
 const progressText = ref('');
 const progress = ref<number | null>(null);
+const extraImages = ref(0);
 
 const storage: Storage | null = (() => {
   try {
@@ -257,7 +259,8 @@ function onKeydown(event: KeyboardEvent) {
   });
   if (!action) return;
   event.preventDefault();
-  if (action === 'save') void saveFromKeyboard();
+  if (action === 'open') chooseImage();
+  else if (action === 'save') void saveFromKeyboard();
   else if (stage.value === 'camera') stage.value = 'capture';
   else if (stage.value === 'guide') closeGuide();
   else void discardWorkout();
@@ -271,13 +274,57 @@ async function saveFromKeyboard() {
   focused?.focus();
 }
 
+const dragging = ref(false);
+const acceptsImages = () => IMAGE_STAGES.includes(stage.value);
+
+function onDragOver(event: DragEvent) {
+  if (!acceptsImages() || !carriesFiles(event.dataTransfer?.types)) return;
+  event.preventDefault();
+  event.dataTransfer!.dropEffect = 'copy';
+  dragging.value = true;
+}
+
+function onDragLeave(event: DragEvent) {
+  if (event.relatedTarget === null) dragging.value = false;
+}
+
+function onDrop(event: DragEvent) {
+  dragging.value = false;
+  if (!acceptsImages() || !carriesFiles(event.dataTransfer?.types)) return;
+  event.preventDefault();
+  void scanPicked([...(event.dataTransfer?.files ?? [])]);
+}
+
+function onPaste(event: ClipboardEvent) {
+  if (!acceptsImages() || isTextField(document.activeElement as HTMLInputElement | null)) return;
+  const files = [...(event.clipboardData?.files ?? [])];
+  if (!pickImage(files)) return;
+  event.preventDefault();
+  void scanPicked(files);
+}
+
+async function scanPicked(files: File[]) {
+  const picked = pickImage(files);
+  if (!picked) return;
+  await scanBlob(picked.file, new Date(picked.file.lastModified || Date.now()), false);
+  if (picked.extra) extraImages.value = picked.extra;
+}
+
+const DOCUMENT_LISTENERS = [
+  ['keydown', onKeydown],
+  ['dragover', onDragOver],
+  ['dragleave', onDragLeave],
+  ['drop', onDrop],
+  ['paste', onPaste],
+] as const;
+
 onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true });
-  document.addEventListener('keydown', onKeydown);
+  for (const [type, listener] of DOCUMENT_LISTENERS) document.addEventListener(type, listener as EventListener);
 });
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll);
-  document.removeEventListener('keydown', onKeydown);
+  for (const [type, listener] of DOCUMENT_LISTENERS) document.removeEventListener(type, listener as EventListener);
 });
 
 const navTitle = computed(() => {
@@ -418,6 +465,7 @@ function reset() {
   extraColumn.value = null;
   rawText.value = '';
   notice.value = '';
+  extraImages.value = 0;
   computedSummary.value = false;
   stage.value = 'capture';
 }
@@ -549,6 +597,15 @@ function download() {
   link.download = file.name;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function dragFit(event: DragEvent) {
+  if (!event.dataTransfer || !canExport.value) return;
+  const file = fitFile();
+  const url = URL.createObjectURL(file);
+  event.dataTransfer.effectAllowed = 'copy';
+  event.dataTransfer.setData('DownloadURL', downloadUrlData(file, url));
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 async function share() {
@@ -793,6 +850,7 @@ async function share() {
           <div class="review-main">
             <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
             <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
+            <p v-if="extraImages" class="banner">{{ t('drop.extra', extraImages) }}</p>
 
             <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
 
@@ -836,7 +894,9 @@ async function share() {
           class="fab"
           :class="{ 'fab-collapsed': fabCollapse }"
           :disabled="!canExport"
+          :draggable="canExport"
           @click="canShare ? share() : download()"
+          @dragstart="dragFit"
         >
           <MdIcon :name="canShare ? 'share' : 'download'" />
           <span class="fab-label">{{ canShare ? t('export.share') : t('export.download') }}</span>
@@ -845,6 +905,11 @@ async function share() {
     </main>
 
     <UpdatePrompt />
+
+    <div v-if="dragging" class="drop-overlay" aria-hidden="true">
+      <MdIcon name="photo_library" />
+      {{ t('drop.overlay') }}
+    </div>
 
     <nav v-if="tabbed" class="tabbar">
       <button type="button" class="tab" :aria-current="stage === 'capture' || stage === 'guide' ? 'page' : undefined" @click="goTo('capture')">

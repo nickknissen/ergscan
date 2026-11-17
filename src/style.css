@@ -609,6 +609,30 @@ button svg {
   }
 }
 
+/* ---------- Drop to scan ---------- */
+
+.drop-overlay {
+  position: fixed;
+  inset: 12px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 2px dashed var(--primary);
+  border-radius: var(--shape-extra-large);
+  background: color-mix(in srgb, var(--primary-container) 85%, transparent);
+  color: var(--on-primary-container);
+  font: var(--title-large);
+  pointer-events: none;
+}
+
+.drop-overlay svg {
+  width: 48px;
+  height: 48px;
+}
+
 /* ---------- Snackbar ---------- */
 
 .snackbar {

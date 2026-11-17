@@ -24,6 +24,13 @@ describe('appShortcut', () => {
     expect(appShortcut(key('s'), { ...idle, stage: 'review' })).toBeNull();
   });
 
+  it('opens an image with Ctrl+O on the tab screens only', () => {
+    expect(appShortcut(key('o', { ctrlKey: true }), { ...idle, stage: 'capture' })).toBe('open');
+    expect(appShortcut(key('O', { metaKey: true }), { ...idle, stage: 'history' })).toBe('open');
+    expect(appShortcut(key('o', { ctrlKey: true }), { ...idle, stage: 'review' })).toBeNull();
+    expect(appShortcut(key('o', { ctrlKey: true }), { ...idle, stage: 'capture', overlayOpen: true })).toBeNull();
+  });
+
   it('goes back with Esc from the camera, guide and review', () => {
     for (const stage of ['camera', 'guide', 'review']) expect(appShortcut(key('Escape'), { ...idle, stage })).toBe('back');
   });

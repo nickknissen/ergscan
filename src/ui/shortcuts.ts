@@ -1,4 +1,4 @@
-export type ShortcutAction = 'back' | 'save';
+export type ShortcutAction = 'back' | 'save' | 'open';
 
 interface KeyLike {
   key: string;
@@ -16,12 +16,14 @@ interface ShortcutContext {
 }
 
 const BACK_STAGES = ['camera', 'guide', 'review'];
+export const IMAGE_STAGES = ['capture', 'history', 'settings'];
 const NON_TEXT_INPUTS = ['button', 'checkbox', 'color', 'file', 'image', 'radio', 'range', 'reset', 'submit'];
 
 export function appShortcut(event: KeyLike, context: ShortcutContext): ShortcutAction | null {
   if (event.defaultPrevented) return null;
   const command = (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
   if (command && event.key.toLowerCase() === 's' && context.stage === 'review') return 'save';
+  if (command && event.key.toLowerCase() === 'o' && !context.overlayOpen && IMAGE_STAGES.includes(context.stage)) return 'open';
   if (event.key === 'Escape' && !context.editing && !context.overlayOpen && BACK_STAGES.includes(context.stage)) return 'back';
   return null;
 }
