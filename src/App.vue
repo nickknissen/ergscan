@@ -41,6 +41,7 @@ import {
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createUndoStack } from './core/undo';
+import { scanFailure } from './ocr/scanFailure';
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
 import { historyPane, listDetail } from './ui/layout';
@@ -621,7 +622,8 @@ async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
     }
   } catch (error) {
     workout.value = newWorkout();
-    notice.value = t('scan.error', { message: error instanceof Error ? error.message : String(error) });
+    const { key, message } = scanFailure(error, navigator.onLine);
+    notice.value = t(key, { message });
   }
   showReview(null);
 }
