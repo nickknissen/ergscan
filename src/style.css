@@ -135,7 +135,6 @@ svg {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 4px;
   min-height: calc(var(--navbar-height) + env(safe-area-inset-top));
   padding: env(safe-area-inset-top) max(4px, env(safe-area-inset-right)) 0 max(4px, env(safe-area-inset-left));
   background: var(--surface);
