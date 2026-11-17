@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
 import MdDialog from './components/MdDialog.vue';
@@ -12,6 +12,7 @@ import { applyTheme, clearAppData, loadIntroHidden, loadTheme, saveIntroHidden, 
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
+import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
@@ -125,6 +126,23 @@ async function clearData() {
   theme.value = 'system';
   introHidden.value = false;
 }
+const transition = ref<ScreenTransition>('fade-through');
+watch(stage, (to, from) => (transition.value = screenTransition(from, to)), { flush: 'sync' });
+
+const scrolled = ref(false);
+const fabCollapse = ref(false);
+let lastScrollY = 0;
+
+function onScroll() {
+  const y = window.scrollY;
+  scrolled.value = y > 0;
+  fabCollapse.value = fabCollapsed(lastScrollY, y, fabCollapse.value);
+  lastScrollY = y;
+}
+
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }));
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll));
+
 const navTitle = computed(() => {
   if (stage.value === 'review') return t('review.title');
   if (stage.value === 'guide') return t('guide.title');
@@ -329,7 +347,7 @@ async function share() {
   />
 
   <div v-else class="shell" :class="{ 'shell-tabbed': tabbed }">
-    <header class="navbar">
+    <header class="navbar" :class="{ 'navbar-scrolled': scrolled }">
       <div class="navbar-side">
         <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="t('review.discard')" @click="discardWorkout">
           <MdIcon name="close" />
@@ -347,139 +365,143 @@ async function share() {
     </header>
 
     <main class="screen" :class="`screen-${stage}`">
-      <PmGuide v-if="stage === 'guide'" @done="closeGuide" />
+      <Transition :name="transition" mode="out-in">
+        <PmGuide v-if="stage === 'guide'" @done="closeGuide" />
 
-      <section v-else-if="stage === 'capture'" class="capture">
-        <div v-if="showIntro" class="hero">
-          <img src="/icon.svg" alt="" class="hero-icon" width="56" height="56" />
-          <p class="hero-tagline">{{ t('app.tagline') }}</p>
-          <p class="hero-hint">{{ t('capture.hint') }}</p>
-          <button type="button" class="tonal" @click="openGuide">
-            <MdIcon name="menu_book" />
-            {{ t('guide.open') }}
-          </button>
-        </div>
-
-        <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
-
-        <button v-if="cameraSupported" type="button" class="fab" @click="openCamera">
-          <MdIcon name="photo_camera" />
-          <span class="fab-label">{{ t('capture.camera') }}</span>
-        </button>
-
-        <div class="group">
-          <button v-if="!showIntro" type="button" class="group-row tappable" @click="openGuide">
-            <MdIcon name="menu_book" class="row-icon" />
-            <span class="row-label">{{ t('guide.open') }}</span>
-          </button>
-          <button v-if="!cameraSupported || cameraError" type="button" class="group-row tappable" @click="photoInput?.click()">
-            <MdIcon name="photo_camera" class="row-icon" />
-            <span class="row-label">{{ t('capture.takePhoto') }}</span>
-          </button>
-          <button type="button" class="group-row tappable" @click="chooseImage">
-            <MdIcon name="photo_library" class="row-icon" />
-            <span class="row-label">{{ t('capture.chooseImage') }}</span>
-          </button>
-          <button type="button" class="group-row tappable" @click="enterManually">
-            <MdIcon name="edit" class="row-icon" />
-            <span class="row-label">{{ t('capture.manual') }}</span>
-          </button>
-        </div>
-      </section>
-
-      <section v-else-if="stage === 'history'" class="history">
-        <div v-if="!history.length" class="history-empty">
-          <MdIcon name="history" />
-          <h2>{{ t('history.emptyTitle') }}</h2>
-          <p>{{ t('history.empty') }}</p>
-          <button type="button" class="primary" @click="stage = 'capture'">{{ t('history.scanFirst') }}</button>
-        </div>
-        <div v-else class="group">
-          <div v-for="entry in history" :key="entry.id" class="group-row">
-            <button type="button" class="history-open" @click="openEntry(entry.id)">
-              <MdIcon name="rowing" class="row-icon" />
-              <span class="row-label">
-                {{ entrySummary(entry) }}
-                <span class="row-detail">{{ entryDate(entry) }}</span>
-              </span>
-            </button>
-            <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry)">
-              <MdIcon name="delete" />
+        <section v-else-if="stage === 'capture'" class="capture">
+          <div v-if="showIntro" class="hero">
+            <img src="/icon.svg" alt="" class="hero-icon" width="56" height="56" />
+            <p class="hero-tagline">{{ t('app.tagline') }}</p>
+            <p class="hero-hint">{{ t('capture.hint') }}</p>
+            <button type="button" class="tonal" @click="openGuide">
+              <MdIcon name="menu_book" />
+              {{ t('guide.open') }}
             </button>
           </div>
-        </div>
-      </section>
 
-      <section v-else-if="stage === 'settings'" class="settings">
-        <h2 class="group-header">{{ t('settings.appearance') }}</h2>
-        <div class="group">
-          <div class="group-row settings-theme">
-            <MdIcon name="contrast" class="row-icon" />
-            <span class="row-label">{{ t('settings.theme') }}</span>
-            <div class="segmented" role="radiogroup" :aria-label="t('settings.theme')">
-              <button
-                v-for="option in THEMES"
-                :key="option"
-                type="button"
-                role="radio"
-                :aria-checked="theme === option"
-                @click="theme = option"
-              >
-                <MdIcon v-if="theme === option" name="check" />
-                {{ t(`settings.themes.${option}`) }}
+          <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
+
+          <div class="group">
+            <button v-if="!showIntro" type="button" class="group-row tappable" @click="openGuide">
+              <MdIcon name="menu_book" class="row-icon" />
+              <span class="row-label">{{ t('guide.open') }}</span>
+            </button>
+            <button v-if="!cameraSupported || cameraError" type="button" class="group-row tappable" @click="photoInput?.click()">
+              <MdIcon name="photo_camera" class="row-icon" />
+              <span class="row-label">{{ t('capture.takePhoto') }}</span>
+            </button>
+            <button type="button" class="group-row tappable" @click="chooseImage">
+              <MdIcon name="photo_library" class="row-icon" />
+              <span class="row-label">{{ t('capture.chooseImage') }}</span>
+            </button>
+            <button type="button" class="group-row tappable" @click="enterManually">
+              <MdIcon name="edit" class="row-icon" />
+              <span class="row-label">{{ t('capture.manual') }}</span>
+            </button>
+          </div>
+        </section>
+
+        <section v-else-if="stage === 'history'" class="history">
+          <div v-if="!history.length" class="history-empty">
+            <MdIcon name="history" />
+            <h2>{{ t('history.emptyTitle') }}</h2>
+            <p>{{ t('history.empty') }}</p>
+            <button type="button" class="primary" @click="stage = 'capture'">{{ t('history.scanFirst') }}</button>
+          </div>
+          <div v-else class="group">
+            <div v-for="entry in history" :key="entry.id" class="group-row">
+              <button type="button" class="history-open" @click="openEntry(entry.id)">
+                <MdIcon name="rowing" class="row-icon" />
+                <span class="row-label">
+                  {{ entrySummary(entry) }}
+                  <span class="row-detail">{{ entryDate(entry) }}</span>
+                </span>
+              </button>
+              <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry)">
+                <MdIcon name="delete" />
               </button>
             </div>
           </div>
-          <label class="group-row tappable">
-            <MdIcon name="view_day" class="row-icon" />
-            <span class="row-label">
-              {{ t('settings.showIntro') }}
-              <span class="row-detail">{{ t('settings.showIntroDetail') }}</span>
-            </span>
-            <input v-model="showIntro" type="checkbox" role="switch" class="switch" />
-          </label>
-        </div>
+        </section>
 
-        <h2 class="group-header">{{ t('settings.data') }}</h2>
-        <div class="group">
-          <button type="button" class="group-row tappable settings-danger" @click="clearData">
-            <MdIcon name="delete_forever" class="row-icon" />
-            <span class="row-label">
-              {{ t('settings.clear') }}
-              <span class="row-detail">{{ t('settings.clearDetail', history.length) }}</span>
-            </span>
-          </button>
-        </div>
-      </section>
-
-      <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
-        <div v-if="photoUrl" class="scan-photo">
-          <img :src="photoUrl" :alt="t('review.photo')" />
-          <span class="scan-line" aria-hidden="true"></span>
-        </div>
-        <div class="progress" :class="{ indeterminate: progress === null }" role="progressbar" :aria-valuenow="progress === null ? undefined : Math.round(progress * 100)" aria-valuemin="0" aria-valuemax="100">
-          <span :style="progress === null ? undefined : { width: `${Math.round(progress * 100)}%` }"></span>
-        </div>
-        <p class="scan-status">{{ progressText }}</p>
-      </section>
-
-      <section v-else-if="workout" class="review">
-        <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
-        <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
-
-        <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
-
-        <details v-if="photoUrl || rawText" class="group disclosure">
-          <summary class="group-row tappable">
-            <span class="row-label">{{ t('review.rawText') }}</span>
-            <MdIcon name="keyboard_arrow_down" class="chevron" />
-          </summary>
-          <div class="disclosure-body">
-            <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
-            <pre>{{ rawText }}</pre>
+        <section v-else-if="stage === 'settings'" class="settings">
+          <h2 class="group-header">{{ t('settings.appearance') }}</h2>
+          <div class="group">
+            <div class="group-row settings-theme">
+              <MdIcon name="contrast" class="row-icon" />
+              <span class="row-label">{{ t('settings.theme') }}</span>
+              <div class="segmented" role="radiogroup" :aria-label="t('settings.theme')">
+                <button
+                  v-for="option in THEMES"
+                  :key="option"
+                  type="button"
+                  role="radio"
+                  :aria-checked="theme === option"
+                  @click="theme = option"
+                >
+                  <MdIcon v-if="theme === option" name="check" />
+                  {{ t(`settings.themes.${option}`) }}
+                </button>
+              </div>
+            </div>
+            <label class="group-row tappable">
+              <MdIcon name="view_day" class="row-icon" />
+              <span class="row-label">
+                {{ t('settings.showIntro') }}
+                <span class="row-detail">{{ t('settings.showIntroDetail') }}</span>
+              </span>
+              <input v-model="showIntro" type="checkbox" role="switch" class="switch" />
+            </label>
           </div>
-        </details>
-      </section>
+
+          <h2 class="group-header">{{ t('settings.data') }}</h2>
+          <div class="group">
+            <button type="button" class="group-row tappable settings-danger" @click="clearData">
+              <MdIcon name="delete_forever" class="row-icon" />
+              <span class="row-label">
+                {{ t('settings.clear') }}
+                <span class="row-detail">{{ t('settings.clearDetail', history.length) }}</span>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
+          <div v-if="photoUrl" class="scan-photo">
+            <img :src="photoUrl" :alt="t('review.photo')" />
+            <span class="scan-line" aria-hidden="true"></span>
+          </div>
+          <div class="progress" :class="{ indeterminate: progress === null }" role="progressbar" :aria-valuenow="progress === null ? undefined : Math.round(progress * 100)" aria-valuemin="0" aria-valuemax="100">
+            <span :style="progress === null ? undefined : { width: `${Math.round(progress * 100)}%` }"></span>
+          </div>
+          <p class="scan-status">{{ progressText }}</p>
+        </section>
+
+        <section v-else-if="workout" class="review">
+          <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
+          <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
+
+          <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
+
+          <details v-if="photoUrl || rawText" class="group disclosure">
+            <summary class="group-row tappable">
+              <span class="row-label">{{ t('review.rawText') }}</span>
+              <MdIcon name="keyboard_arrow_down" class="chevron" />
+            </summary>
+            <div class="disclosure-body">
+              <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
+              <pre>{{ rawText }}</pre>
+            </div>
+          </details>
+        </section>
+      </Transition>
+
+      <Transition name="fab">
+        <button v-if="stage === 'capture' && cameraSupported" type="button" class="fab" :class="{ 'fab-collapsed': fabCollapse }" @click="openCamera">
+          <MdIcon name="photo_camera" />
+          <span class="fab-label">{{ t('capture.camera') }}</span>
+        </button>
+      </Transition>
     </main>
 
     <nav v-if="tabbed" class="tabbar">
