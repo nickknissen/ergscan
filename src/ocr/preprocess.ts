@@ -12,7 +12,7 @@ export interface PreprocessOptions {
 export const DEFAULT_PREPROCESS: PreprocessOptions = {
   longSide: 3000,
   blurRadius: 2,
-  sensitivity: 0.1,
+  sensitivity: 0.07,
   cropWidth: 1300,
   detectScreen: true,
 };
