@@ -1747,6 +1747,64 @@ tr.rest .cell {
   font: var(--body-medium);
 }
 
+/* ---------- Heart rate zones ---------- */
+
+.zone-1 {
+  --zone: light-dark(#78909c, #b0bec5);
+}
+
+.zone-2 {
+  --zone: light-dark(#1e88e5, #64b5f6);
+}
+
+.zone-3 {
+  --zone: light-dark(#43a047, #81c784);
+}
+
+.zone-4 {
+  --zone: light-dark(#fb8c00, #ffb74d);
+}
+
+.zone-5 {
+  --zone: light-dark(#e53935, #e57373);
+}
+
+.zones-bar-row {
+  min-height: 48px;
+}
+
+.zones-bar {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.zones-bar span {
+  flex-basis: 0;
+  background: var(--zone);
+}
+
+.zone-dot {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--zone);
+  color: #111318;
+  font: var(--title-medium);
+}
+
+.zone-time {
+  flex: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .settings-number {
   width: 6ch;
   flex: none;

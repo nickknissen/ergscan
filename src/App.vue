@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
+import HeartRateZones from './components/HeartRateZones.vue';
 import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import MdMenu from './components/MdMenu.vue';
@@ -716,6 +717,8 @@ async function share() {
           <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
 
           <p v-if="!saved && !invalidCells" class="review-hint">{{ canSave ? t('export.saveFirst') : t('export.invalid') }}</p>
+
+          <HeartRateZones :workout="workout" :max-hr="maxHr" />
 
           <details v-if="photoUrl || rawText" class="group disclosure">
             <summary class="group-row tappable">
