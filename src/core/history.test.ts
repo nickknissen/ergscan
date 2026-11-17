@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { HISTORY_KEY, HISTORY_LIMIT, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry, type HistoryStorage } from './history';
+import {
+  draftKey,
+  hasUnsavedChanges,
+  HISTORY_KEY,
+  HISTORY_LIMIT,
+  loadHistory,
+  removeFromHistory,
+  saveToHistory,
+  type HistoryEntry,
+  type HistoryStorage,
+} from './history';
 import { emptyRow } from './workout';
 
 function memoryStorage(initial?: string): HistoryStorage & { data: Map<string, string> } {
@@ -74,5 +84,23 @@ describe('history', () => {
       throw new DOMException('full', 'QuotaExceededError');
     };
     expect(saveToHistory(storage, entry('b', '2026-11-17T07:00:00Z')).map((e) => e.id)).toEqual(['a']);
+  });
+});
+
+describe('hasUnsavedChanges', () => {
+  it('treats a new workout as unsaved once it has any data', () => {
+    const scanned = entry('a', '2026-11-16T07:00:00Z');
+    expect(hasUnsavedChanges(scanned.workout, null, null)).toBe(true);
+    const blank = { ...scanned.workout, summary: emptyRow(), rows: [] };
+    expect(hasUnsavedChanges(blank, null, null)).toBe(false);
+  });
+
+  it('compares a saved workout against what was stored', () => {
+    const saved = entry('a', '2026-11-16T07:00:00Z');
+    const key = draftKey(saved.workout, saved.extraColumn);
+    expect(hasUnsavedChanges(saved.workout, saved.extraColumn, key)).toBe(false);
+    expect(hasUnsavedChanges(saved.workout, 'heartRate', key)).toBe(true);
+    saved.workout.summary.distanceM = 2100;
+    expect(hasUnsavedChanges(saved.workout, saved.extraColumn, key)).toBe(true);
   });
 });

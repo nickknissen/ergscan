@@ -1,4 +1,4 @@
-import type { ExtraColumn, Workout } from './workout';
+import { isBlank, type ExtraColumn, type Workout } from './workout';
 
 export interface HistoryEntry {
   id: string;
@@ -34,6 +34,14 @@ export function saveToHistory(storage: HistoryStorage, entry: HistoryEntry): His
     .sort((a, b) => b.workout.startTime.getTime() - a.workout.startTime.getTime())
     .slice(0, HISTORY_LIMIT);
   return write(storage, entries);
+}
+
+export function draftKey(workout: Workout, extraColumn: ExtraColumn | null): string {
+  return JSON.stringify({ workout, extraColumn });
+}
+
+export function hasUnsavedChanges(workout: Workout, extraColumn: ExtraColumn | null, savedKey: string | null): boolean {
+  return savedKey === null ? !isBlank(workout) : draftKey(workout, extraColumn) !== savedKey;
 }
 
 export function removeFromHistory(storage: HistoryStorage, id: string): HistoryEntry[] {

@@ -73,7 +73,11 @@
     "rawText": "Genkendt tekst",
     "photo": "Billede",
     "back": "Tilbage til {screen}",
-    "discardConfirm": "Træningen har endnu ingen samlet tid og distance, så den er ikke gemt. Vil du forlade den og kassere den?"
+    "save": "Gem",
+    "saved": "Gemt",
+    "discard": "Kassér",
+    "discardNew": "Vil du kassere træningen? Den er ikke gemt i Historik.",
+    "discardChanges": "Vil du kassere dine ændringer til træningen?"
   },
   "columns": {
     "time": "Tid",
@@ -92,10 +96,11 @@
   "history": {
     "title": "Historik",
     "emptyTitle": "Ingen træninger endnu",
-    "empty": "En træning gemmes her automatisk, så snart den har en samlet tid og distance.",
+    "empty": "Scan eller indtast en træning, og tryk på Gem for at beholde den her.",
     "scanFirst": "Scan en træning",
     "summary": "{distance} m · {time}",
-    "remove": "Slet træningen fra {date}"
+    "remove": "Slet træningen fra {date}",
+    "removeConfirm": "Vil du slette træningen fra {date}? Det kan ikke fortrydes."
   },
   "settings": {
     "title": "Indstillinger",
@@ -116,6 +121,7 @@
   "export": {
     "download": "Download FIT",
     "share": "Del FIT",
-    "invalid": "Udfyld totalens tid og distance før eksport."
+    "invalid": "Udfyld totalens tid og distance for at gemme træningen.",
+    "saveFirst": "Gem træningen for at dele eller downloade FIT-filen."
   }
 }

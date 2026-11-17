@@ -110,6 +110,19 @@ svg {
   color: var(--text);
 }
 
+.nav-action {
+  position: relative;
+  min-height: 40px;
+  margin-right: 8px;
+  padding: 0 20px;
+}
+
+.nav-action::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+
 .nav-button svg {
   width: 24px;
   height: 24px;
@@ -1136,6 +1149,10 @@ tr.rest .cell {
   color: var(--muted);
   font-size: 0.8125rem;
   text-align: center;
+}
+
+.toolbar-hint-only {
+  margin-bottom: 0;
 }
 
 .toolbar-actions {

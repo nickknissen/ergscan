@@ -5,10 +5,10 @@ import CameraCapture from './components/CameraCapture.vue';
 import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
-import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
+import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { applyTheme, clearAppData, loadIntroHidden, loadTheme, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
 import { formatTime } from './core/time';
-import { emptyRow, isBlank, isExportable, type ExtraColumn, type Workout } from './core/workout';
+import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
@@ -116,9 +116,6 @@ function clearData() {
   theme.value = 'system';
   introHidden.value = false;
 }
-const reviewBackLabel = computed(() =>
-  t('review.back', { screen: reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan') }),
-);
 const navTitle = computed(() => {
   if (stage.value === 'review') return t('review.title');
   if (stage.value === 'guide') return t('guide.title');
@@ -127,15 +124,8 @@ const navTitle = computed(() => {
   return t('app.title');
 });
 
-watch(
-  [workout, extraColumn],
-  () => {
-    const w = workout.value;
-    if (stage.value !== 'review' || !storage || !historyId.value || !w?.summary.durationDs || !w.summary.distanceM) return;
-    history.value = saveToHistory(storage, { id: historyId.value, workout: w, extraColumn: extraColumn.value });
-  },
-  { deep: true },
-);
+const savedKey = ref<string | null>(null);
+const unsaved = computed(() => Boolean(workout.value && hasUnsavedChanges(workout.value, extraColumn.value, savedKey.value)));
 
 function startEntry() {
   historyId.value = crypto.randomUUID();
@@ -149,20 +139,32 @@ function openEntry(id: string) {
   historyId.value = entry.id;
   workout.value = entry.workout;
   extraColumn.value = entry.extraColumn;
+  savedKey.value = draftKey(entry.workout, entry.extraColumn);
   stage.value = 'review';
 }
 
-function leaveReview() {
+function saveWorkout() {
   const w = workout.value;
-  const unsaved = w && !isExportable(w, 0) && !isBlank(w);
-  if (unsaved && !window.confirm(t('review.discardConfirm'))) return;
+  if (!storage || !historyId.value || !w || !isExportable(w, invalidCells.value)) return;
+  history.value = saveToHistory(storage, { id: historyId.value, workout: w, extraColumn: extraColumn.value });
+  savedKey.value = draftKey(w, extraColumn.value);
+  reviewOrigin.value = 'history';
+}
+
+const saved = computed(() => savedKey.value !== null && !unsaved.value);
+const canSave = computed(() => !saved.value && isExportable(workout.value, invalidCells.value));
+
+function discardWorkout() {
+  const message = savedKey.value === null ? t('review.discardNew') : t('review.discardChanges');
+  if (unsaved.value && !window.confirm(message)) return;
   const origin = reviewOrigin.value;
   reset();
   stage.value = origin;
 }
 
-function deleteEntry(id: string) {
-  if (storage) history.value = removeFromHistory(storage, id);
+function deleteEntry(entry: HistoryEntry) {
+  if (!storage || !window.confirm(t('history.removeConfirm', { date: entryDate(entry) }))) return;
+  history.value = removeFromHistory(storage, entry.id);
 }
 
 function entryDate(entry: HistoryEntry): string {
@@ -194,6 +196,7 @@ function reset() {
   if (photoUrl.value) URL.revokeObjectURL(photoUrl.value);
   photoUrl.value = null;
   historyId.value = null;
+  savedKey.value = null;
   reviewOrigin.value = 'capture';
   workout.value = null;
   extraColumn.value = null;
@@ -319,15 +322,19 @@ async function share() {
   <div v-else class="shell" :class="{ 'shell-tabbed': tabbed }">
     <header class="navbar">
       <div class="navbar-side">
-        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="reviewBackLabel" @click="leaveReview">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="t('review.discard')" @click="discardWorkout">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
         <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('review.back', { screen: t('tabs.scan') })" @click="closeGuide">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
         </button>
       </div>
       <h1 class="navbar-title">{{ navTitle }}</h1>
-      <div class="navbar-side"></div>
+      <div class="navbar-side">
+        <button v-if="stage === 'review' && workout" type="button" class="primary nav-action" :disabled="!canSave" @click="saveWorkout">
+          {{ saved ? t('review.saved') : t('review.save') }}
+        </button>
+      </div>
     </header>
 
     <main class="screen" :class="`screen-${stage}`">
@@ -406,7 +413,7 @@ async function share() {
                 <span class="row-detail">{{ entryDate(entry) }}</span>
               </span>
             </button>
-            <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry.id)">
+            <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry)">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
             </button>
           </div>
@@ -516,8 +523,10 @@ async function share() {
     </nav>
 
     <footer v-if="stage === 'review' && workout" class="toolbar">
-      <p v-if="!canExport" class="toolbar-hint">{{ invalidCells ? t('review.invalidCells') : t('export.invalid') }}</p>
-      <div class="toolbar-actions">
+      <p v-if="!saved" class="toolbar-hint toolbar-hint-only">
+        {{ invalidCells ? t('review.invalidCells') : canSave ? t('export.saveFirst') : t('export.invalid') }}
+      </p>
+      <div v-else class="toolbar-actions">
         <button v-if="canShare" type="button" class="primary" :disabled="!canExport" @click="share">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4M6 12v8h12v-8" /></svg>
           {{ t('export.share') }}

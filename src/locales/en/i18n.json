@@ -73,7 +73,11 @@
     "rawText": "Recognized text",
     "photo": "Photo",
     "back": "Back to {screen}",
-    "discardConfirm": "This workout has no total time and distance yet, so it hasn't been saved. Leave and discard it?"
+    "save": "Save",
+    "saved": "Saved",
+    "discard": "Discard",
+    "discardNew": "Discard this workout? It hasn't been saved to History.",
+    "discardChanges": "Discard your changes to this workout?"
   },
   "columns": {
     "time": "Time",
@@ -92,10 +96,11 @@
   "history": {
     "title": "History",
     "emptyTitle": "No workouts yet",
-    "empty": "A workout is saved here automatically as soon as it has a total time and distance.",
+    "empty": "Scan or enter a workout and tap Save to keep it here.",
     "scanFirst": "Scan a workout",
     "summary": "{distance} m · {time}",
-    "remove": "Delete the workout from {date}"
+    "remove": "Delete the workout from {date}",
+    "removeConfirm": "Delete the workout from {date}? This can't be undone."
   },
   "settings": {
     "title": "Settings",
@@ -116,6 +121,7 @@
   "export": {
     "download": "Download FIT",
     "share": "Share FIT",
-    "invalid": "Fill in the total time and distance before exporting."
+    "invalid": "Fill in the total time and distance to save the workout.",
+    "saveFirst": "Save the workout to share or download the FIT file."
   }
 }
