@@ -26,6 +26,9 @@ local storage, and the app keeps working offline once it has been opened.
   with image thresholding to cope with glare and uneven light on the LCD.
 - Parses the PM4/PM5 table: time, meters, split (/500m or /1000m), stroke rate,
   and heart rate, watts or calories. Rest intervals are detected.
+- Long workouts that do not fit on one screen: when the splits fall short of
+  the total, scroll the monitor down and scan the next rows. Rows shared by
+  both photos are kept once.
 - Editable review table to fix anything the OCR got wrong, add or remove rows,
   set the start time and recalculate the total. Unsaved edits survive a reload.
 - Time in heart rate zones (60/70/80/90% of max) on the result page, using a
@@ -101,7 +104,9 @@ loads OCR files from a CDN.
 a JSON file describing what the screen shows and the workout it should parse
 to. `npm run eval` runs the same preprocessing and OCR as the app on every
 image in Node and prints per-image scores for OCR cells, rows, workout fields
-and lap counts. Results are saved to `eval-results/` (ignored by git).
+and lap counts. Workouts photographed across several scrolled screens are
+described in `testdata/multi/`; their photos are merged in order and scored
+against the whole workout. Results are saved to `eval-results/` (ignored by git).
 
 Useful flags, passed after `--`:
 

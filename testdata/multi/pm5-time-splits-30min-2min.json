@@ -1,0 +1,28 @@
+{
+  "pages": ["pm5-time-splits-30min-2min-part1", "pm5-time-splits-30min-2min-part2"],
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-10-31",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "30:00.0", "meters": 6509, "split": "2:18.2", "rate": 27 },
+    "laps": [
+      { "time": "2:00.0", "meters": 418, "rate": 26 },
+      { "time": "2:00.0", "meters": 446, "rate": 28 },
+      { "time": "2:00.0", "meters": 443, "rate": 28 },
+      { "time": "2:00.0", "meters": 432, "rate": 27 },
+      { "time": "2:00.0", "meters": 423, "rate": 27 },
+      { "time": "2:00.0", "meters": 421, "rate": 28 },
+      { "time": "2:00.0", "meters": 416, "rate": 27 },
+      { "time": "2:00.0", "meters": 430, "rate": 26 },
+      { "time": "2:00.0", "meters": 428, "rate": 27 },
+      { "time": "2:00.0", "meters": 411, "rate": 25 },
+      { "time": "2:00.0", "meters": 415, "rate": 26 },
+      { "time": "2:00.0", "meters": 413, "rate": 26 },
+      { "time": "2:00.0", "meters": 463, "rate": 27 },
+      { "time": "2:00.0", "meters": 456, "rate": 28 },
+      { "time": "2:00.0", "meters": 496, "rate": 33 }
+    ]
+  },
+  "notes": "Two photos overlapping on the 16:00.0 row cover all 15 splits. Time column is cumulative and meter column is per split. The splits sum to 6511 m against 6509 m on the summary, a rounding difference on the monitor."
+}

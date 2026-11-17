@@ -502,6 +502,18 @@ button svg {
   color: var(--on-error-container);
 }
 
+.banner-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.banner-action p {
+  flex: 1 1 16em;
+  margin: 0;
+}
+
 /* ---------- Capture ---------- */
 
 .screen-capture {

@@ -15,6 +15,19 @@ export interface ParsedScan {
   summary: WorkoutRow;
   summaryFromScreen: boolean;
   rows: WorkoutRow[];
+  /** The rows as the screen showed them, before cumulative columns were turned into laps; kept to merge later photos. */
+  screen: ScreenRead;
+}
+
+/** What one photo of the results screen showed, with columns still as printed (possibly cumulative). */
+export interface ScreenRead {
+  date: ScreenDate | null;
+  dragFactor: number | null;
+  splitDistance: 500 | 1000;
+  extraColumn: ExtraColumn | null;
+  titleRestDs: number | null;
+  summary: WorkoutRow | null;
+  rows: WorkoutRow[];
 }
 
 type Token = { text: string; rest: boolean };
@@ -64,18 +77,24 @@ export function parsePm5Text(text: string): ParsedScan | null {
 
   const all = parsed.map((p) => p.row);
   const [first, ...rest] = all as [WorkoutRow, ...WorkoutRow[]];
-  const finish = (screenSummary: WorkoutRow | null, rows: WorkoutRow[]): ParsedScan => {
-    decumulate(rows, 'durationDs', 10);
-    decumulate(rows, 'distanceM', 5);
-    const summary = screenSummary ?? sumRows(rows, splitDistance);
-    if (screenSummary) repairSummaryTime(summary, rows, splitDistance);
-    for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
-    const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
-    return { date, dragFactor, splitDistance, extraColumn, summary, summaryFromScreen: screenSummary !== null, rows: withRest };
-  };
-  if (rest.length === 0) return finish(first, []);
-  if ((headerSeen && (!exceededBy(first, rest) || metersAddUp(first, rest))) || isSummaryOf(first, rest)) return finish(first, rest);
-  return finish(null, all);
+  const read = (summary: WorkoutRow | null, rows: WorkoutRow[]): ParsedScan =>
+    scanFromScreen({ date, dragFactor, splitDistance, extraColumn, titleRestDs, summary, rows });
+  if (rest.length === 0) return read(first, []);
+  if ((headerSeen && (!exceededBy(first, rest) || metersAddUp(first, rest))) || isSummaryOf(first, rest)) return read(first, rest);
+  return read(null, all);
+}
+
+/** Turns what the screen showed into laps: cumulative columns become per-lap values and a missing total is summed. */
+export function scanFromScreen(screen: ScreenRead): ParsedScan {
+  const { date, dragFactor, splitDistance, extraColumn, titleRestDs } = screen;
+  const rows = screen.rows.map((r) => ({ ...r }));
+  decumulate(rows, 'durationDs', 10);
+  decumulate(rows, 'distanceM', 5);
+  const summary = screen.summary ? { ...screen.summary } : sumRows(rows, splitDistance);
+  if (screen.summary) repairSummaryTime(summary, rows, splitDistance);
+  for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
+  const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
+  return { date, dragFactor, splitDistance, extraColumn, summary, summaryFromScreen: screen.summary !== null, rows: withRest, screen };
 }
 
 function repairSummaryTime(summary: WorkoutRow, rows: WorkoutRow[], splitDistance: number): void {

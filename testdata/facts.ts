@@ -32,11 +32,27 @@ export interface Facts {
   notes: string;
 }
 
-export const TESTDATA_DIR = import.meta.dirname;
+/** One workout photographed across several scrolled screens; `pages` name the single-photo fact files in scan order. */
+export interface MultiFacts {
+  pages: string[];
+  workout: Facts['workout'];
+  notes: string;
+}
 
-export function loadFacts(): { name: string; facts: Facts }[] {
-  return readdirSync(TESTDATA_DIR)
+export const TESTDATA_DIR = import.meta.dirname;
+const MULTI_DIR = join(TESTDATA_DIR, 'multi');
+
+function loadJson<T>(dir: string): { name: string; facts: T }[] {
+  return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
     .sort()
-    .map((f) => ({ name: f.replace(/\.json$/, ''), facts: JSON.parse(readFileSync(join(TESTDATA_DIR, f), 'utf8')) as Facts }));
+    .map((f) => ({ name: f.replace(/\.json$/, ''), facts: JSON.parse(readFileSync(join(dir, f), 'utf8')) as T }));
+}
+
+export function loadFacts(): { name: string; facts: Facts }[] {
+  return loadJson<Facts>(TESTDATA_DIR);
+}
+
+export function loadMultiFacts(): { name: string; facts: MultiFacts }[] {
+  return loadJson<MultiFacts>(MULTI_DIR);
 }

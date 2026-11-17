@@ -41,6 +41,9 @@ import {
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createUndoStack } from './core/undo';
+import type { ParsedScan } from './core/pm5Parser';
+import { mergeScans, rowsMissing, withAddedRows } from './core/scanMerge';
+import type { ScanOutcome } from './ocr/firstParsed';
 import { scanFailure } from './ocr/scanFailure';
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
@@ -159,7 +162,10 @@ window.addEventListener('popstate', () => {
 });
 const workout = ref<Workout | null>(null);
 const extraColumn = ref<ExtraColumn | null>(null);
-const photoUrl = ref<string | null>(null);
+const photoUrls = ref<string[]>([]);
+const photoUrl = computed(() => photoUrls.value.at(-1) ?? null);
+const scanSoFar = shallowRef<ParsedScan | null>(null);
+let addingRows = false;
 const rawText = ref('');
 const notice = ref('');
 const computedSummary = ref(false);
@@ -273,7 +279,7 @@ function onKeydown(event: KeyboardEvent) {
   else if (action === 'undo') applyUndo(undoStack.undo());
   else if (action === 'redo') applyUndo(undoStack.redo());
   else if (action === 'save') void saveFromKeyboard();
-  else if (stage.value === 'camera') stage.value = 'capture';
+  else if (stage.value === 'camera') closeCamera();
   else if (stage.value === 'guide') closeGuide();
   else void discardWorkout();
 }
@@ -496,7 +502,7 @@ function applyUndo(snapshot: string | null) {
   syncUndo();
 }
 const largeWindow = useMediaQuery('(min-width: 1200px)');
-const reviewPanel = computed(() => largeWindow.value && Boolean(photoUrl.value || rawText.value));
+const reviewPanel = computed(() => largeWindow.value && Boolean(photoUrls.value.length || rawText.value));
 const wideWindow = useMediaQuery('(min-width: 840px)');
 const layout = computed(() => ({
   wide: wideWindow.value,
@@ -548,8 +554,10 @@ function newWorkout(): Workout {
 }
 
 function reset() {
-  if (photoUrl.value) URL.revokeObjectURL(photoUrl.value);
-  photoUrl.value = null;
+  for (const url of photoUrls.value) URL.revokeObjectURL(url);
+  photoUrls.value = [];
+  scanSoFar.value = null;
+  addingRows = false;
   historyId.value = null;
   savedKey.value = null;
   reviewOrigin.value = 'capture';
@@ -583,34 +591,85 @@ function openCamera() {
   stage.value = 'camera';
 }
 
-function onCameraFailed(message: string) {
-  cameraError.value = message;
-  stage.value = 'capture';
+function closeCamera() {
+  stage.value = addingRows ? 'review' : 'capture';
+  addingRows = false;
 }
 
-async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
-  reset();
-  startEntry();
-  photoUrl.value = URL.createObjectURL(image);
+function onCameraFailed(message: string) {
+  if (addingRows) notice.value = message;
+  else cameraError.value = message;
+  closeCamera();
+}
+
+const moreRows = computed(() => {
+  const scan = scanSoFar.value;
+  const w = workout.value;
+  return scan !== null && w !== null && rowsMissing({ summaryFromScreen: scan.summaryFromScreen, summary: w.summary, rows: w.rows });
+});
+
+function stopAddingRows() {
+  addingRows = false;
+}
+
+function scanMoreRows() {
+  addingRows = true;
+  if (cameraSupported) openCamera();
+  else photoInput.value?.click();
+}
+
+async function readImage(image: Blob, framed: boolean): Promise<ScanOutcome> {
   stage.value = 'scanning';
   progressText.value = t('scan.loading');
   progress.value = null;
+  const { scanImage } = await import('./ocr/scan');
+  return scanImage(
+    image,
+    (status, value) => {
+      const recognizing = status === 'recognizing text';
+      progress.value = recognizing ? value : null;
+      progressText.value = recognizing ? t('scan.recognizing', { percent: Math.round(value * 100) }) : t('scan.loading');
+    },
+    framed,
+  );
+}
+
+async function addRowsFrom(image: Blob, framed: boolean, previous: ParsedScan) {
+  photoUrls.value = [...photoUrls.value, URL.createObjectURL(image)];
+  notice.value = '';
+  try {
+    const outcome = await readImage(image, framed);
+    rawText.value = [rawText.value, outcome.text].filter(Boolean).join('\n\n');
+    if (outcome.scan && workout.value) {
+      const merged = mergeScans(previous, outcome.scan);
+      workout.value = { ...workout.value, ...withAddedRows(workout.value, previous, merged) };
+      extraColumn.value ??= merged.extraColumn;
+      scanSoFar.value = merged;
+    } else {
+      notice.value = t('scan.moreFailed');
+    }
+  } catch (error) {
+    const { key, message } = scanFailure(error, navigator.onLine);
+    notice.value = t(key, { message });
+  }
+  stage.value = 'review';
+}
+
+async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
+  const previous = addingRows ? scanSoFar.value : null;
+  addingRows = false;
+  if (previous && workout.value) return addRowsFrom(image, framed, previous);
+  reset();
+  startEntry();
+  photoUrls.value = [URL.createObjectURL(image)];
 
   try {
-    const { scanImage } = await import('./ocr/scan');
-    const outcome = await scanImage(
-      image,
-      (status, value) => {
-        const recognizing = status === 'recognizing text';
-        progress.value = recognizing ? value : null;
-        progressText.value = recognizing ? t('scan.recognizing', { percent: Math.round(value * 100) }) : t('scan.loading');
-      },
-      framed,
-    );
+    const outcome = await readImage(image, framed);
     rawText.value = outcome.text;
     const start = photoTime;
     if (outcome.scan) {
       const { scan } = outcome;
+      scanSoFar.value = scan;
       const elapsedDs = scan.rows.length > 0 ? scan.rows.reduce((a, r) => a + (r.durationDs ?? 0), 0) : (scan.summary.durationDs ?? 0);
       const startTime = startTimeFor(scan.date, photoTime, elapsedDs);
       workout.value = { ...newWorkout(), startTime, splitDistance: scan.splitDistance, dragFactor: scan.dragFactor, summary: scan.summary, rows: scan.rows };
@@ -748,14 +807,14 @@ async function share() {
 </script>
 
 <template>
-  <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" />
+  <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" @cancel="stopAddingRows" />
   <input ref="imageInput" type="file" accept="image/*" hidden @change="onImage" />
   <MdDialog :pending="dialog.pending.value" @settle="dialog.settle" />
 
   <CameraCapture
     v-if="stage === 'camera'"
     @capture="(image) => scanBlob(image, new Date(), true)"
-    @cancel="stage = 'capture'"
+    @cancel="closeCamera"
     @choose="chooseImage"
     @failed="onCameraFailed"
   />
@@ -1012,6 +1071,13 @@ async function share() {
             <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
             <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
             <p v-if="extraImages" class="banner">{{ t('drop.extra', extraImages) }}</p>
+            <div v-if="moreRows" class="banner banner-action">
+              <p>{{ t('review.moreRows') }}</p>
+              <button type="button" class="tonal" @click="scanMoreRows">
+                <MdIcon name="photo_camera" />
+                {{ t('review.scanMoreRows') }}
+              </button>
+            </div>
 
             <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
 
@@ -1020,13 +1086,13 @@ async function share() {
 
             <HeartRateZones :workout="workout" :max-hr="maxHr" />
 
-            <details v-if="!reviewPanel && (photoUrl || rawText)" class="group disclosure">
+            <details v-if="!reviewPanel && (photoUrls.length || rawText)" class="group disclosure">
               <summary class="group-row tappable">
                 <span class="row-label">{{ t('review.rawText') }}</span>
                 <MdIcon name="keyboard_arrow_down" class="chevron" />
               </summary>
               <div class="disclosure-body">
-                <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
+                <img v-for="url in photoUrls" :key="url" :src="url" :alt="t('review.photo')" class="photo" />
                 <pre>{{ rawText }}</pre>
               </div>
             </details>
@@ -1036,7 +1102,7 @@ async function share() {
             <h2 class="group-header">{{ t('review.rawText') }}</h2>
             <div class="group">
               <div class="disclosure-body">
-                <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
+                <img v-for="url in photoUrls" :key="url" :src="url" :alt="t('review.photo')" class="photo" />
                 <pre>{{ rawText }}</pre>
               </div>
             </div>

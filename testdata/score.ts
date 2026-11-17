@@ -33,16 +33,16 @@ export function scoreOcr(text: string, screenRows: string[][]): OcrScore {
   return { cells, cellsTotal: screenRows.flat().length, rows, rowsTotal: screenRows.length };
 }
 
-export function scoreWorkout(scan: ParsedScan | null, facts: Facts): WorkoutScore {
+export function scoreWorkout(scan: Pick<ParsedScan, 'date' | 'summary' | 'rows'> | null, workout: Facts['workout']): WorkoutScore {
   const checks: boolean[] = [];
-  const { summary, laps } = facts.workout;
+  const { summary, laps } = workout;
   const s = scan?.summary;
   checks.push(s?.durationDs === parseTime(summary.time));
   checks.push(s?.distanceM === summary.meters);
   checks.push(s?.rate === summary.rate);
   if (summary.heartRate !== undefined) checks.push(s?.heartRate === summary.heartRate);
   const d = scan?.date;
-  checks.push(d ? `${d.year}-${String(d.month).padStart(2, '0')}-${String(d.day).padStart(2, '0')}` === facts.workout.date : false);
+  checks.push(d ? `${d.year}-${String(d.month).padStart(2, '0')}-${String(d.day).padStart(2, '0')}` === workout.date : false);
 
   laps.forEach((lap, i) => checks.push(...lapChecks(lap, scan?.rows[i])));
   return {

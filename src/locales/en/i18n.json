@@ -72,6 +72,7 @@
     "loading": "Loading the OCR engine…",
     "recognizing": "Reading the screen… {percent}%",
     "failed": "No results table was found. Try another photo or enter the workout manually.",
+    "moreFailed": "No rows were found in that photo. The splits from the earlier photos are kept; try again.",
     "error": "Scanning failed: {message}",
     "offline": "You're offline and the text reader hasn't been downloaded yet. Connect once and try again, or enter the workout manually."
   },
@@ -80,6 +81,8 @@
     "details": "Workout",
     "splits": "Splits",
     "computedSummary": "The total was not found on the screen, so it was calculated from the rows.",
+    "moreRows": "The splits don't add up to the total yet. Press the down arrow on the monitor to show the next rows, then scan them.",
+    "scanMoreRows": "Scan more rows",
     "name": "Name",
     "notes": "Notes",
     "start": "Start time",

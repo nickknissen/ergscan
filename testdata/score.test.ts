@@ -46,11 +46,11 @@ describe('scoreWorkout', () => {
       summary: row({ durationDs: 2400, distanceM: 1000, rate: 24 }),
       rows: [row({ durationDs: 1200, distanceM: 500, rate: 23 })],
     };
-    expect(scoreWorkout(scan, facts)).toEqual({ fields: 6, fieldsTotal: 10, laps: 1, lapsExpected: 2 });
-    expect(scoreWorkout({ ...scan, date: { year: 2026, month: 1, day: 1 } }, facts).fields).toBe(7);
+    expect(scoreWorkout(scan, facts.workout)).toEqual({ fields: 6, fieldsTotal: 10, laps: 1, lapsExpected: 2 });
+    expect(scoreWorkout({ ...scan, date: { year: 2026, month: 1, day: 1 } }, facts.workout).fields).toBe(7);
   });
 
   it('scores nothing when the scan failed', () => {
-    expect(scoreWorkout(null, facts).fields).toBe(0);
+    expect(scoreWorkout(null, facts.workout).fields).toBe(0);
   });
 });

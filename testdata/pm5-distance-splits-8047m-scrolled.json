@@ -36,5 +36,5 @@
       { "time": "2:12.4", "meters": 500, "rate": 22 }
     ]
   },
-  "notes": "Second page of the workout in pm5-distance-splits-8047m: scrolled down so the splits from 4000 to 7500 m are visible, overlapping that image on the 4000 m row. Meter column is cumulative. The final 547 m split is still off screen. No heart rate shown."
+  "notes": "Second page of the workout in pm5-distance-splits-8047m: scrolled down so the splits from 4000 to 7500 m are visible, overlapping that image on the 4000 m row. Meter column is cumulative. The final 8000 m and 8047 m splits are still off screen. No heart rate shown."
 }
