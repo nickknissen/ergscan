@@ -1,0 +1,34 @@
+{
+  "image": "pm5-distance-splits-5000m-watts.webp",
+  "monitor": "PM5",
+  "capture": "portrait phone photo of the whole PM5 in a gym, sharp grey LCD, blue signage in the background",
+  "screenRect": { "x": 0.122, "y": 0.338, "width": 0.611, "height": 0.334 },
+  "screen": {
+    "title": "5000m",
+    "date": "Oct 17 2026",
+    "header": ["time", "meter", "watt", "s/m", "♡"],
+    "rows": [
+      ["24:01.3", "5000", "117", "23"],
+      ["4:30.6", "1000", "141", "23"],
+      ["5:14.3", "2000", "90", "21"],
+      ["5:08.9", "3000", "95", "22"],
+      ["4:40.6", "4000", "127", "24"],
+      ["4:26.9", "5000", "147", "26"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-10-17",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "24:01.3", "meters": 5000, "split": "2:24.1", "rate": 23 },
+    "laps": [
+      { "time": "4:30.6", "meters": 1000, "rate": 23 },
+      { "time": "5:14.3", "meters": 1000, "rate": 21 },
+      { "time": "5:08.9", "meters": 1000, "rate": 22 },
+      { "time": "4:40.6", "meters": 1000, "rate": 24 },
+      { "time": "4:26.9", "meters": 1000, "rate": 26 }
+    ]
+  },
+  "notes": "Units set to watts, so the pace column shows watt instead of a split; the summary split is derived from time and meters. Splits are 1000m: the meter column is cumulative on screen (1000 to 5000) while laps hold 1000 each, and the lap times add up to 24:01.3. Heart rate column is empty."
+}

@@ -1,0 +1,32 @@
+{
+  "image": "pm5-distance-splits-2000m.webp",
+  "monitor": "PM5",
+  "capture": "close-up phone photo of the LCD, greenish tint, scratches and a bright vertical streak of glare, left half of the title text is faint",
+  "screenRect": { "x": 0.025, "y": 0.077, "width": 0.95, "height": 0.68 },
+  "screen": {
+    "title": "2000m",
+    "date": "Oct 10 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["7:26.9", "2000", "1:51.7", "31"],
+      ["1:50.4", "500", "1:50.4", "30"],
+      ["1:48.8", "1000", "1:48.8", "31"],
+      ["1:53.3", "1500", "1:53.3", "30"],
+      ["1:54.4", "2000", "1:54.4", "33"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-10-10",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "7:26.9", "meters": 2000, "split": "1:51.7", "rate": 31 },
+    "laps": [
+      { "time": "1:50.4", "meters": 500, "rate": 30 },
+      { "time": "1:48.8", "meters": 500, "rate": 31 },
+      { "time": "1:53.3", "meters": 500, "rate": 30 },
+      { "time": "1:54.4", "meters": 500, "rate": 33 }
+    ]
+  },
+  "notes": "Meter column is cumulative. All four 500 m splits are visible and sum to 7:26.9. No heart rate shown. The rate 33 in the last row is faint but legible."
+}

@@ -1,0 +1,34 @@
+{
+  "image": "pm5-distance-splits-6000m-calhr.webp",
+  "monitor": "PM5",
+  "capture": "close-up phone photo, LCD fills most of the frame and is brightly lit, only the Concept2 logo visible above it",
+  "screenRect": { "x": 0.0, "y": 0.233, "width": 0.903, "height": 0.656 },
+  "screen": {
+    "title": "6000m",
+    "date": "Oct 15 2026",
+    "header": ["time", "meter", "Cal/hr", "s/m", "♡"],
+    "rows": [
+      ["32:28.2", "6000", "581", "28"],
+      ["6:35.9", "1200", "568", "28"],
+      ["6:36.5", "2400", "567", "28"],
+      ["6:38.8", "3600", "562", "29"],
+      ["6:31.1", "4800", "578", "29"],
+      ["6:06.0", "6000", "639", "30"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-10-15",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "32:28.2", "meters": 6000, "split": "2:42.4", "rate": 28 },
+    "laps": [
+      { "time": "6:35.9", "meters": 1200, "rate": 28 },
+      { "time": "6:36.5", "meters": 1200, "rate": 28 },
+      { "time": "6:38.8", "meters": 1200, "rate": 29 },
+      { "time": "6:31.1", "meters": 1200, "rate": 29 },
+      { "time": "6:06.0", "meters": 1200, "rate": 30 }
+    ]
+  },
+  "notes": "Units set to Cal/hr, so the pace column shows calories per hour instead of a split; the summary split is derived from time and meters. Splits are every 1200 m and the meter column is cumulative; lap meters are derived (1200 each). Time column is per split. Lap times sum to 32:28.3, 0.1 s off the summary (rounding). No heart rate shown, the heart column is empty. Brand unlabeled, identified as PM5 by the View Detail screen."
+}

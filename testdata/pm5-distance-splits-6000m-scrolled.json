@@ -1,0 +1,40 @@
+{
+  "image": "pm5-distance-splits-6000m-scrolled.webp",
+  "monitor": "PM5",
+  "capture": "close-up phone photo of the whole monitor outdoors in sunlight, bluish LCD, slight shadow on the right",
+  "screenRect": { "x": 0.145, "y": 0.188, "width": 0.658, "height": 0.478 },
+  "screen": {
+    "title": "6000m",
+    "date": "Sep 23 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["28:18.3", "6000", "2:21.5", "31"],
+      ["2:23.9", "2500", "2:23.9", "30"],
+      ["2:24.4", "3000", "2:24.4", "31"],
+      ["2:24.0", "3500", "2:24.0", "32"],
+      ["2:23.4", "4000", "2:23.4", "32"],
+      ["2:21.3", "4500", "2:21.3", "32"],
+      ["2:20.1", "5000", "2:20.1", "34"],
+      ["2:19.3", "5500", "2:19.3", "34"],
+      ["2:06.5", "6000", "2:06.5", "38"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-09-23",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "28:18.3", "meters": 6000, "split": "2:21.5", "rate": 31 },
+    "laps": [
+      { "time": "2:23.9", "meters": 500, "rate": 30 },
+      { "time": "2:24.4", "meters": 500, "rate": 31 },
+      { "time": "2:24.0", "meters": 500, "rate": 32 },
+      { "time": "2:23.4", "meters": 500, "rate": 32 },
+      { "time": "2:21.3", "meters": 500, "rate": 32 },
+      { "time": "2:20.1", "meters": 500, "rate": 34 },
+      { "time": "2:19.3", "meters": 500, "rate": 34 },
+      { "time": "2:06.5", "meters": 500, "rate": 38 }
+    ]
+  },
+  "notes": "Meter column is cumulative. The list is scrolled: the first four splits (500 to 2000 m) are off screen, so only 8 of 12 splits are visible and the laps do not add up to the summary. No heart rate shown. Last split (2:06.5) is the final 500 m."
+}

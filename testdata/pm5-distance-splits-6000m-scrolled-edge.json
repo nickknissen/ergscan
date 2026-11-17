@@ -1,0 +1,40 @@
+{
+  "image": "pm5-distance-splits-6000m-scrolled-edge.webp",
+  "monitor": "PM5",
+  "capture": "close-up phone photo of the whole monitor tilted up, LCD cut off at the left edge, greenish tint with specks",
+  "screenRect": { "x": 0.0, "y": 0.326, "width": 0.79, "height": 0.555 },
+  "screen": {
+    "title": "6000m",
+    "date": "Oct 28 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["27:01.8", "6000", "2:15.1", "29"],
+      ["2:16.4", "2500", "2:16.4", "29"],
+      ["2:16.0", "3000", "2:16.0", "29"],
+      ["2:16.8", "3500", "2:16.8", "29"],
+      ["2:16.0", "4000", "2:16.0", "30"],
+      ["2:15.3", "4500", "2:15.3", "30"],
+      ["2:14.9", "5000", "2:14.9", "30"],
+      ["2:14.0", "5500", "2:14.0", "31"],
+      ["2:02.8", "6000", "2:02.8", "36"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-10-28",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "27:01.8", "meters": 6000, "split": "2:15.1", "rate": 29 },
+    "laps": [
+      { "time": "2:16.4", "meters": 500, "rate": 29 },
+      { "time": "2:16.0", "meters": 500, "rate": 29 },
+      { "time": "2:16.8", "meters": 500, "rate": 29 },
+      { "time": "2:16.0", "meters": 500, "rate": 30 },
+      { "time": "2:15.3", "meters": 500, "rate": 30 },
+      { "time": "2:14.9", "meters": 500, "rate": 30 },
+      { "time": "2:14.0", "meters": 500, "rate": 31 },
+      { "time": "2:02.8", "meters": 500, "rate": 36 }
+    ]
+  },
+  "notes": "Meter column is cumulative. The screen is scrolled to the end: splits for 500 to 2000 m are not visible (8 of 12 shown). No heart rate shown, the heart column is empty. The View Detail header and scroll arrows are also on screen."
+}

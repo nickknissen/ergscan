@@ -1,0 +1,34 @@
+{
+  "image": "pm5-distance-splits-5000m.webp",
+  "monitor": "PM5",
+  "capture": "portrait phone photo of the whole monitor in a gym, LCD fills about half the frame, bluish backlit LCD, slight reflections",
+  "screenRect": { "x": 0.218, "y": 0.38, "width": 0.486, "height": 0.258 },
+  "screen": {
+    "title": "5000m",
+    "date": "Oct 20 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["22:55.4", "5000", "2:17.5", "21"],
+      ["4:38.5", "1000", "2:19.2", "18"],
+      ["4:53.3", "2000", "2:26.6", "18"],
+      ["4:48.5", "3000", "2:24.2", "21"],
+      ["4:31.2", "4000", "2:15.6", "25"],
+      ["4:03.9", "5000", "2:01.9", "27"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-10-20",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "22:55.4", "meters": 5000, "split": "2:17.5", "rate": 21 },
+    "laps": [
+      { "time": "4:38.5", "meters": 1000, "rate": 18 },
+      { "time": "4:53.3", "meters": 1000, "rate": 18 },
+      { "time": "4:48.5", "meters": 1000, "rate": 21 },
+      { "time": "4:31.2", "meters": 1000, "rate": 25 },
+      { "time": "4:03.9", "meters": 1000, "rate": 27 }
+    ]
+  },
+  "notes": "View Detail screen of a 5000m workout with 1000m splits. Meter column is cumulative (1000 to 5000); laps hold 1000m each. Verification codes DFB9-DC47 and 8C89-64D2 are shown top right. No heart rate data (heart icon in header, empty column). Pace column is /500m. The five lap times add up to the summary time 22:55.4."
+}

@@ -1,0 +1,30 @@
+{
+  "image": "pm5-time-splits-13min.jpg",
+  "monitor": "PM5",
+  "capture": "portrait phone photo of the whole monitor from slightly below, bright LCD with vertical glare bands from the lighting",
+  "screenRect": { "x": 0.022, "y": 0.206, "width": 0.87, "height": 0.452 },
+  "screen": {
+    "title": "13:00",
+    "date": "Sep 23 2020",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["13:00.4", "2009", "3:14.2", "19", "144"],
+      ["5:00.0", "743", "3:21.8", "19", "145"],
+      ["10:00.0", "784", "3:11.3", "19", "129"],
+      ["13:00.4", "483", "3:06.7", "19", "160"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2020-09-23",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "13:00.4", "meters": 2009, "split": "3:14.2", "rate": 19, "heartRate": 144 },
+    "laps": [
+      { "time": "5:00.0", "meters": 743, "rate": 19, "heartRate": 145 },
+      { "time": "5:00.0", "meters": 784, "rate": 19, "heartRate": 129 },
+      { "time": "3:00.4", "meters": 483, "rate": 19, "heartRate": 160 }
+    ]
+  },
+  "notes": "Time column is cumulative (5:00.0, 10:00.0, 13:00.4); lap durations are derived. Meter column is per split, not cumulative; the three split meters add up to 2010 against a summary of 2009 (as printed). The 5:00 split interval is inferred from the cumulative times. The date prints as 2020. The PM model badge is cropped out of the photo; View Detail and the Units/Display/Menu buttons indicate a PM5."
+}

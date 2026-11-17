@@ -1,0 +1,37 @@
+{
+  "image": "pm5-variable-intervals-47500m.webp",
+  "monitor": "PM5",
+  "capture": "screenshot of a social media post: small LCD inside a stock monitor image, with unrelated title and stats text above",
+  "screenRect": { "x": 0.275, "y": 0.473, "width": 0.355, "height": 0.342 },
+  "screen": {
+    "title": "v25000m/4:00r...3",
+    "date": "Oct 31, 2026",
+    "totalTime": "3:40:31.5",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["3:28:31.5", "47500", "2:11.7", "22", "120"],
+      ["1:49:47.1", "25,000", "2:11.7", "21", "116"],
+      ["r4:00", "11"],
+      ["1:06:10.6", "15,000", "2:12.3", "22", "117"],
+      ["r4:00", "26"],
+      ["32:33.8", "7,500", "2:10.2", "27", "127"],
+      ["r4:00", "28"]
+    ]
+  },
+  "workout": {
+    "type": "VariableInterval",
+    "date": "2026-10-31",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "3:28:31.5", "meters": 47500, "split": "2:11.7", "rate": 22, "heartRate": 120 },
+    "laps": [
+      { "time": "1:49:47.1", "meters": 25000, "rate": 21, "heartRate": 116 },
+      { "time": "4:00.0", "meters": 11, "rest": true },
+      { "time": "1:06:10.6", "meters": 15000, "rate": 22, "heartRate": 117 },
+      { "time": "4:00.0", "meters": 26, "rest": true },
+      { "time": "32:33.8", "meters": 7500, "rate": 27, "heartRate": 127 },
+      { "time": "4:00.0", "meters": 28, "rest": true }
+    ]
+  },
+  "notes": "Variable intervals (25000m, 15000m, 7500m) with rest rows shown as r-prefixed time and rest meters. Meters use thousands separators on interval rows but not on the summary row. All three intervals and their rests are visible: work 3:28:31.5 + 3 x 4:00 rest = Total Time 3:40:31.5. The title is truncated on the monitor (v25000m/4:00r...3). The post header above the LCD (47,530 m, 2:19 /500m, 3h 40m) is not the monitor screen and includes rest meters and pace, so it differs from the summary row. Same workout family as pm5-variable-intervals-60000m but a different session."
+}
