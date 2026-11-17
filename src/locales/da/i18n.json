@@ -41,7 +41,13 @@
     "hint": "Placér PM-skærmen inden for rammen",
     "capture": "Tag billede",
     "cancel": "Annullér",
-    "failed": "Kameraet kunne ikke startes ({message}). Tag eller vælg et billede i stedet."
+    "failed": "Kameraet kunne ikke startes ({message}). Tag eller vælg et billede i stedet.",
+    "denied": "Adgang til kameraet er blokeret. Tillad det i browserens indstillinger, eller tag eller vælg et billede i stedet.",
+    "missing": "Der blev ikke fundet noget kamera. Vælg et billede i stedet.",
+    "busy": "Kameraet bruges af en anden app. Luk den og prøv igen, eller vælg et billede i stedet.",
+    "starting": "Starter kameraet…",
+    "stalled": "Kameraet svarer ikke. Hvis browseren beder om tilladelse, så tillad det og prøv igen.",
+    "retry": "Prøv igen"
   },
   "scan": {
     "loading": "Indlæser OCR…",

@@ -41,7 +41,13 @@
     "hint": "Fit the PM screen inside the frame",
     "capture": "Capture",
     "cancel": "Cancel",
-    "failed": "The camera could not be started ({message}). Take or choose a photo instead."
+    "failed": "The camera could not be started ({message}). Take or choose a photo instead.",
+    "denied": "Camera access is blocked. Allow it in your browser settings, or take or choose a photo instead.",
+    "missing": "No camera was found. Choose a photo instead.",
+    "busy": "The camera is in use by another app. Close it and try again, or choose a photo instead.",
+    "starting": "Starting camera…",
+    "stalled": "The camera isn't responding. If your browser is asking for permission, allow it, then try again.",
+    "retry": "Try again"
   },
   "scan": {
     "loading": "Loading the OCR engine…",

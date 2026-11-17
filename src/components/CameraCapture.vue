@@ -2,48 +2,85 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { captureRect, guideRectInView, type Size } from '../ocr/guide';
+import { cameraFailure } from './cameraFailure';
 
 const emit = defineEmits<{
   capture: [image: Blob];
   cancel: [];
+  choose: [];
   failed: [message: string];
 }>();
+
+const START_TIMEOUT_MS = 10_000;
 
 const { t } = useI18n();
 
 const container = ref<HTMLDivElement | null>(null);
 const video = ref<HTMLVideoElement | null>(null);
 const view = ref<Size>({ width: 0, height: 0 });
-const ready = ref(false);
+const state = ref<'starting' | 'ready' | 'stalled'>('starting');
+const ready = computed(() => state.value === 'ready');
 let stream: MediaStream | null = null;
 let observer: ResizeObserver | null = null;
+let timeout: ReturnType<typeof setTimeout> | undefined;
+let attempt = 0;
 
 const guideStyle = computed(() => {
   const g = guideRectInView(view.value);
   return { left: `${g.x}px`, top: `${g.y}px`, width: `${g.width}px`, height: `${g.height}px` };
 });
 
-onMounted(async () => {
+function failureMessage(error: unknown): string {
+  const { key, message } = cameraFailure(error);
+  return t(key, { message });
+}
+
+function stop() {
+  clearTimeout(timeout);
+  stream?.getTracks().forEach((track) => track.stop());
+  stream = null;
+}
+
+async function start() {
+  stop();
+  const current = ++attempt;
+  state.value = 'starting';
+  timeout = setTimeout(() => {
+    if (current === attempt && state.value === 'starting') state.value = 'stalled';
+  }, START_TIMEOUT_MS);
+  try {
+    const media = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 2560 }, height: { ideal: 1920 } },
+    });
+    if (current !== attempt) {
+      media.getTracks().forEach((track) => track.stop());
+      return;
+    }
+    stream = media;
+    video.value!.srcObject = stream;
+    await video.value!.play();
+    clearTimeout(timeout);
+    state.value = 'ready';
+  } catch (error) {
+    if (current !== attempt) return;
+    stop();
+    emit('failed', failureMessage(error));
+  }
+}
+
+onMounted(() => {
   observer = new ResizeObserver(([entry]) => {
     if (entry) view.value = { width: entry.contentRect.width, height: entry.contentRect.height };
   });
   if (container.value) observer.observe(container.value);
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 2560 }, height: { ideal: 1920 } },
-    });
-    video.value!.srcObject = stream;
-    await video.value!.play();
-    ready.value = true;
-  } catch (error) {
-    emit('failed', error instanceof Error ? error.message : String(error));
-  }
+  void start();
 });
 
 onBeforeUnmount(() => {
+  attempt++;
   observer?.disconnect();
-  stream?.getTracks().forEach((track) => track.stop());
+  stop();
 });
 
 function capture() {
@@ -67,7 +104,20 @@ function capture() {
         <span class="corner tr"></span>
         <span class="corner bl"></span>
         <span class="corner br"></span>
-        <p class="guide-hint">{{ t('camera.hint') }}</p>
+        <p v-if="ready" class="guide-hint">{{ t('camera.hint') }}</p>
+      </div>
+      <div v-if="!ready" class="camera-status" role="status">
+        <template v-if="state === 'starting'">
+          <span class="spinner" aria-hidden="true"></span>
+          <p>{{ t('camera.starting') }}</p>
+        </template>
+        <template v-else>
+          <p>{{ t('camera.stalled') }}</p>
+          <div class="camera-status-actions">
+            <button type="button" class="primary" @click="start">{{ t('camera.retry') }}</button>
+            <button type="button" class="tonal" @click="emit('choose')">{{ t('capture.chooseImage') }}</button>
+          </div>
+        </template>
       </div>
     </div>
     <div class="camera-actions">

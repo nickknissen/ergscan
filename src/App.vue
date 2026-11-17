@@ -173,7 +173,7 @@ function openCamera() {
 }
 
 function onCameraFailed(message: string) {
-  cameraError.value = t('camera.failed', { message });
+  cameraError.value = message;
   stage.value = 'capture';
 }
 
@@ -261,6 +261,7 @@ async function share() {
     v-if="stage === 'camera'"
     @capture="(image) => scanBlob(image, new Date(), true)"
     @cancel="stage = 'capture'"
+    @choose="chooseImage"
     @failed="onCameraFailed"
   />
 

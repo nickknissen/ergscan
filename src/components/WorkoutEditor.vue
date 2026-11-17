@@ -85,7 +85,7 @@ function recalculate() {
 
     <h2 class="group-header">{{ t('review.splits') }}</h2>
     <div class="group table-wrap">
-      <table>
+      <table :class="{ 'has-extra': extraColumn }">
         <thead>
           <tr>
             <th class="col-time">{{ t('columns.time') }}</th>
@@ -118,7 +118,9 @@ function recalculate() {
               <NumberCell v-model="row[extraColumn]" :label="label(t(`columns.${extraColumn}`), row)" />
             </td>
             <td class="center">
-              <input v-model="row.isRest" type="checkbox" class="check" :aria-label="label(t('columns.rest'), row)" />
+              <label class="check-hit">
+                <input v-model="row.isRest" type="checkbox" class="check" :aria-label="label(t('columns.rest'), row)" />
+              </label>
             </td>
             <td class="center">
               <button type="button" class="icon" :aria-label="t('review.removeRow', { number: index + 1 })" @click="removeRow(index)">
