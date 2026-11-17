@@ -6,6 +6,7 @@ const emit = defineEmits<{ done: [] }>();
 const { t } = useI18n();
 
 const steps = ['setup', 'finish', 'results', 'photo'] as const;
+const monitors = ['pm5', 'pm4'] as const;
 </script>
 
 <template>
@@ -26,7 +27,12 @@ const steps = ['setup', 'finish', 'results', 'photo'] as const;
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
             {{ t('guide.finish.warning') }}
           </p>
-          <p v-if="step === 'results'" class="step-path">{{ t('guide.results.path') }}</p>
+          <template v-if="step === 'results'">
+            <p v-for="monitor in monitors" :key="monitor" class="step-path step-path-labelled">
+              <span class="step-path-monitor">{{ t(`guide.results.paths.${monitor}.monitor`) }}</span>
+              <span>{{ t(`guide.results.paths.${monitor}.path`) }}</span>
+            </p>
+          </template>
           <p v-if="step === 'results'" class="step-note">{{ t('guide.results.note') }}</p>
         </div>
       </li>

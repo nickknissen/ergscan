@@ -28,7 +28,10 @@
     "results": {
       "title": "Open the results",
       "body": "From the main menu, open the workout from memory. Find it with the arrows (check the date and time), then press the magnifying glass button to see the total and every split.",
-      "path": "More Options › Memory › List by Date › 🔍",
+      "paths": {
+        "pm5": { "monitor": "PM5", "path": "Memory › List by Date › 🔍" },
+        "pm4": { "monitor": "PM4", "path": "More Options › Memory › List by Date › 🔍" }
+      },
       "note": "If the monitor goes dark, press a button to wake it. The workout stays in memory."
     },
     "photo": {
