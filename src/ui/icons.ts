@@ -3,7 +3,6 @@ import arrowBack from '@material-symbols/svg-400/rounded/arrow_back.svg?raw';
 import arrowDropDown from '@material-symbols/svg-400/rounded/arrow_drop_down.svg?raw';
 import calculate from '@material-symbols/svg-400/rounded/calculate.svg?raw';
 import check from '@material-symbols/svg-400/rounded/check.svg?raw';
-import close from '@material-symbols/svg-400/rounded/close.svg?raw';
 import contrast from '@material-symbols/svg-400/rounded/contrast.svg?raw';
 import deleteForever from '@material-symbols/svg-400/rounded/delete_forever.svg?raw';
 import deleteIcon from '@material-symbols/svg-400/rounded/delete.svg?raw';
@@ -16,6 +15,7 @@ import historyFill from '@material-symbols/svg-400/rounded/history-fill.svg?raw'
 import history from '@material-symbols/svg-400/rounded/history.svg?raw';
 import keyboardArrowDown from '@material-symbols/svg-400/rounded/keyboard_arrow_down.svg?raw';
 import menuBook from '@material-symbols/svg-400/rounded/menu_book.svg?raw';
+import moreVert from '@material-symbols/svg-400/rounded/more_vert.svg?raw';
 import photoCamera from '@material-symbols/svg-400/rounded/photo_camera.svg?raw';
 import photoLibrary from '@material-symbols/svg-400/rounded/photo_library.svg?raw';
 import rowing from '@material-symbols/svg-400/rounded/rowing.svg?raw';
@@ -35,7 +35,6 @@ export const ICONS = {
   arrow_drop_down: pair(arrowDropDown),
   calculate: pair(calculate),
   check: pair(check),
-  close: pair(close),
   contrast: pair(contrast),
   delete: pair(deleteIcon),
   delete_forever: pair(deleteForever),
@@ -46,6 +45,7 @@ export const ICONS = {
   history: pair(history, historyFill),
   keyboard_arrow_down: pair(keyboardArrowDown),
   menu_book: pair(menuBook),
+  more_vert: pair(moreVert),
   photo_camera: pair(photoCamera),
   photo_library: pair(photoLibrary),
   rowing: pair(rowing),

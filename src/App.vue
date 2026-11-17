@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
 import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
+import MdMenu from './components/MdMenu.vue';
 import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
@@ -258,6 +259,8 @@ watch(stage, (value) => {
 const invalidCells = ref(0);
 const canExport = computed(() => Boolean(fitModule.value) && isExportable(workout.value, invalidCells.value));
 const canShare = computed(() => typeof navigator.canShare === 'function');
+const overflowItems = computed(() => [{ id: 'download', label: t('export.download'), icon: 'download' as const }]);
+const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan')));
 const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
 const cameraError = ref('');
 
@@ -400,8 +403,8 @@ async function share() {
   <div v-else class="shell" :class="{ 'shell-tabbed': tabbed }">
     <header class="navbar" :class="{ 'navbar-scrolled': scrolled }">
       <div class="navbar-side">
-        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="t('review.discard')" @click="discardWorkout">
-          <MdIcon name="close" />
+        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="t('review.back', { screen: originTitle })" @click="discardWorkout">
+          <MdIcon name="arrow_back" />
         </button>
         <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('review.back', { screen: t('tabs.scan') })" @click="closeGuide">
           <MdIcon name="arrow_back" />
@@ -412,6 +415,7 @@ async function share() {
         <button v-if="stage === 'review' && workout" type="button" class="primary nav-action" :disabled="!canSave" @click="saveWorkout">
           {{ saved ? t('review.saved') : t('review.save') }}
         </button>
+        <MdMenu v-if="stage === 'review' && saved && canShare" :label="t('review.more')" :items="overflowItems" @select="download" />
       </div>
     </header>
 
@@ -534,6 +538,8 @@ async function share() {
 
           <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
 
+          <p v-if="!saved && !invalidCells" class="review-hint">{{ canSave ? t('export.saveFirst') : t('export.invalid') }}</p>
+
           <details v-if="photoUrl || rawText" class="group disclosure">
             <summary class="group-row tappable">
               <span class="row-label">{{ t('review.rawText') }}</span>
@@ -548,9 +554,21 @@ async function share() {
       </Transition>
 
       <Transition name="fab">
-        <button v-if="stage === 'capture' && cameraSupported" type="button" class="fab" :class="{ 'fab-collapsed': fabCollapse }" @click="openCamera">
+        <button v-if="stage === 'capture' && cameraSupported" key="camera" type="button" class="fab" :class="{ 'fab-collapsed': fabCollapse }" @click="openCamera">
           <MdIcon name="photo_camera" />
           <span class="fab-label">{{ t('capture.camera') }}</span>
+        </button>
+        <button
+          v-else-if="stage === 'review' && saved"
+          key="export"
+          type="button"
+          class="fab"
+          :class="{ 'fab-collapsed': fabCollapse }"
+          :disabled="!canExport"
+          @click="canShare ? share() : download()"
+        >
+          <MdIcon :name="canShare ? 'share' : 'download'" />
+          <span class="fab-label">{{ canShare ? t('export.share') : t('export.download') }}</span>
         </button>
       </Transition>
     </main>
@@ -575,21 +593,5 @@ async function share() {
         <span>{{ t('settings.title') }}</span>
       </button>
     </nav>
-
-    <footer v-if="stage === 'review' && workout" class="toolbar">
-      <p v-if="!saved" class="toolbar-hint toolbar-hint-only">
-        {{ invalidCells ? t('review.invalidCells') : canSave ? t('export.saveFirst') : t('export.invalid') }}
-      </p>
-      <div v-else class="toolbar-actions">
-        <button v-if="canShare" type="button" class="primary" :disabled="!canExport" @click="share">
-          <MdIcon name="share" />
-          {{ t('export.share') }}
-        </button>
-        <button type="button" :class="canShare ? 'secondary' : 'primary'" :disabled="!canExport" @click="download">
-          <MdIcon name="download" />
-          {{ t('export.download') }}
-        </button>
-      </div>
-    </footer>
   </div>
 </template>

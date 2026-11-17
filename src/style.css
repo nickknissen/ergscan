@@ -324,10 +324,6 @@ button:disabled {
   background-color: color-mix(in srgb, var(--on-surface) 12%, transparent);
 }
 
-.secondary:disabled {
-  border-color: color-mix(in srgb, var(--on-surface) 12%, transparent);
-}
-
 button svg {
   width: 18px;
   height: 18px;
@@ -347,11 +343,6 @@ button svg {
 .tonal {
   background-color: var(--secondary-container);
   color: var(--on-secondary-container);
-}
-
-.secondary {
-  border: 1px solid var(--outline-variant);
-  color: var(--on-surface-variant);
 }
 
 .large {
@@ -525,7 +516,7 @@ button svg {
 .fab {
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
-  bottom: calc(96px + env(safe-area-inset-bottom));
+  bottom: max(16px, env(safe-area-inset-bottom));
   z-index: 11;
   min-height: 56px;
   padding: 0 20px 0 16px;
@@ -542,6 +533,15 @@ button svg {
     padding var(--spring-fast-duration) var(--spring-fast),
     transform var(--spring-fast-duration) var(--spring-fast),
     opacity var(--duration-short) var(--ease-standard);
+}
+
+.shell-tabbed .fab {
+  bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.fab:disabled {
+  background-color: color-mix(in srgb, var(--on-surface) 12%, transparent);
+  box-shadow: none;
 }
 
 .fab-label {
@@ -1354,6 +1354,12 @@ input:focus {
   color: var(--on-secondary-container);
 }
 
+.menu-item .menu-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--on-surface-variant);
+}
+
 .menu-item .menu-check {
   width: 20px;
   height: 20px;
@@ -1687,39 +1693,16 @@ tr.rest .cell {
   font: 400 0.75rem/1rem ui-monospace, monospace;
 }
 
-/* ---------- Bottom toolbar ---------- */
+/* ---------- Review ---------- */
 
-.toolbar {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  padding: 12px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  background: var(--surface-container);
+.screen-review {
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
 }
 
-.toolbar-hint {
-  max-width: 720px;
-  margin: 0 auto 10px;
+.review-hint {
+  margin: -8px 4px 24px;
   color: var(--on-surface-variant);
-  font: var(--body-small);
-  text-align: center;
-}
-
-.toolbar-hint-only {
-  margin-bottom: 0;
-}
-
-.toolbar-actions {
-  display: flex;
-  gap: 8px;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.toolbar-actions button {
-  flex: 1;
-  min-height: 48px;
-  padding: 0 16px;
+  font: var(--body-medium);
 }
 
 /* ---------- Navigation bar ---------- */
@@ -1842,7 +1825,7 @@ tr.rest .cell {
     width: 56px;
   }
 
-  .fab {
+  .shell-tabbed .fab {
     top: calc(env(safe-area-inset-top) + 8px);
     right: auto;
     bottom: auto;
@@ -1852,7 +1835,7 @@ tr.rest .cell {
     box-shadow: none;
   }
 
-  .fab-label {
+  .shell-tabbed .fab-label {
     position: absolute;
     width: 1px;
     height: 1px;
