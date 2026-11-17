@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTem
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
 import HeartRateZones from './components/HeartRateZones.vue';
+import MdContextMenu from './components/MdContextMenu.vue';
 import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import MdMenu from './components/MdMenu.vue';
@@ -36,6 +37,7 @@ import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
+import { contextMenuPoint } from './ui/menu';
 import { appShortcut, isTextField } from './ui/shortcuts';
 import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
@@ -361,6 +363,28 @@ async function deleteEntry(entry: HistoryEntry) {
   history.value = removeFromHistory(storage, entry.id);
 }
 
+const entryMenu = useTemplateRef<InstanceType<typeof MdContextMenu>>('entryMenu');
+const entryMenuItems = computed(() => [
+  { id: 'open', label: t('history.open'), icon: 'edit' as const },
+  { id: 'delete', label: t('history.delete'), icon: 'delete' as const },
+]);
+let menuEntry: HistoryEntry | null = null;
+
+function openEntryMenu(event: MouseEvent, entry: HistoryEntry) {
+  const row = event.currentTarget as HTMLElement;
+  menuEntry = entry;
+  const point = contextMenuPoint({ x: event.clientX, y: event.clientY }, row.getBoundingClientRect());
+  entryMenu.value?.openAt(point, row.querySelector<HTMLElement>('.history-open'));
+}
+
+function onEntryMenu(id: string) {
+  const entry = menuEntry;
+  menuEntry = null;
+  if (!entry) return;
+  if (id === 'open') openEntry(entry.id);
+  else void deleteEntry(entry);
+}
+
 function entryDate(entry: HistoryEntry): string {
   return entry.workout.startTime.toLocaleString(locale.value, { dateStyle: 'medium', timeStyle: 'short' });
 }
@@ -624,7 +648,7 @@ async function share() {
             <button type="button" class="primary" @click="stage = 'capture'">{{ t('history.scanFirst') }}</button>
           </div>
           <div v-else class="group">
-            <div v-for="entry in history" :key="entry.id" class="group-row">
+            <div v-for="entry in history" :key="entry.id" class="group-row" @contextmenu.prevent="openEntryMenu($event, entry)">
               <button type="button" class="history-open" @click="openEntry(entry.id)">
                 <MdIcon name="rowing" class="row-icon" />
                 <span class="row-label">
@@ -637,6 +661,7 @@ async function share() {
               </button>
             </div>
           </div>
+          <MdContextMenu ref="entryMenu" :label="t('history.actions')" :items="entryMenuItems" @select="onEntryMenu" />
         </section>
 
         <section v-else-if="stage === 'settings'" class="settings">

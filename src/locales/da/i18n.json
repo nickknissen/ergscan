@@ -129,7 +129,10 @@
     "empty": "Scan eller indtast en træning, og tryk på Gem for at beholde den her.",
     "scanFirst": "Scan en træning",
     "summary": "{distance} m · {time}",
-    "remove": "Slet træningen fra {date}"
+    "remove": "Slet træningen fra {date}",
+    "actions": "Handlinger for træning",
+    "open": "Rediger",
+    "delete": "Slet"
   },
   "settings": {
     "title": "Indstillinger",

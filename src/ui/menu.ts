@@ -20,6 +20,24 @@ export interface MenuPlacement {
   above: boolean;
 }
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export function contextMenuPoint(pointer: Point, target: { left: number; right: number; top: number; bottom: number }): Point {
+  const inside = pointer.x >= target.left && pointer.x <= target.right && pointer.y >= target.top && pointer.y <= target.bottom;
+  return inside ? pointer : { x: target.left + 16, y: target.bottom };
+}
+
+export function placeMenuAt(point: Point, menu: { width: number; height: number }, viewport: { width: number; height: number }, margin = 8): MenuPlacement {
+  const fitsRight = point.x + menu.width <= viewport.width - margin;
+  const left = Math.max(margin, Math.min(fitsRight ? point.x : point.x - menu.width, viewport.width - menu.width - margin));
+  const above = point.y + menu.height > viewport.height - margin && point.y - menu.height >= margin;
+  const top = above ? point.y - menu.height : Math.max(margin, Math.min(point.y, viewport.height - menu.height - margin));
+  return { left, top, above };
+}
+
 export function placeMenu(
   anchor: { left: number; right: number; top: number; bottom: number },
   menu: { width: number; height: number },

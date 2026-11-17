@@ -129,7 +129,10 @@
     "empty": "Scan or enter a workout and tap Save to keep it here.",
     "scanFirst": "Scan a workout",
     "summary": "{distance} m · {time}",
-    "remove": "Delete the workout from {date}"
+    "remove": "Delete the workout from {date}",
+    "actions": "Workout actions",
+    "open": "Edit",
+    "delete": "Delete"
   },
   "settings": {
     "title": "Settings",

@@ -1,9 +1,9 @@
 import { onBeforeUnmount, ref, type ShallowRef } from 'vue';
-import { nextOptionIndex, placeMenu } from './menu';
+import { nextOptionIndex, placeMenu, placeMenuAt, type Point } from './menu';
 
 type ElementRef = Readonly<ShallowRef<HTMLElement | null>>;
 
-export function usePopoverMenu(trigger: ElementRef, menu: ElementRef, itemSelector: string, initialIndex: () => number) {
+export function usePopoverMenu(trigger: ElementRef, menu: ElementRef, itemSelector: string, initialIndex: () => number, anchorPoint?: () => Point | null) {
   const open = ref(false);
 
   function items(): HTMLElement[] {
@@ -17,10 +17,18 @@ export function usePopoverMenu(trigger: ElementRef, menu: ElementRef, itemSelect
   function place() {
     const m = menu.value;
     const t = trigger.value;
-    if (!m || !t) return;
-    const anchor = t.getBoundingClientRect();
-    m.style.minWidth = `${anchor.width}px`;
-    const { left, top, above } = placeMenu(anchor, { width: m.offsetWidth, height: m.offsetHeight }, { width: innerWidth, height: innerHeight });
+    const point = anchorPoint?.();
+    if (!m || (!t && !point)) return;
+    const viewport = { width: innerWidth, height: innerHeight };
+    let placement;
+    if (point) {
+      placement = placeMenuAt(point, { width: m.offsetWidth, height: m.offsetHeight }, viewport);
+    } else {
+      const anchor = t!.getBoundingClientRect();
+      m.style.minWidth = `${anchor.width}px`;
+      placement = placeMenu(anchor, { width: m.offsetWidth, height: m.offsetHeight }, viewport);
+    }
+    const { left, top, above } = placement;
     m.style.left = `${left}px`;
     m.style.top = `${top}px`;
     m.style.transformOrigin = above ? 'bottom' : 'top';

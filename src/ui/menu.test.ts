@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextOptionIndex, placeMenu } from './menu';
+import { contextMenuPoint, nextOptionIndex, placeMenu, placeMenuAt } from './menu';
 
 describe('nextOptionIndex', () => {
   it('moves and wraps with the arrow keys', () => {
@@ -38,5 +38,35 @@ describe('placeMenu', () => {
     expect(placeMenu(anchor, menu, viewport).left).toBe(8);
     const wide = { left: 300, right: 420, top: 100, bottom: 140 };
     expect(placeMenu(wide, menu, viewport).left).toBe(232);
+  });
+});
+
+describe('placeMenuAt', () => {
+  const viewport = { width: 400, height: 800 };
+  const menu = { width: 160, height: 200 };
+
+  it('opens down and to the right of the pointer', () => {
+    expect(placeMenuAt({ x: 100, y: 300 }, menu, viewport)).toEqual({ left: 100, top: 300, above: false });
+  });
+
+  it('flips left and up when the pointer is near the far edges', () => {
+    expect(placeMenuAt({ x: 350, y: 700 }, menu, viewport)).toEqual({ left: 190, top: 500, above: true });
+  });
+
+  it('stays inside the viewport when neither side fits', () => {
+    const tiny = { width: 400, height: 300 };
+    expect(placeMenuAt({ x: 20, y: 200 }, menu, tiny)).toEqual({ left: 20, top: 92, above: false });
+  });
+});
+
+describe('contextMenuPoint', () => {
+  const row = { left: 50, right: 350, top: 100, bottom: 172 };
+
+  it('uses the pointer when it is on the target', () => {
+    expect(contextMenuPoint({ x: 120, y: 130 }, row)).toEqual({ x: 120, y: 130 });
+  });
+
+  it('anchors below the target for keyboard-opened menus', () => {
+    expect(contextMenuPoint({ x: 0, y: 0 }, row)).toEqual({ x: 66, y: 172 });
   });
 });
