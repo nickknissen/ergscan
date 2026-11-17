@@ -52,6 +52,9 @@
   #screen { position: relative; width: 248px; height: 537px; border-radius: 31px; overflow: hidden; background: var(--surface); }
   #screen > * { position: absolute; left: 0; top: 0; }
   .shot { width: 248px; height: 537px; }
+  #review { overflow: hidden; background: var(--surface); }
+  #reviewPage, #reviewPage img { position: absolute; left: 0; top: 0; width: 248px; }
+  #reviewBar { position: absolute; left: 0; top: 0; width: 248px; background: url('review.png') 0 0 / 248px auto no-repeat; }
 
   #camera { width: 248px; height: 537px; background: #000; }
   #camTitle { left: 16px; top: 22px; font-size: 13px; color: #fff; opacity: .85; }
@@ -107,7 +110,7 @@
   <div class="caption abs" id="cap2">
     <div class="kicker">2 &middot; Review</div>
     <div class="headline">Check every split</div>
-    <div class="sub">Fix anything the OCR got wrong. Rest intervals are detected for you.</div>
+    <div class="sub">Fix anything the OCR got wrong, name the workout and rate how it felt.</div>
   </div>
   <div class="caption abs" id="cap3">
     <div class="kicker">3 &middot; Export</div>
@@ -126,7 +129,7 @@
 
   <div id="fit" class="abs">
     <svg width="34" height="40" viewBox="0 0 34 40"><path d="M3 3h19l9 9v25H3z" fill="#d8e2ff"/><path d="M22 3v9h9" fill="#aec6ff"/><text x="17" y="31" text-anchor="middle" font-family="Roboto Flex, sans-serif" font-size="10" font-weight="800" fill="#00439a">FIT</text></svg>
-    <div>ergscan-20261110-1200.fit<small>Indoor rowing &middot; 8 laps &middot; 4000 m</small></div>
+    <div>ergscan-20261110-1200.fit<small>Indoor rowing &middot; 8 &times; 500 m &middot; 4000 m</small></div>
   </div>
   <div class="chip abs" id="chip0"><b>&#10003;</b>Strava</div>
   <div class="chip abs" id="chip1"><b>&#10003;</b>Garmin Connect</div>
@@ -147,7 +150,13 @@
         <div id="progress"><span id="spinner"></span><span id="progressText">Reading the screen&hellip; 0%</span></div>
         <div id="shutter"><i></i></div>
       </div>
-      <img id="review" class="shot" src="review.png" alt="">
+      <div id="review" class="shot">
+        <div id="reviewPage">
+          <img src="review.png" alt="">
+          <img id="feeling" src="feeling.png" alt="">
+        </div>
+        <div id="reviewBar"></div>
+      </div>
       <img id="saved" class="shot" src="saved.png" alt="">
       <div id="rowHL"></div>
       <div id="ripple"></div>
@@ -156,9 +165,13 @@
   </div>
 </div>
 
+<script src="shots.js"></script>
 <script>
-  const DURATION = 15.6;
-  const S = 248 / 780;
+  const DURATION = 17.4;
+  const SH = window.SHOTS;
+  const K = 248 / SH.viewport.width;
+  const SCREEN = { x: 631, y: 31 };
+  const centreOf = (r) => ({ x: (r.x + r.w / 2) * K, y: (r.y + r.h / 2) * K });
   const $ = (id) => document.getElementById(id);
   const clamp = (x) => Math.min(1, Math.max(0, x));
   const seg = (t, a, b) => clamp((t - a) / (b - a));
@@ -167,7 +180,8 @@
   const lerp = (a, b, p) => a + (b - a) * p;
   const set = (el, styles) => Object.assign(($(el) || el).style, styles);
 
-  const CAPTIONS = [[0.15, 2.4], [2.4, 6.6], [6.6, 9.9], [9.9, 13.2], [13.2, 15.45]];
+  const CAPTIONS = [[0.15, 2.4], [2.4, 6.6], [6.6, 11.7], [11.7, 15.0], [15.0, 17.25]];
+  const STEPS = [[2.4, 6.6], [6.6, 11.7], [11.7, 15.0]];
   const PHOTO_RECT = { x: 0, y: 70, w: 248, h: 331 };
   const LCD_RECT = { x: 3, y: 70 + 68, w: 223, h: 217 };
 
@@ -198,16 +212,20 @@
     t = ((t % DURATION) + DURATION) % DURATION;
     CAPTIONS.forEach((_, i) => caption(i, t));
 
-    const barsIn = easeOut(seg(t, 2.4, 2.9)) * (1 - seg(t, 13.0, 13.4));
+    const barsIn = easeOut(seg(t, 2.4, 2.9)) * (1 - seg(t, 14.8, 15.2));
     set('bars', { opacity: barsIn });
-    [[2.4, 6.6], [6.6, 9.9], [9.9, 13.2]].forEach(([a, b], i) => {
+    STEPS.forEach(([a, b], i) => {
       document.querySelectorAll('.bar i')[i].style.transform = `scaleX(${seg(t, a, b)})`;
     });
 
     const camIn = easeOut(seg(t, 2.25, 2.6));
     const reviewIn = easeInOut(seg(t, 6.35, 6.85));
-    const savedIn = seg(t, 9.45, 9.7);
-    const homeBack = seg(t, 15.1, 15.6);
+    const savedIn = seg(t, 11.25, 11.5);
+    const homeBack = seg(t, 16.9, 17.4);
+    const scrolled = SH.scroll * easeInOut(seg(t, 7.75, 8.55));
+    set('reviewPage', { transform: `translateY(${-scrolled * K}px)` });
+    set('reviewBar', { height: `${SH.bar * K}px` });
+    set('feeling', { left: `${SH.faces.x * K}px`, top: `${SH.faces.y * K}px`, width: `${SH.faces.w * K}px`, opacity: seg(t, 7.3, 7.45) });
     set('camera', { opacity: camIn * (1 - homeBack), transform: `scale(${lerp(1.06, 1, camIn)})` });
     set('review', { transform: `translateY(${(1 - reviewIn) * 100}%)`, opacity: t < 6.3 ? 0 : 1 - homeBack });
     set('saved', { opacity: savedIn * (1 - homeBack) });
@@ -249,35 +267,42 @@
     $('progressText').textContent = `Reading the screen… ${Math.round(100 * easeInOut(prog))}%`;
     set('spinner', { transform: `rotate(${t * 540}deg)` });
 
-    const rows = [795, 957, 1057, 1157, 1257, 1357, 1457];
-    const hl = seg(t, 7.0, 8.7);
+    const rows = SH.rows.slice(0, 7);
+    const hl = seg(t, 8.8, 10.5);
     const idx = Math.min(rows.length - 1, Math.floor(hl * rows.length));
     const frac = hl * rows.length - idx;
-    const hlVisible = t > 7.0 && t < 8.9;
-    const y0 = rows[idx];
-    const y1 = rows[Math.min(rows.length - 1, idx + 1)];
+    const hlVisible = t > 8.8 && t < 10.7;
+    const r0 = rows[idx];
+    const r1 = rows[Math.min(rows.length - 1, idx + 1)];
+    const ease = easeInOut(clamp(frac * 1.6 - 0.6));
     set('rowHL', {
-      left: `${44 * S}px`, width: `${(676 - 44) * S}px`, height: `${95 * S}px`,
-      top: `${lerp(y0, y1, easeInOut(clamp(frac * 1.6 - 0.6))) * S - 1}px`,
-      opacity: hlVisible ? Math.min(seg(t, 7.0, 7.2), 1 - seg(t, 8.7, 8.9)) : 0,
+      left: `${r0.x * K - 1}px`, width: `${r0.w * K + 2}px`, height: `${lerp(r0.h, r1.h, ease) * K + 2}px`,
+      top: `${(lerp(r0.y, r1.y, ease) - SH.scroll) * K - 1}px`,
+      opacity: hlVisible ? Math.min(seg(t, 8.8, 9.0), 1 - seg(t, 10.5, 10.7)) : 0,
     });
 
-    if (!ripple(t, 1.75, 546 * S, 1440 * S) && !ripple(t, 9.15, 693 * S, 64 * S)) ripple(t, 10.45, 607 * S, 1600 * S);
+    const tapCamera = { x: SH.cameraFab.x * K, y: SH.cameraFab.y * K };
+    const tapFace = centreOf(SH.face);
+    const tapSave = centreOf(SH.save);
+    const tapShare = { x: SH.shareFab.x * K, y: SH.shareFab.y * K };
+    if (!ripple(t, 1.75, tapCamera.x, tapCamera.y) && !ripple(t, 7.15, tapFace.x, tapFace.y) && !ripple(t, 10.95, tapSave.x, tapSave.y)) {
+      ripple(t, 12.25, tapShare.x, tapShare.y);
+    }
 
-    const fly = easeInOut(seg(t, 10.6, 11.35));
-    const fitVisible = t > 10.55 && t < 13.2;
-    const fromX = 631 + 607 * S - 40, fromY = 31 + 1600 * S - 20;
+    const fly = easeInOut(seg(t, 12.4, 13.15));
+    const fitVisible = t > 12.35 && t < 15.0;
+    const fromX = SCREEN.x + tapShare.x - 40, fromY = SCREEN.y + tapShare.y - 20;
     const toX = 56, toY = 356;
     const arc = Math.sin(fly * Math.PI) * -60;
     set('fit', {
       left: `${lerp(fromX, toX, fly)}px`, top: `${lerp(fromY, toY, fly) + arc}px`,
-      transform: `scale(${lerp(0.3, 1, easeOut(seg(t, 10.6, 11.2)))})`,
-      opacity: fitVisible ? seg(t, 10.55, 10.75) * (1 - seg(t, 12.85, 13.2)) : 0,
+      transform: `scale(${lerp(0.3, 1, easeOut(seg(t, 12.4, 13.0)))})`,
+      opacity: fitVisible ? seg(t, 12.35, 12.55) * (1 - seg(t, 14.65, 15.0)) : 0,
     });
     const chipX = [56, 56 + 112, 56 + 112 + 178];
     chipX.forEach((x, i) => {
-      const p = easeOut(seg(t, 11.45 + i * 0.22, 11.85 + i * 0.22));
-      const out = seg(t, 12.85, 13.2);
+      const p = easeOut(seg(t, 13.25 + i * 0.22, 13.65 + i * 0.22));
+      const out = seg(t, 14.65, 15.0);
       set('chip' + i, { left: `${x}px`, opacity: p * (1 - out), transform: `translateY(${(1 - p) * 14}px) scale(${lerp(0.9, 1, p)})` });
     });
   }
