@@ -1,0 +1,28 @@
+{
+  "image": "pm5-just-row-7min-watts.webp",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole PM5 in a garage, bright pale blue LCD, sharp",
+  "screenRect": { "x": 0.157, "y": 0.295, "width": 0.588, "height": 0.438 },
+  "screen": {
+    "title": "7:03",
+    "date": "Oct 14 2026",
+    "header": ["time", "meter", "watt", "s/m", "♡"],
+    "rows": [
+      ["7:03.7", "2017", "302", "30"],
+      ["5:00.0", "1441", "310", "30"],
+      ["7:03.7", "576", "283", "30"]
+    ]
+  },
+  "workout": {
+    "type": "JustRow",
+    "date": "2026-10-14",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "7:03.7", "meters": 2017, "split": "1:45.0", "rate": 30 },
+    "laps": [
+      { "time": "5:00.0", "meters": 1441, "rate": 30 },
+      { "time": "2:03.7", "meters": 576, "rate": 30 }
+    ]
+  },
+  "notes": "Just Row of 7:03.7 with the default 5 minute splits. Units set to watts, so the pace column shows watt instead of a split; the summary split is derived from time and meters (and matches 302 W). Time column is cumulative and meter column is per split; the last split is a 2:03.7 remainder. No heart rate shown."
+}

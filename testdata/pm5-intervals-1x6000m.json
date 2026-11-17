@@ -1,0 +1,29 @@
+{
+  "image": "pm5-intervals-1x6000m.webp",
+  "monitor": "PM5",
+  "capture": "close-up phone photo, LCD fills most of the frame, bright white backlight, bottom buttons cut off",
+  "screenRect": { "x": 0.06, "y": 0.219, "width": 0.889, "height": 0.667 },
+  "screen": {
+    "title": "1x6000m/7:00r",
+    "date": "Sep 01 2026",
+    "totalTime": "30:35.3",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["23:35.3", "6000", "1:57.9", "24"],
+      ["23:35.3", "6000", "1:57.9", "24"],
+      ["r21"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceInterval",
+    "date": "2026-09-01",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "23:35.3", "meters": 6000, "split": "1:57.9", "rate": 24 },
+    "laps": [
+      { "time": "23:35.3", "meters": 6000, "rate": 24 },
+      { "time": "7:00.0", "meters": 21, "rest": true }
+    ]
+  },
+  "notes": "A single 6000 m interval with 7:00 rest, so the summary and the only interval row are identical. The rest row shows just 'r21' (21 rest meters) in the meter column with no rest time; the 7:00 comes from the title and Total Time (23:35.3 + 7:00 = 30:35.3). No heart rate shown."
+}

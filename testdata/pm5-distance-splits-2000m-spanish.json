@@ -1,0 +1,32 @@
+{
+  "image": "pm5-distance-splits-2000m-spanish.webp",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole PM5 from a distance in a tent gym, small greenish LCD with low contrast",
+  "screenRect": { "x": 0.231, "y": 0.271, "width": 0.472, "height": 0.351 },
+  "screen": {
+    "title": "2000m",
+    "date": "Ago 12 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["7:18.6", "2000", "1:49.6", "29"],
+      ["1:39.7", "500", "1:39.7", "34"],
+      ["1:48.9", "1000", "1:48.9", "29"],
+      ["1:54.9", "1500", "1:54.9", "29"],
+      ["1:55.2", "2000", "1:55.2", "28"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-08-12",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "7:18.6", "meters": 2000, "split": "1:49.6", "rate": 29 },
+    "laps": [
+      { "time": "1:39.7", "meters": 500, "rate": 34 },
+      { "time": "1:48.9", "meters": 500, "rate": 29 },
+      { "time": "1:54.9", "meters": 500, "rate": 29 },
+      { "time": "1:55.2", "meters": 500, "rate": 28 }
+    ]
+  },
+  "notes": "Monitor language is Spanish: the date reads 'Ago' (agosto) for August. Meter column is cumulative. Lap times sum to 7:18.7, 0.1 s over the summary because of rounding. No heart rate shown. The LCD is small in the frame."
+}

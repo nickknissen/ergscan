@@ -1,0 +1,36 @@
+{
+  "image": "pm5-distance-splits-6000m-1k.webp",
+  "monitor": "PM5",
+  "capture": "hand-held phone photo of the whole PM5 in a gym with flags behind, blue LCD, slight angle and soft focus, a finger at the right edge",
+  "screenRect": { "x": 0.13, "y": 0.209, "width": 0.694, "height": 0.525 },
+  "screen": {
+    "title": "6000m",
+    "date": "Oct 15 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["29:00.9", "6000", "2:25.0", "25"],
+      ["4:39.7", "1000", "2:19.8", "25"],
+      ["4:50.1", "2000", "2:25.0", "25"],
+      ["4:54.9", "3000", "2:27.4", "25"],
+      ["4:52.8", "4000", "2:26.4", "26"],
+      ["4:58.1", "5000", "2:29.0", "26"],
+      ["4:45.3", "6000", "2:22.6", "28"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-10-15",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "29:00.9", "meters": 6000, "split": "2:25.0", "rate": 25 },
+    "laps": [
+      { "time": "4:39.7", "meters": 1000, "rate": 25 },
+      { "time": "4:50.1", "meters": 1000, "rate": 25 },
+      { "time": "4:54.9", "meters": 1000, "rate": 25 },
+      { "time": "4:52.8", "meters": 1000, "rate": 26 },
+      { "time": "4:58.1", "meters": 1000, "rate": 26 },
+      { "time": "4:45.3", "meters": 1000, "rate": 28 }
+    ]
+  },
+  "notes": "Splits are 1000 m: the meter column is cumulative on screen while laps hold 1000 each, and the lap times add up to 29:00.9. No heart rate shown."
+}

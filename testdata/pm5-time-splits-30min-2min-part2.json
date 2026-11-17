@@ -1,0 +1,40 @@
+{
+  "image": "pm5-time-splits-30min-2min-part2.webp",
+  "monitor": "PM5",
+  "capture": "close-up phone photo, LCD fills the frame, slight soft focus, reddish and bluish fringing on the digits",
+  "screenRect": { "x": 0.023, "y": 0.037, "width": 0.954, "height": 0.904 },
+  "screen": {
+    "title": "30:00",
+    "date": "Oct 31 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["30:00.0", "6509", "2:18.2", "27"],
+      ["16:00.0", "430", "2:19.5", "26"],
+      ["18:00.0", "428", "2:20.1", "27"],
+      ["20:00.0", "411", "2:25.9", "25"],
+      ["22:00.0", "415", "2:24.5", "26"],
+      ["24:00.0", "413", "2:25.2", "26"],
+      ["26:00.0", "463", "2:09.5", "27"],
+      ["28:00.0", "456", "2:11.5", "28"],
+      ["30:00.0", "496", "2:00.9", "33"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-10-31",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "30:00.0", "meters": 6509, "split": "2:18.2", "rate": 27 },
+    "laps": [
+      { "time": "2:00.0", "meters": 430, "rate": 26 },
+      { "time": "2:00.0", "meters": 428, "rate": 27 },
+      { "time": "2:00.0", "meters": 411, "rate": 25 },
+      { "time": "2:00.0", "meters": 415, "rate": 26 },
+      { "time": "2:00.0", "meters": 413, "rate": 26 },
+      { "time": "2:00.0", "meters": 463, "rate": 27 },
+      { "time": "2:00.0", "meters": 456, "rate": 28 },
+      { "time": "2:00.0", "meters": 496, "rate": 33 }
+    ]
+  },
+  "notes": "Second page of the workout in pm5-time-splits-30min-2min-part1, scrolled to the end and overlapping it on the 16:00.0 row. Time column is cumulative and meter column is per split. The first visible row is split 8 of 15, so lap times are 2:00 each. Across both pages the splits sum to 6511 m against 6509 m on the summary, a rounding difference on the monitor."
+}

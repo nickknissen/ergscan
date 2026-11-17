@@ -1,0 +1,38 @@
+{
+  "image": "pm5-time-splits-30min-overrun.webp",
+  "monitor": "PM5",
+  "capture": "close-up phone photo, LCD fills most of the frame and is cut off at the left edge, bluish tint",
+  "screenRect": { "x": 0.0, "y": 0.226, "width": 0.958, "height": 0.747 },
+  "screen": {
+    "title": "30:05",
+    "date": "Sep 06 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["30:05.2", "7159", "2:06.0", "25"],
+      ["5:00.0", "1183", "2:06.7", "30"],
+      ["10:00.0", "1186", "2:06.4", "28"],
+      ["15:00.0", "1193", "2:05.7", "29"],
+      ["20:00.0", "1196", "2:05.4", "30"],
+      ["25:00.0", "1195", "2:05.5", "29"],
+      ["30:00.0", "1199", "2:05.1", "29"],
+      ["30:05.2", "8", "5:25.0"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-09-06",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "30:05.2", "meters": 7159, "split": "2:06.0", "rate": 25 },
+    "laps": [
+      { "time": "5:00.0", "meters": 1183, "rate": 30 },
+      { "time": "5:00.0", "meters": 1186, "rate": 28 },
+      { "time": "5:00.0", "meters": 1193, "rate": 29 },
+      { "time": "5:00.0", "meters": 1196, "rate": 30 },
+      { "time": "5:00.0", "meters": 1195, "rate": 29 },
+      { "time": "5:00.0", "meters": 1199, "rate": 29 },
+      { "time": "0:05.2", "meters": 8 }
+    ]
+  },
+  "notes": "Time column is cumulative. The last split is a 5.2 s, 8 m remainder with a 5:25.0 pace and no stroke rate cell, so its row has only three values. No heart rate shown."
+}

@@ -1,0 +1,40 @@
+{
+  "image": "pm5-time-splits-55min-hr-scrolled.webp",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole PM5 at home, warm light with a reddish glare spot on the first split row",
+  "screenRect": { "x": 0.042, "y": 0.288, "width": 0.759, "height": 0.556 },
+  "screen": {
+    "title": "55:11",
+    "date": "Aug 30 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["55:11.1", "11267", "2:26.9", "26", "131"],
+      ["5:00.0", "998", "2:30.3", "27", "117"],
+      ["10:00.0", "1061", "2:21.3", "28", "124"],
+      ["15:00.0", "1101", "2:16.2", "29", "135"],
+      ["20:00.0", "1089", "2:17.7", "28", "139"],
+      ["25:00.0", "1061", "2:21.3", "28", "137"],
+      ["30:00.0", "1066", "2:20.7", "27", "139"],
+      ["35:00.0", "1076", "2:19.4", "27", "141"],
+      ["40:00.0", "1062", "2:21.2", "27", "139"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-08-30",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "55:11.1", "meters": 11267, "split": "2:26.9", "rate": 26, "heartRate": 131 },
+    "laps": [
+      { "time": "5:00.0", "meters": 998, "rate": 27, "heartRate": 117 },
+      { "time": "5:00.0", "meters": 1061, "rate": 28, "heartRate": 124 },
+      { "time": "5:00.0", "meters": 1101, "rate": 29, "heartRate": 135 },
+      { "time": "5:00.0", "meters": 1089, "rate": 28, "heartRate": 139 },
+      { "time": "5:00.0", "meters": 1061, "rate": 28, "heartRate": 137 },
+      { "time": "5:00.0", "meters": 1066, "rate": 27, "heartRate": 139 },
+      { "time": "5:00.0", "meters": 1076, "rate": 27, "heartRate": 141 },
+      { "time": "5:00.0", "meters": 1062, "rate": 27, "heartRate": 139 }
+    ]
+  },
+  "notes": "Probably a Just Row of 55:11 split every 5 minutes. Time column is cumulative and meter column is per split. Heart rate is shown on every row. Only 8 of 12 splits are visible (11 full 5 minute splits plus an 11.1 s remainder); the screen scrolls. The glare tints the 5:00.0 row red."
+}
