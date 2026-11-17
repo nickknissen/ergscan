@@ -139,7 +139,13 @@ function recalculate() {
               </label>
             </td>
             <td class="center">
-              <button type="button" class="icon" :aria-label="t('review.removeRow', { number: index + 1 })" @click="removeRow(index)">
+              <button
+                type="button"
+                class="icon"
+                :aria-label="t('review.removeRow', { number: index + 1 })"
+                :title="t('review.removeRow', { number: index + 1 })"
+                @click="removeRow(index)"
+              >
                 <MdIcon name="do_not_disturb_on" />
               </button>
             </td>

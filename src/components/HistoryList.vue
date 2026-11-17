@@ -61,7 +61,13 @@ function entrySummary(entry: HistoryEntry): string {
             <span class="row-detail">{{ entryDate(entry) }}</span>
           </span>
         </button>
-        <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="emit('remove', entry)">
+        <button
+          type="button"
+          class="icon"
+          :aria-label="t('history.remove', { date: entryDate(entry) })"
+          :title="t('history.remove', { date: entryDate(entry) })"
+          @click="emit('remove', entry)"
+        >
           <MdIcon name="delete" />
         </button>
       </div>

@@ -27,6 +27,7 @@ function choose(id: string) {
     class="nav-button"
     aria-haspopup="menu"
     :aria-label="label"
+    :title="label"
     :aria-expanded="open"
     :aria-controls="menuId"
     :popovertarget="menuId"

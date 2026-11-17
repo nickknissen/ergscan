@@ -581,10 +581,24 @@ async function share() {
   <div v-else class="shell" :class="{ 'shell-tabbed': tabbed }">
     <header class="navbar" :class="{ 'navbar-scrolled': scrolled }">
       <div class="navbar-side">
-        <button v-if="stage === 'review'" type="button" class="nav-button" :aria-label="t('review.back', { screen: originTitle })" @click="discardWorkout">
+        <button
+          v-if="stage === 'review'"
+          type="button"
+          class="nav-button"
+          :aria-label="t('review.back', { screen: originTitle })"
+          :title="t('review.back', { screen: originTitle })"
+          @click="discardWorkout"
+        >
           <MdIcon name="arrow_back" />
         </button>
-        <button v-else-if="stage === 'guide'" type="button" class="nav-button" :aria-label="t('review.back', { screen: t('tabs.scan') })" @click="closeGuide">
+        <button
+          v-else-if="stage === 'guide'"
+          type="button"
+          class="nav-button"
+          :aria-label="t('review.back', { screen: t('tabs.scan') })"
+          :title="t('review.back', { screen: t('tabs.scan') })"
+          @click="closeGuide"
+        >
           <MdIcon name="arrow_back" />
         </button>
       </div>
@@ -698,6 +712,7 @@ async function share() {
                     :aria-checked="accent === option"
                     :tabindex="accent === option ? 0 : -1"
                     :aria-label="t(`settings.accents.${option}`)"
+                    :title="t(`settings.accents.${option}`)"
                     :style="{ '--swatch-1': colors[0], '--swatch-2': colors[1], '--swatch-3': colors[2] }"
                     @click="accent = option"
                   >
