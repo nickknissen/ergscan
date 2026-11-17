@@ -158,6 +158,7 @@ const computedSummary = ref(false);
 const progressText = ref('');
 const progress = ref<number | null>(null);
 const extraImages = ref(0);
+const savedAs = ref('');
 
 const storage: Storage | null = (() => {
   try {
@@ -374,6 +375,7 @@ function saveWorkout() {
 }
 
 const saved = computed(() => savedKey.value !== null && !unsaved.value);
+watch(unsaved, (value) => value && (savedAs.value = ''));
 const canSave = computed(() => !saved.value && isExportable(workout.value, invalidCells.value));
 
 function confirmDiscard(): Promise<boolean> {
@@ -436,7 +438,10 @@ watch(stage, (value) => {
 const invalidCells = ref(0);
 const canExport = computed(() => Boolean(fitModule.value) && isExportable(workout.value, invalidCells.value));
 const canShare = computed(() => typeof navigator.canShare === 'function');
-const overflowItems = computed(() => [{ id: 'download', label: t('export.download'), icon: 'download' as const }]);
+const overflowItems = computed(() => [
+  ...(saved.value && canShare.value ? [{ id: 'download', label: t('export.download'), icon: 'download' as const }] : []),
+  { id: 'print', label: t('review.print'), icon: 'print' as const },
+]);
 const largeWindow = useMediaQuery('(min-width: 1200px)');
 const reviewPanel = computed(() => largeWindow.value && Boolean(photoUrl.value || rawText.value));
 const wideWindow = useMediaQuery('(min-width: 840px)');
@@ -469,6 +474,7 @@ function reset() {
   rawText.value = '';
   notice.value = '';
   extraImages.value = 0;
+  savedAs.value = '';
   computedSummary.value = false;
   stage.value = 'capture';
 }
@@ -592,14 +598,35 @@ function fitFile(): File {
   return new File([bytes.slice().buffer], fitFileName(w.startTime), { type: 'application/vnd.ant.fit' });
 }
 
-function download() {
+async function download() {
   const file = fitFile();
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: file.name,
+        types: [{ description: 'FIT', accept: { [file.type]: ['.fit'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(file);
+      await writable.close();
+      savedAs.value = handle.name;
+      return;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+    }
+  }
   const url = URL.createObjectURL(file);
   const link = document.createElement('a');
   link.href = url;
   link.download = file.name;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  savedAs.value = file.name;
+}
+
+function onReviewMenu(id: string) {
+  if (id === 'download') void download();
+  else if (id === 'print') window.print();
 }
 
 function dragFit(event: DragEvent) {
@@ -614,13 +641,13 @@ function dragFit(event: DragEvent) {
 async function share() {
   const file = fitFile();
   if (!navigator.canShare({ files: [file] })) {
-    download();
+    await download();
     return;
   }
   try {
     await navigator.share({ files: [file], title: file.name });
   } catch (error) {
-    if (!(error instanceof DOMException && error.name === 'AbortError')) download();
+    if (!(error instanceof DOMException && error.name === 'AbortError')) await download();
   }
 }
 </script>
@@ -667,7 +694,7 @@ async function share() {
         <button v-if="stage === 'review' && workout" type="button" class="primary nav-action" :disabled="!canSave" @click="saveWorkout">
           {{ saved ? t('review.saved') : t('review.save') }}
         </button>
-        <MdMenu v-if="stage === 'review' && saved && canShare" :label="t('review.more')" :items="overflowItems" @select="download" />
+        <MdMenu v-if="stage === 'review' && workout" :label="t('review.more')" :items="overflowItems" @select="onReviewMenu" />
       </div>
     </header>
 
@@ -858,6 +885,7 @@ async function share() {
             <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
 
             <p v-if="!saved && !invalidCells" class="review-hint">{{ canSave ? t('export.saveFirst') : t('export.invalid') }}</p>
+            <p v-else-if="savedAs" class="review-hint">{{ t('export.savedAs', { name: savedAs }) }}</p>
 
             <HeartRateZones :workout="workout" :max-hr="maxHr" />
 

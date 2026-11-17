@@ -7,6 +7,12 @@ interface LaunchParams {
   readonly files: readonly FileSystemFileHandle[];
 }
 
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+  types?: { description?: string; accept: Record<string, string[]> }[];
+}
+
 interface Window {
   launchQueue?: { setConsumer(consumer: (params: LaunchParams) => void): void };
+  showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>;
 }

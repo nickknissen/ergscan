@@ -2211,3 +2211,66 @@ tr.rest .cell {
     --state: 8%;
   }
 }
+
+/* ---------- Print ---------- */
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+
+  .shell-tabbed {
+    padding-left: 0;
+  }
+
+  .navbar {
+    position: static;
+    background: none;
+  }
+
+  .navbar-side,
+  .tabbar,
+  .fab,
+  .snackbar,
+  .history-pane,
+  .review-panel,
+  .disclosure,
+  .banner,
+  .review-hint,
+  .editor > .group:last-child,
+  td:has(> .icon),
+  thead th:last-child {
+    display: none;
+  }
+
+  .screen,
+  .screen.screen-split,
+  .review-split {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+
+  .group > *,
+  .table-wrap,
+  input,
+  .select-trigger,
+  tr.summary .cell {
+    background: none;
+    box-shadow: none;
+  }
+
+  input,
+  .select-trigger {
+    border: none;
+  }
+
+  .select-arrow {
+    display: none;
+  }
+
+  .group,
+  table {
+    break-inside: avoid;
+  }
+}

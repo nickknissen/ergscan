@@ -21,6 +21,7 @@ import moreVert from '@material-symbols/svg-400/rounded/more_vert.svg?raw';
 import palette from '@material-symbols/svg-400/rounded/palette.svg?raw';
 import photoCamera from '@material-symbols/svg-400/rounded/photo_camera.svg?raw';
 import photoLibrary from '@material-symbols/svg-400/rounded/photo_library.svg?raw';
+import print from '@material-symbols/svg-400/rounded/print.svg?raw';
 import rowing from '@material-symbols/svg-400/rounded/rowing.svg?raw';
 import settingsFill from '@material-symbols/svg-400/rounded/settings-fill.svg?raw';
 import settings from '@material-symbols/svg-400/rounded/settings.svg?raw';
@@ -54,6 +55,7 @@ export const ICONS = {
   palette: pair(palette),
   photo_camera: pair(photoCamera),
   photo_library: pair(photoLibrary),
+  print: pair(print),
   rowing: pair(rowing),
   settings: pair(settings, settingsFill),
   share: pair(share),
