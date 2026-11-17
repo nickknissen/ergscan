@@ -96,9 +96,9 @@ function recalculate() {
       <table :class="{ 'has-extra': extraColumn }">
         <thead>
           <tr>
-            <th class="col-time">{{ t('columns.time') }}</th>
-            <th class="col-meter">{{ t('columns.meter') }}</th>
-            <th class="col-split">{{ splitHeader }}</th>
+            <th>{{ t('columns.time') }}</th>
+            <th>{{ t('columns.meter') }}</th>
+            <th>{{ splitHeader }}</th>
             <th class="col-small"><abbr :title="t('columns.rateLong')">{{ t('columns.rate') }}</abbr></th>
             <th v-if="extraColumn" class="col-small">{{ t(`columns.${extraColumn}`) }}</th>
             <th class="col-tight">{{ t('columns.rest') }}</th>

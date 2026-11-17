@@ -353,6 +353,24 @@ button svg {
   color: var(--on-secondary-container);
 }
 
+.primary,
+.tonal,
+.dialog-actions button,
+.snackbar-action,
+.camera-cancel {
+  position: relative;
+}
+
+.primary::after,
+.tonal::after,
+.dialog-actions button::after,
+.snackbar-action::after,
+.camera-cancel::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+
 .large {
   min-height: 56px;
   font: var(--title-medium);
@@ -437,7 +455,7 @@ button svg {
 .row-value {
   flex: none;
   max-width: 60%;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0 12px;
   text-align: right;
 }
@@ -692,7 +710,7 @@ button svg {
 }
 
 .guide-change {
-  min-height: 32px;
+  min-height: 40px;
   padding: 0 12px;
 }
 
@@ -857,7 +875,7 @@ button svg {
 .segmented button {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0 8px;
   gap: 8px;
   border-radius: 0;
@@ -1346,7 +1364,7 @@ input {
   border: none;
   border-bottom: 1px solid var(--on-surface-variant);
   border-radius: 4px 4px 0 0;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0 8px;
   appearance: none;
   -webkit-appearance: none;
@@ -1357,11 +1375,20 @@ input:focus {
   border-bottom: 2px solid var(--primary);
 }
 
+@media (hover: hover) {
+  .cell:hover:not(:focus),
+  .row-value:hover:not(:focus),
+  .settings-number:hover:not(:focus) {
+    background-image: linear-gradient(color-mix(in srgb, var(--on-surface) 8%, transparent) 0 0);
+  }
+}
+
 /* ---------- Dropdown menu ---------- */
 
 .select-trigger {
   flex: none;
   max-width: 60%;
+  min-height: 48px;
   gap: 4px;
   padding: 0 4px 0 12px;
   border-bottom: 1px solid var(--on-surface-variant);
@@ -1595,24 +1622,9 @@ abbr[title] {
   text-decoration: none;
 }
 
-.col-time {
-  width: 27%;
-}
-
-.col-meter {
-  width: 19%;
-}
-
-.col-split {
-  width: 21%;
-}
-
-.col-small {
-  width: 12%;
-}
-
+.col-small,
 .col-tight {
-  width: 42px;
+  width: 50px;
 }
 
 table.has-extra {
@@ -1716,7 +1728,7 @@ tr.rest .cell {
   position: relative;
   display: grid;
   place-items: center;
-  min-width: 40px;
+  min-width: 48px;
   min-height: 48px;
   cursor: pointer;
 }
