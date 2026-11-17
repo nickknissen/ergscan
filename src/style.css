@@ -511,6 +511,34 @@ button svg {
   margin-bottom: 0;
 }
 
+.history {
+  margin-top: 32px;
+}
+
+.history-open {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font-weight: 400;
+  text-align: left;
+}
+
+.history-open:active:not(:disabled) {
+  transform: none;
+  opacity: 0.6;
+}
+
+.row-detail {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
 /* ---------- Scanning ---------- */
 
 .scanning {

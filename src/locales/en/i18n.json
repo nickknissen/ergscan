@@ -75,6 +75,11 @@
     "calories": "Cal",
     "rest": "Rest"
   },
+  "history": {
+    "title": "History",
+    "summary": "{distance} m · {time}",
+    "remove": "Delete the workout from {date}"
+  },
   "export": {
     "download": "Download FIT",
     "share": "Share FIT",

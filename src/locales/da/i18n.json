@@ -75,6 +75,11 @@
     "calories": "Kal",
     "rest": "Pause"
   },
+  "history": {
+    "title": "Historik",
+    "summary": "{distance} m · {time}",
+    "remove": "Slet træningen fra {date}"
+  },
   "export": {
     "download": "Download FIT",
     "share": "Del FIT",

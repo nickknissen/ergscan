@@ -5,12 +5,14 @@ import CameraCapture from './components/CameraCapture.vue';
 import PmGuide from './components/PmGuide.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { fitFileName, startTimeFor } from './core/dates';
+import { loadHistory, removeFromHistory, saveToHistory, type HistoryEntry, type HistoryStorage } from './core/history';
+import { formatTime } from './core/time';
 import { emptyRow, type ExtraColumn, type Workout } from './core/workout';
 
 type Stage = 'guide' | 'capture' | 'camera' | 'scanning' | 'review';
 type FitModule = typeof import('./core/fitExport');
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const GUIDE_SEEN_KEY = 'ergscan.guideSeen';
 
@@ -41,6 +43,53 @@ const computedSummary = ref(false);
 const progressText = ref('');
 const progress = ref<number | null>(null);
 
+const storage: HistoryStorage | null = (() => {
+  try {
+    return localStorage;
+  } catch {
+    return null;
+  }
+})();
+const history = ref<HistoryEntry[]>(storage ? loadHistory(storage) : []);
+const historyId = ref<string | null>(null);
+
+watch(
+  [workout, extraColumn],
+  () => {
+    const w = workout.value;
+    if (stage.value !== 'review' || !storage || !historyId.value || !w?.summary.durationDs || !w.summary.distanceM) return;
+    history.value = saveToHistory(storage, { id: historyId.value, workout: w, extraColumn: extraColumn.value });
+  },
+  { deep: true },
+);
+
+function startEntry() {
+  historyId.value = crypto.randomUUID();
+}
+
+function openEntry(id: string) {
+  const entry = storage && loadHistory(storage).find((e) => e.id === id);
+  if (!entry) return;
+  reset();
+  historyId.value = entry.id;
+  workout.value = entry.workout;
+  extraColumn.value = entry.extraColumn;
+  stage.value = 'review';
+}
+
+function deleteEntry(id: string) {
+  if (storage) history.value = removeFromHistory(storage, id);
+}
+
+function entryDate(entry: HistoryEntry): string {
+  return entry.workout.startTime.toLocaleString(locale.value, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function entrySummary(entry: HistoryEntry): string {
+  const { distanceM, durationDs } = entry.workout.summary;
+  return t('history.summary', { distance: distanceM, time: formatTime(durationDs ?? 0) });
+}
+
 const fitModule = shallowRef<FitModule | null>(null);
 
 watch(stage, (value) => {
@@ -59,6 +108,7 @@ function newWorkout(): Workout {
 function reset() {
   if (photoUrl.value) URL.revokeObjectURL(photoUrl.value);
   photoUrl.value = null;
+  historyId.value = null;
   workout.value = null;
   extraColumn.value = null;
   rawText.value = '';
@@ -87,6 +137,7 @@ function onCameraFailed(message: string) {
 
 async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
   reset();
+  startEntry();
   photoUrl.value = URL.createObjectURL(image);
   stage.value = 'scanning';
   progressText.value = t('scan.loading');
@@ -125,6 +176,7 @@ async function scanBlob(image: Blob, photoTime: Date, framed: boolean) {
 
 function enterManually() {
   reset();
+  startEntry();
   workout.value = newWorkout();
   stage.value = 'review';
 }
@@ -248,6 +300,24 @@ async function share() {
             </button>
           </div>
         </div>
+
+        <section v-if="history.length" class="history">
+          <h2 class="group-header">{{ t('history.title') }}</h2>
+          <div class="group">
+            <div v-for="entry in history" :key="entry.id" class="group-row">
+              <button type="button" class="history-open" @click="openEntry(entry.id)">
+                <span class="row-label">
+                  {{ entrySummary(entry) }}
+                  <span class="row-detail">{{ entryDate(entry) }}</span>
+                </span>
+                <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+              </button>
+              <button type="button" class="icon" :aria-label="t('history.remove', { date: entryDate(entry) })" @click="deleteEntry(entry.id)">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+              </button>
+            </div>
+          </div>
+        </section>
       </section>
 
       <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
