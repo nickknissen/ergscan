@@ -140,7 +140,7 @@ docker run -p 8080:80 ergscan
 | `src/ui/` | Framework-free UI behavior: icons, menus, ripples, transitions, confirm dialogs |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
 | `testdata/` | Labelled results-screen images for tests and `npm run eval` |
-| `scripts/` | Build helpers, the OCR evaluation script and the README animation (`node scripts/readme-demo/render.mjs`, needs Chrome and ffmpeg) |
+| `scripts/` | Build helpers, the OCR evaluation script and the README animation: with `npm run build && npx vite preview --port 4317` running, `node scripts/readme-demo/capture.mjs` screenshots the app and `node scripts/readme-demo/render.mjs` renders the GIF (needs Chrome; a Playwright Chromium is found on its own) |
 
 ### Adding a language
 
