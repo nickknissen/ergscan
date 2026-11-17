@@ -1,7 +1,7 @@
 # Reverse-engineering artifacts: third-party binaries and decompiled code, never commit
-re/download/
-re/apk/
-re/out/
+re/**/download/
+re/**/apk/
+re/**/out/
 re/tools/.venv/
 *.apk
 *.xapk
