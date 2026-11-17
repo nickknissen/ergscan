@@ -3,6 +3,8 @@ import App from './App.vue';
 import { applyTheme, loadTheme } from './core/settings';
 import { i18n } from './i18n';
 import { prefetchOcrAssets } from './ocr/assets';
+import { installRipple } from './ui/ripple';
+import '@fontsource-variable/roboto-flex';
 import './style.css';
 
 document.documentElement.lang = i18n.global.locale.value;
@@ -12,6 +14,7 @@ try {
   applyTheme(document, 'system');
 }
 createApp(App).use(i18n).mount('#app');
+installRipple(document);
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   void (async () => {
