@@ -14,6 +14,7 @@ function decode(bytes: Uint8Array) {
     lapMesgs: messages.lapMesgs ?? [],
     recordMesgs: messages.recordMesgs ?? [],
     activityMesgs: messages.activityMesgs ?? [],
+    workoutMesgs: messages.workoutMesgs ?? [],
   };
 }
 
@@ -34,7 +35,7 @@ function decodeDeveloperFields(bytes: Uint8Array) {
 
 function workoutFrom(text: string): Workout {
   const scan = parsePm5Text(text)!;
-  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, dragFactor: null, summary: scan.summary, rows: scan.rows };
+  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, dragFactor: null, name: null, notes: null, summary: scan.summary, rows: scan.rows };
 }
 
 describe('workoutToFit', () => {
@@ -89,6 +90,26 @@ describe('workoutToFit', () => {
     const { fieldDescriptions, sessions } = decodeDeveloperFields(workoutToFit(workout));
     expect(fieldDescriptions).toEqual([{ fieldName: 'Drag Factor', nativeMesgNum: 18 }]);
     expect(sessions).toEqual([{ 'Drag Factor': 125 }]);
+  });
+
+  it('names the workout and describes it with the notes and drag factor', () => {
+    const workout = { ...workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24'), name: 'Test day', notes: 'Felt strong', dragFactor: 125 };
+    const [wkt] = decode(workoutToFit(workout)).workoutMesgs;
+    expect(wkt).toMatchObject({ wktName: 'Test day', wktDescription: 'Felt strong\nDrag factor 125', sport: 'rowing', subSport: 'indoorRowing' });
+  });
+
+  it('cuts a long name and notes to what FIT strings can hold', () => {
+    const notes = 'æ'.repeat(400);
+    const workout = { ...workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24'), name: 'ø'.repeat(200), notes: `  ${notes}\n\n` };
+    const [wkt] = decode(workoutToFit(workout)).workoutMesgs;
+    expect(wkt!.wktName).toBe('ø'.repeat(127));
+    expect(wkt!.wktDescription).toBe('æ'.repeat(127));
+  });
+
+  it('falls back to the suggested name and leaves out an empty description', () => {
+    const [wkt] = decode(workoutToFit(workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24'))).workoutMesgs;
+    expect(wkt!.wktName).toBe('1000m');
+    expect(wkt!.wktDescription).toBeUndefined();
   });
 
   it('writes no developer data without a drag factor', () => {

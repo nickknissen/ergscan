@@ -3,6 +3,7 @@ import { computed, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
+import { suggestName } from '../core/workoutName';
 import { handleCellKeydown } from '../ui/keyboardNav';
 import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
 import MdIcon from './MdIcon.vue';
@@ -45,6 +46,18 @@ const startInput = computed({
   },
 });
 
+const suggestedName = computed(() => suggestName(workout.value) ?? '');
+
+const name = computed({
+  get: () => workout.value.name ?? '',
+  set: (value: string) => (workout.value.name = value || null),
+});
+
+const notes = computed({
+  get: () => workout.value.notes ?? '',
+  set: (value: string) => (workout.value.notes = value || null),
+});
+
 const extraSelection = computed({
   get: () => extraColumn.value ?? '',
   set: (value: ExtraColumn | '') => {
@@ -79,6 +92,10 @@ function recalculate() {
     <h2 class="group-header">{{ t('review.details') }}</h2>
     <div class="group">
       <label class="group-row">
+        <span class="row-label">{{ t('review.name') }}</span>
+        <input v-model.trim="name" class="row-value" type="text" :placeholder="suggestedName" autocomplete="off" />
+      </label>
+      <label class="group-row">
         <span class="row-label">{{ t('review.start') }}</span>
         <input v-model="startInput" class="row-value" type="datetime-local" />
       </label>
@@ -93,6 +110,10 @@ function recalculate() {
       <label class="group-row">
         <span class="row-label">{{ t('review.dragFactor') }}</span>
         <NumberCell v-model="workout.dragFactor" class="row-value" :label="t('review.dragFactor')" />
+      </label>
+      <label class="group-row stacked">
+        <span class="row-label">{{ t('review.notes') }}</span>
+        <textarea v-model="notes" class="row-notes" rows="3"></textarea>
       </label>
     </div>
 

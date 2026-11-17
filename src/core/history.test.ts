@@ -24,7 +24,7 @@ function memoryStorage(initial?: string): HistoryStorage & { data: Map<string, s
 function entry(id: string, start: string): HistoryEntry {
   return {
     id,
-    workout: { startTime: new Date(start), splitDistance: 500, dragFactor: null, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [] },
+    workout: { startTime: new Date(start), splitDistance: 500, dragFactor: null, name: null, notes: null, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [] },
     extraColumn: 'watts',
   };
 }
@@ -46,9 +46,18 @@ describe('history', () => {
     expect(loadHistory(storage)[0]!.workout.dragFactor).toBe(125);
   });
 
-  it('loads workouts saved before the drag factor existed with no drag factor', () => {
+  it('keeps the name and notes with the workout', () => {
+    const storage = memoryStorage();
+    const named = entry('a', '2026-11-16T07:00:00Z');
+    named.workout.name = 'Test day';
+    named.workout.notes = 'Felt strong';
+    saveToHistory(storage, named);
+    expect(loadHistory(storage)[0]!.workout).toMatchObject({ name: 'Test day', notes: 'Felt strong' });
+  });
+
+  it('loads workouts saved before the drag factor, name and notes existed without them', () => {
     const old = '[{"id":"a","workout":{"startTime":"2026-11-16T07:00:00Z","splitDistance":500,"summary":{},"rows":[]},"extraColumn":null}]';
-    expect(loadHistory(memoryStorage(old))[0]!.workout.dragFactor).toBeNull();
+    expect(loadHistory(memoryStorage(old))[0]!.workout).toMatchObject({ dragFactor: null, name: null, notes: null });
   });
 
   it('replaces an entry with the same id instead of duplicating it', () => {

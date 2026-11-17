@@ -90,7 +90,8 @@ function entryDetail(entry: HistoryEntry): string {
 
 function entrySummary(entry: HistoryEntry): string {
   const { distanceM, durationDs } = entry.workout.summary;
-  return t('history.summary', { distance: distanceM, time: formatTime(durationDs ?? 0) });
+  const summary = t('history.summary', { distance: distanceM, time: formatTime(durationDs ?? 0) });
+  return entry.workout.name ? t('history.named', { name: entry.workout.name, summary }) : summary;
 }
 </script>
 

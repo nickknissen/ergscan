@@ -23,12 +23,26 @@ export function loadHistory(storage: HistoryStorage): HistoryEntry[] {
 }
 
 export function parseEntry(item: unknown): HistoryEntry | null {
-  const entry = item as { id?: unknown; workout?: { startTime?: unknown; rows?: unknown; dragFactor?: unknown }; extraColumn?: ExtraColumn | null };
+  const entry = item as {
+    id?: unknown;
+    workout?: { startTime?: unknown; rows?: unknown; dragFactor?: unknown; name?: unknown; notes?: unknown };
+    extraColumn?: ExtraColumn | null;
+  };
   if (typeof entry?.id !== 'string' || !entry.workout || !Array.isArray(entry.workout.rows)) return null;
-  const startTime = new Date(entry.workout.startTime as string);
+  const { workout } = entry;
+  const startTime = new Date(workout.startTime as string);
   if (Number.isNaN(startTime.getTime())) return null;
-  const dragFactor = typeof entry.workout.dragFactor === 'number' ? entry.workout.dragFactor : null;
-  return { id: entry.id, workout: { ...(entry.workout as Workout), startTime, dragFactor }, extraColumn: entry.extraColumn ?? null };
+  return {
+    id: entry.id,
+    workout: {
+      ...(workout as Workout),
+      startTime,
+      dragFactor: typeof workout.dragFactor === 'number' ? workout.dragFactor : null,
+      name: typeof workout.name === 'string' ? workout.name : null,
+      notes: typeof workout.notes === 'string' ? workout.notes : null,
+    },
+    extraColumn: entry.extraColumn ?? null,
+  };
 }
 
 export function saveToHistory(storage: HistoryStorage, entry: HistoryEntry): HistoryEntry[] {

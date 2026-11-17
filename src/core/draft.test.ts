@@ -15,7 +15,7 @@ function memoryStorage(): DraftStorage & { data: Map<string, string> } {
 function draft(overrides: Partial<Draft> = {}): Draft {
   return {
     id: 'a',
-    workout: { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: 500, dragFactor: null, summary: { ...emptyRow(), distanceM: 2000 }, rows: [] },
+    workout: { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: 500, dragFactor: null, name: null, notes: null, summary: { ...emptyRow(), distanceM: 2000 }, rows: [] },
     extraColumn: 'watts',
     savedKey: null,
     origin: 'capture',

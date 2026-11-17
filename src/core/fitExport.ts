@@ -10,8 +10,10 @@ import {
   type Mesg,
   type RecordMesg,
   type SessionMesg,
+  type WorkoutMesg,
 } from '@garmin/fitsdk';
 import { wattsForSplit, type Workout, type WorkoutRow } from './workout';
+import { suggestName } from './workoutName';
 
 const MesgNum = {
   FILE_ID: 0,
@@ -19,6 +21,7 @@ const MesgNum = {
   LAP: 19,
   RECORD: 20,
   EVENT: 21,
+  WORKOUT: 26,
   ACTIVITY: 34,
   FIELD_DESCRIPTION: 206,
   DEVELOPER_DATA_ID: 207,
@@ -85,6 +88,13 @@ export function workoutToFit(workout: Workout): Uint8Array {
     write<DeveloperDataIdMesg>(encoder, developerDataId);
     write<FieldDescriptionMesg>(encoder, fieldDescription);
   }
+  write<WorkoutMesg>(encoder, {
+    mesgNum: MesgNum.WORKOUT,
+    sport: FIT.sportRowing,
+    subSport: FIT.subSportIndoorRowing,
+    wktName: fitString(workout.name ?? suggestName(workout)),
+    wktDescription: fitString(describe(workout)),
+  });
   write<EventMesg>(encoder, {
     mesgNum: MesgNum.EVENT,
     timestamp: start,
@@ -176,6 +186,28 @@ export function workoutToFit(workout: Workout): Uint8Array {
   });
 
   return encoder.close();
+}
+
+/** FIT has no field for the drag factor that apps show, so it is spelled out after the notes. */
+function describe(workout: Workout): string | null {
+  const lines = [workout.notes?.trim(), workout.dragFactor === null ? null : `Drag factor ${workout.dragFactor}`].filter(Boolean);
+  return lines.length > 0 ? lines.join('\n') : null;
+}
+
+/** A FIT string field holds at most 255 bytes, including its terminating zero. */
+const FIT_STRING_BYTES = 254;
+
+function fitString(text: string | null): string | undefined {
+  if (!text) return undefined;
+  const encoder = new TextEncoder();
+  let bytes = 0;
+  let end = 0;
+  for (const char of text) {
+    bytes += encoder.encode(char).length;
+    if (bytes > FIT_STRING_BYTES) break;
+    end += char.length;
+  }
+  return text.slice(0, end);
 }
 
 function writeRecord(encoder: Encoder, timestamp: Date, distance: number, row: WorkoutRow, power: number | null): void {

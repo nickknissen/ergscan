@@ -467,6 +467,18 @@ button svg {
   text-align: right;
 }
 
+.group-row.stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding-block: 12px;
+}
+
+.row-notes {
+  padding: 12px;
+  resize: vertical;
+}
+
 .chevron {
   width: 24px;
   height: 24px;
@@ -1426,7 +1438,8 @@ button svg {
   border-radius: var(--shape-medium);
 }
 
-input {
+input,
+textarea {
   font: var(--body-large);
   color: var(--on-surface);
   background: var(--surface-container-highest);
@@ -1439,7 +1452,8 @@ input {
   -webkit-appearance: none;
 }
 
-input:focus {
+input:focus,
+textarea:focus {
   outline: none;
   border-bottom: 2px solid var(--primary);
 }
@@ -1447,6 +1461,7 @@ input:focus {
 @media (hover: hover) {
   .cell:hover:not(:focus),
   .row-value:hover:not(:focus),
+  .row-notes:hover:not(:focus),
   .settings-number:hover:not(:focus) {
     background-image: linear-gradient(color-mix(in srgb, var(--on-surface) 8%, transparent) 0 0);
   }
