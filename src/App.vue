@@ -35,6 +35,7 @@ import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type Tab
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
+import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
@@ -349,6 +350,8 @@ const invalidCells = ref(0);
 const canExport = computed(() => Boolean(fitModule.value) && isExportable(workout.value, invalidCells.value));
 const canShare = computed(() => typeof navigator.canShare === 'function');
 const overflowItems = computed(() => [{ id: 'download', label: t('export.download'), icon: 'download' as const }]);
+const largeWindow = useMediaQuery('(min-width: 1200px)');
+const reviewPanel = computed(() => largeWindow.value && Boolean(photoUrl.value || rawText.value));
 const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan')));
 const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
 const cameraError = ref('');
@@ -715,26 +718,38 @@ async function share() {
           <p class="scan-status">{{ progressText }}</p>
         </section>
 
-        <section v-else-if="workout" class="review">
-          <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
-          <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
+        <section v-else-if="workout" class="review" :class="{ 'review-split': reviewPanel }">
+          <div class="review-main">
+            <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
+            <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
 
-          <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
+            <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
 
-          <p v-if="!saved && !invalidCells" class="review-hint">{{ canSave ? t('export.saveFirst') : t('export.invalid') }}</p>
+            <p v-if="!saved && !invalidCells" class="review-hint">{{ canSave ? t('export.saveFirst') : t('export.invalid') }}</p>
 
-          <HeartRateZones :workout="workout" :max-hr="maxHr" />
+            <HeartRateZones :workout="workout" :max-hr="maxHr" />
 
-          <details v-if="photoUrl || rawText" class="group disclosure">
-            <summary class="group-row tappable">
-              <span class="row-label">{{ t('review.rawText') }}</span>
-              <MdIcon name="keyboard_arrow_down" class="chevron" />
-            </summary>
-            <div class="disclosure-body">
-              <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
-              <pre>{{ rawText }}</pre>
+            <details v-if="!reviewPanel && (photoUrl || rawText)" class="group disclosure">
+              <summary class="group-row tappable">
+                <span class="row-label">{{ t('review.rawText') }}</span>
+                <MdIcon name="keyboard_arrow_down" class="chevron" />
+              </summary>
+              <div class="disclosure-body">
+                <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
+                <pre>{{ rawText }}</pre>
+              </div>
+            </details>
+          </div>
+
+          <aside v-if="reviewPanel" class="review-panel" :aria-label="t('review.rawText')">
+            <h2 class="group-header">{{ t('review.rawText') }}</h2>
+            <div class="group">
+              <div class="disclosure-body">
+                <img v-if="photoUrl" :src="photoUrl" :alt="t('review.photo')" class="photo" />
+                <pre>{{ rawText }}</pre>
+              </div>
             </div>
-          </details>
+          </aside>
         </section>
       </Transition>
 
