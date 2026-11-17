@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { MONITORS as monitors, type Monitor } from '../core/route';
 import MdIcon from './MdIcon.vue';
 
-const emit = defineEmits<{ done: [] }>();
+const props = defineProps<{ monitor: Monitor | null }>();
+const emit = defineEmits<{ done: []; pick: [monitor: Monitor]; change: [] }>();
 
 const { t, te } = useI18n();
 
-const monitors = ['pm5', 'pm4'] as const;
-type Monitor = (typeof monitors)[number];
-
 const steps = ['setup', 'finish', 'results', 'photo'] as const;
-const monitor = ref<Monitor | null>(null);
 
-const key = (name: string) => `guide.monitors.${monitor.value}.${name}`;
-const menuButton = computed(() => (monitor.value ? t(key('menu')) : ''));
+const key = (name: string) => `guide.monitors.${props.monitor}.${name}`;
+const menuButton = computed(() => (props.monitor ? t(key('menu')) : ''));
 </script>
 
 <template>
@@ -25,7 +23,7 @@ const menuButton = computed(() => (monitor.value ? t(key('menu')) : ''));
         <p>{{ t('guide.pick.hint') }}</p>
       </div>
       <div class="monitor-choices">
-        <button v-for="m in monitors" :key="m" type="button" class="monitor-choice" @click="monitor = m">
+        <button v-for="m in monitors" :key="m" type="button" class="monitor-choice" @click="emit('pick', m)">
           <span class="monitor-choice-name">{{ t(`guide.monitors.${m}.name`) }}</span>
           <span class="monitor-choice-look">{{ t(`guide.monitors.${m}.look`) }}</span>
         </button>
@@ -36,7 +34,7 @@ const menuButton = computed(() => (monitor.value ? t(key('menu')) : ''));
       <div class="guide-intro">
         <div class="guide-monitor">
           <span class="guide-badge">{{ t(key('name')) }}</span>
-          <button type="button" class="tonal guide-change" @click="monitor = null">{{ t('guide.pick.change') }}</button>
+          <button type="button" class="tonal guide-change" @click="emit('change')">{{ t('guide.pick.change') }}</button>
         </div>
         <p>{{ t('guide.intro') }}</p>
       </div>

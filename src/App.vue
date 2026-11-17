@@ -11,7 +11,7 @@ import { fitFileName, startTimeFor } from './core/dates';
 import { draftKey, hasUnsavedChanges, loadHistory, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
 import { ACCENTS, accentSwatch, type Accent } from './core/palette';
 import { applyTheme, clearAppData, loadAccent, loadIntroHidden, loadTheme, saveAccent, saveIntroHidden, saveTheme, THEMES, type Theme } from './core/settings';
-import { parseRoute, routeHash } from './core/route';
+import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
 import { formatTime } from './core/time';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createConfirm } from './ui/confirm';
@@ -41,31 +41,56 @@ function markGuideSeen() {
   }
 }
 
-const GUIDE_HASH = routeHash({ page: 'guide' });
 const baseUrl = () => location.pathname + location.search;
+const isTab = (value: Stage): value is TabStage => (TABS as readonly Stage[]).includes(value);
 
 const initialRoute = parseRoute(location.hash);
-if (initialRoute.page === 'home' && !guideSeen()) window.history.replaceState(null, '', GUIDE_HASH);
-const stage = ref<Stage>(location.hash === GUIDE_HASH ? 'guide' : 'capture');
-let stageAfterBack: Stage | null = null;
+if (initialRoute.page === 'home' && !guideSeen()) window.history.replaceState(null, '', routeHash({ page: 'guide', monitor: null }));
+const startRoute = parseRoute(location.hash);
+const stage = ref<Stage>(startRoute.page === 'guide' ? 'guide' : routeTab(startRoute));
+const guideMonitor = ref<Monitor | null>(startRoute.page === 'guide' ? startRoute.monitor : null);
+let stageAfterBack: TabStage | null = null;
 let ignoreNextPop = false;
 
+function syncTabUrl() {
+  if (!isTab(stage.value)) return;
+  const hash = routeHash(tabRoute(stage.value));
+  if (location.hash !== hash) window.history.replaceState(window.history.state, '', baseUrl() + hash);
+}
+
 function openGuide() {
-  window.history.pushState({ guide: true }, '', GUIDE_HASH);
+  window.history.pushState({ guide: 1 }, '', routeHash({ page: 'guide', monitor: null }));
+  guideMonitor.value = null;
   stage.value = 'guide';
 }
 
-function goTo(next: Stage) {
-  if (stage.value === 'guide' && next !== 'guide') {
+function pickMonitor(monitor: Monitor) {
+  window.history.pushState({ guide: (window.history.state?.guide ?? 0) + 1 }, '', routeHash({ page: 'guide', monitor }));
+  guideMonitor.value = monitor;
+}
+
+function changeMonitor() {
+  guideMonitor.value = null;
+  if (window.history.state?.guide > 1) {
+    ignoreNextPop = true;
+    window.history.back();
+  } else {
+    window.history.replaceState(window.history.state, '', routeHash({ page: 'guide', monitor: null }));
+  }
+}
+
+function goTo(next: TabStage) {
+  if (stage.value === 'guide') {
     markGuideSeen();
-    if (window.history.state?.guide) {
+    const depth: number = window.history.state?.guide ?? 0;
+    if (depth > 0) {
       stageAfterBack = next;
-      window.history.back();
+      window.history.go(-depth);
       return;
     }
-    window.history.replaceState(null, '', baseUrl());
   }
   stage.value = next;
+  syncTabUrl();
 }
 
 function closeGuide() {
@@ -75,20 +100,25 @@ function closeGuide() {
 window.addEventListener('popstate', () => {
   if (ignoreNextPop) {
     ignoreNextPop = false;
+    syncTabUrl();
     return;
   }
   const route = parseRoute(location.hash);
   if (stage.value === 'review' && route.page !== 'workout') {
     void backFromReview();
-  } else if (route.page === 'guide') {
+  } else if (route.page === 'guide' && stageAfterBack === null) {
     stage.value = 'guide';
+    guideMonitor.value = route.monitor;
   } else if (stage.value === 'guide') {
     markGuideSeen();
-    stage.value = stageAfterBack ?? 'capture';
+    stage.value = stageAfterBack ?? routeTab(route);
   } else if (route.page === 'workout' && stage.value !== 'review') {
     if (route.id === null || !openEntry(route.id, false)) window.history.replaceState(null, '', baseUrl());
+  } else if (isTab(stage.value)) {
+    stage.value = routeTab(route);
   }
   stageAfterBack = null;
+  syncTabUrl();
 });
 const workout = ref<Workout | null>(null);
 const extraColumn = ref<ExtraColumn | null>(null);
@@ -228,6 +258,7 @@ function leaveReview() {
     window.history.back();
   } else {
     window.history.replaceState(null, '', baseUrl());
+    syncTabUrl();
   }
 }
 
@@ -430,7 +461,7 @@ async function share() {
 
     <main class="screen" :class="`screen-${stage}`">
       <Transition :name="transition" mode="out-in">
-        <PmGuide v-if="stage === 'guide'" @done="closeGuide" />
+        <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />
 
         <section v-else-if="stage === 'capture'" class="capture">
           <div v-if="showIntro" class="hero">
