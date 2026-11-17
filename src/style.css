@@ -2294,6 +2294,36 @@ tr.rest .cell {
   }
 }
 
+/* ---------- Foldables ---------- */
+
+@media (vertical-viewport-segments: 2) {
+  .camera {
+    flex: none;
+    height: env(viewport-segment-bottom 0 0);
+  }
+
+  .camera-actions {
+    flex: 1;
+    margin-top: calc(env(viewport-segment-top 0 1) - env(viewport-segment-bottom 0 0));
+  }
+}
+
+@media (horizontal-viewport-segments: 2) {
+  .screen.screen-split {
+    max-width: none;
+    margin: 0;
+    padding-left: max(16px, env(safe-area-inset-left));
+    grid-template-columns:
+      calc(env(viewport-segment-right 0 0) - env(viewport-segment-left 0 0) - 80px - max(16px, env(safe-area-inset-left)))
+      max(24px, calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0)))
+      minmax(0, 1fr);
+  }
+
+  .screen.screen-split.list-collapsed {
+    grid-template-columns: 0 48px minmax(0, 1fr);
+  }
+}
+
 /* ---------- Print ---------- */
 
 @media print {
