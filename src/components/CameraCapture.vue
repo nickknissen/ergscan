@@ -18,7 +18,7 @@ const { t } = useI18n();
 const container = ref<HTMLDivElement | null>(null);
 const video = ref<HTMLVideoElement | null>(null);
 const view = ref<Size>({ width: 0, height: 0 });
-const state = ref<'starting' | 'ready' | 'stalled'>('starting');
+const state = ref<'starting' | 'ready' | 'stalled' | 'lost'>('starting');
 const ready = computed(() => state.value === 'ready');
 let stream: MediaStream | null = null;
 let observer: ResizeObserver | null = null;
@@ -58,6 +58,13 @@ async function start() {
       return;
     }
     stream = media;
+    media.getVideoTracks().forEach((track) =>
+      track.addEventListener('ended', () => {
+        if (current !== attempt) return;
+        stop();
+        state.value = 'lost';
+      }),
+    );
     video.value!.srcObject = stream;
     await video.value!.play();
     clearTimeout(timeout);
@@ -69,17 +76,28 @@ async function start() {
   }
 }
 
+function onVisibilityChange() {
+  if (document.visibilityState === 'hidden') {
+    attempt++;
+    stop();
+  } else if (!stream) {
+    void start();
+  }
+}
+
 onMounted(() => {
   observer = new ResizeObserver(([entry]) => {
     if (entry) view.value = { width: entry.contentRect.width, height: entry.contentRect.height };
   });
   if (container.value) observer.observe(container.value);
+  document.addEventListener('visibilitychange', onVisibilityChange);
   void start();
 });
 
 onBeforeUnmount(() => {
   attempt++;
   observer?.disconnect();
+  document.removeEventListener('visibilitychange', onVisibilityChange);
   stop();
 });
 
@@ -112,7 +130,7 @@ function capture() {
           <p>{{ t('camera.starting') }}</p>
         </template>
         <template v-else>
-          <p>{{ t('camera.stalled') }}</p>
+          <p>{{ t(state === 'lost' ? 'camera.busy' : 'camera.stalled') }}</p>
           <div class="camera-status-actions">
             <button type="button" class="primary" @click="start">{{ t('camera.retry') }}</button>
             <button type="button" class="tonal" @click="emit('choose')">{{ t('capture.chooseImage') }}</button>
