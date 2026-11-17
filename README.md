@@ -1,10 +1,16 @@
-# ErgScan
+# ErgScan: Concept2 PM5 photo to Strava and Garmin
 
 ![ErgScan reads a photo of a PM5 results screen, shows the splits for review and shares them as a FIT file](.github/readme-demo.gif)
 
-An open-source progressive web app that reads the results screen of a Concept2
-PM4 or PM5 monitor from a photo and exports the workout as a FIT file you can upload to
-Strava, Garmin Connect, intervals.icu or any other tool that accepts FIT.
+**Turn a photo of your Concept2 rowing machine monitor into a FIT file for
+Strava, Garmin Connect or intervals.icu.** ErgScan is a free, open-source web
+app that reads the results screen of a Concept2 PM5 or PM4 performance monitor
+with OCR, lets you check the splits, and exports the indoor rowing workout
+with every split or interval, pace, stroke rate, watts and heart rate.
+
+No Bluetooth pairing, no ErgData and no account needed: row first, photograph
+the screen afterwards. Works with the Concept2 RowErg (Model D and Model E)
+on iPhone, Android and desktop.
 
 Everything runs on your device. The photo is never uploaded: text recognition
 happens in the browser, saved workouts and settings stay in the browser's
@@ -24,6 +30,8 @@ local storage, and the app keeps working offline once it has been opened.
   set the start time and recalculate the total. Unsaved edits survive a reload.
 - Time in heart rate zones (60/70/80/90% of max) on the result page, using a
   measured max heart rate or one estimated from your age.
+- Reads the drag factor and keeps it with the workout.
+- Name workouts and add notes; both are written into the FIT file.
 - History of saved workouts, kept on the device.
 - FIT export as an indoor rowing activity: one lap per split or interval, rest
   laps marked as rest, and per-lap distance, stroke rate, power and heart rate.
@@ -39,6 +47,36 @@ local storage, and the app keeps working offline once it has been opened.
 - Hold the phone straight in front of the screen, not at an angle.
 - Let the table fill most of the frame.
 - Avoid reflections on the digits.
+
+## FAQ
+
+### How do I get a Concept2 rowing workout into Strava without ErgData?
+
+Take a photo of the PM5 or PM4 results screen after the workout, check the
+splits in ErgScan, and share or download the FIT file. Upload that file to
+Strava, Garmin Connect or intervals.icu. Each split keeps its distance, pace,
+stroke rate, power and heart rate.
+
+### I forgot to connect my phone or watch before rowing. Can I still log the workout?
+
+Yes. As long as the workout is in the monitor's memory, open it from the
+PM5 or PM4 memory menu, photograph the results screen and export it. The
+in-app guide shows where to find it.
+
+### Does it work with interval workouts?
+
+Yes. Each interval becomes its own lap, and rest intervals are exported as
+rest laps.
+
+### Do I need to install an app?
+
+No. ErgScan is a progressive web app that runs in the browser. You can add it
+to the home screen and use it offline.
+
+### Is it free?
+
+Yes, free and open source under the MIT license, with no ads, accounts or
+tracking.
 
 ## Development
 
