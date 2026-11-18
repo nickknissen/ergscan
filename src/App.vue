@@ -8,11 +8,12 @@ import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import MdMenu from './components/MdMenu.vue';
 import PmGuide from './components/PmGuide.vue';
+import SyncSettings from './components/SyncSettings.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
 import WorkoutEditor from './components/WorkoutEditor.vue';
 import { entryDateLabel, fitFileName, startTimeFor } from './core/dates';
 import { clearDraft, loadDraft, saveDraft } from './core/draft';
-import { draftKey, hasUnsavedChanges, loadHistory, parseEntry, removeFromHistory, saveToHistory, type HistoryEntry } from './core/history';
+import { draftKey, hasUnsavedChanges, HISTORY_KEY, parseEntry, type HistoryEntry } from './core/history';
 import { ACCENTS, accentSwatch, type Accent } from './core/palette';
 import {
   applyTheme,
@@ -45,6 +46,8 @@ import type { ParsedScan } from './core/pm5Parser';
 import { mergeScans, rowsMissing, withAddedRows } from './core/scanMerge';
 import type { ScanOutcome } from './ocr/firstParsed';
 import { scanFailure } from './ocr/scanFailure';
+import { SyncError, syncHistory } from './sync/client';
+import { historyStore, workouts, type Device, type SavedWorkout } from './sync/store';
 import { createConfirm } from './ui/confirm';
 import { handleRadioKeydown } from './ui/keyboardNav';
 import { historyPane, listDetail } from './ui/layout';
@@ -80,6 +83,15 @@ function markGuideSeen() {
 const baseUrl = () => location.pathname + location.search;
 const isTab = (value: Stage): value is TabStage => (TABS as readonly Stage[]).includes(value);
 
+const syncEnabled = import.meta.env.DEV || import.meta.env.VITE_ERGSCAN_SYNC === 'true';
+const incomingPair = ref('');
+function readPairLink(): boolean {
+  if (!syncEnabled || !location.hash.startsWith('#link/')) return false;
+  incomingPair.value = location.hash.slice('#link/'.length);
+  window.history.replaceState(null, '', baseUrl() + '#/settings');
+  return true;
+}
+readPairLink();
 const initialRoute = parseRoute(location.hash);
 if (initialRoute.page === 'home' && !guideSeen()) window.history.replaceState(null, '', routeHash({ page: 'guide', monitor: null }));
 const startRoute = parseRoute(location.hash);
@@ -137,7 +149,11 @@ function closeGuide() {
   void goTo('capture');
 }
 
-window.addEventListener('popstate', () => {
+window.addEventListener('popstate', async () => {
+  if (readPairLink()) {
+    await goTo('settings');
+    return;
+  }
   if (ignoreNextPop) {
     ignoreNextPop = false;
     syncTabUrl();
@@ -153,7 +169,7 @@ window.addEventListener('popstate', () => {
     markGuideSeen();
     stage.value = stageAfterBack ?? routeTab(route);
   } else if (route.page === 'workout' && stage.value !== 'review') {
-    if (route.id === null || !openEntry(route.id, false)) window.history.replaceState(null, '', baseUrl());
+    if (route.id === null || !(await openEntry(route.id, false))) window.history.replaceState(null, '', baseUrl());
   } else if (isTab(stage.value)) {
     stage.value = routeTab(route);
   }
@@ -181,7 +197,68 @@ const storage: Storage | null = (() => {
     return null;
   }
 })();
-const history = ref<HistoryEntry[]>(storage ? loadHistory(storage) : []);
+const repository = historyStore(storage);
+const history = shallowRef<SavedWorkout[]>([]);
+const linkedDevice = shallowRef<Device | null>(null);
+const pendingSync = ref(0);
+const syncStatus = ref('waiting');
+const storageError = ref(false);
+let refreshSequence = 0;
+let syncing = false;
+
+async function refreshHistory() {
+  const sequence = ++refreshSequence;
+  const state = await repository.read();
+  if (sequence !== refreshSequence) return;
+  history.value = workouts(state);
+  if (linkedDevice.value?.token !== state.device?.token) syncStatus.value = 'waiting';
+  linkedDevice.value = state.device;
+  pendingSync.value = state.pending.length;
+}
+
+const readyHistory = repository.initialize().then(refreshHistory).catch(() => { storageError.value = true; });
+const unsubscribeHistory = repository.subscribe(() => {
+  void refreshHistory().catch(() => { storageError.value = true; });
+});
+
+async function syncNow() {
+  if (!syncEnabled || syncing) return;
+  syncing = true;
+  try {
+    await readyHistory;
+    const { device } = await repository.read();
+    if (!device) return;
+    if (!navigator.onLine) {
+      syncStatus.value = 'offline';
+      return;
+    }
+    syncStatus.value = 'syncing';
+    try {
+      await syncHistory(repository);
+      const current = await repository.read();
+      if (current.device?.token === device.token) syncStatus.value = current.pending.length ? 'waiting' : 'synced';
+    } catch (error) {
+      if ((await repository.read()).device?.token !== device.token) return;
+      syncStatus.value = error instanceof SyncError && error.status === 401 ? 'unlinked' :
+        error instanceof SyncError && error.status === 413 ? 'tooLarge' : 'failed';
+    }
+  } catch {
+    storageError.value = true;
+  } finally {
+    syncing = false;
+  }
+}
+
+function migrateLegacyWrite(event: StorageEvent) {
+  if (event.key === HISTORY_KEY && event.newValue !== null) {
+    void repository.initialize().then(syncNow).catch(() => { storageError.value = true; });
+  }
+}
+
+function syncWhileVisible() {
+  if (document.visibilityState === 'visible') void syncNow();
+}
+
 const historyId = ref<string | null>(null);
 const reviewOrigin = ref<Tab>('capture');
 const tabbed = computed(() => ['capture', 'guide', 'history', 'settings'].includes(stage.value) || showListDetail.value);
@@ -244,9 +321,18 @@ function confirmDialog(key: string, params: Record<string, string> = {}): Promis
 }
 
 async function clearData() {
-  if (!storage || !(await confirmDialog('clear'))) return;
-  clearAppData(storage);
-  history.value = [];
+  if (!(await confirmDialog(pendingSync.value ? 'syncClearPending' : linkedDevice.value ? 'syncClear' : 'clear'))) return;
+  try {
+    await readyHistory;
+    await repository.clear();
+    if (storage) clearAppData(storage);
+    if (session) clearDraft(session);
+    storageError.value = false;
+    await refreshHistory();
+  } catch {
+    storageError.value = true;
+    return;
+  }
   theme.value = 'system';
   accent.value = 'default';
   introHidden.value = false;
@@ -336,7 +422,16 @@ const DOCUMENT_LISTENERS = [
   ['paste', onPaste],
 ] as const;
 
+let syncTimer: number | undefined;
 onMounted(() => {
+  void syncNow();
+  window.addEventListener('online', syncNow);
+  window.addEventListener('storage', migrateLegacyWrite);
+  window.addEventListener('offline', syncNow);
+  document.addEventListener('visibilitychange', syncWhileVisible);
+  syncTimer = window.setInterval(() => {
+    if (linkedDevice.value && syncStatus.value !== 'unlinked') syncWhileVisible();
+  }, 15_000);
   window.launchQueue?.setConsumer(async ({ files }) => {
     if (files.length) await scanPicked(await Promise.all(files.map((handle) => handle.getFile())));
   });
@@ -344,6 +439,12 @@ onMounted(() => {
   for (const [type, listener] of DOCUMENT_LISTENERS) document.addEventListener(type, listener as EventListener);
 });
 onBeforeUnmount(() => {
+  unsubscribeHistory();
+  window.clearInterval(syncTimer);
+  window.removeEventListener('online', syncNow);
+  window.removeEventListener('storage', migrateLegacyWrite);
+  window.removeEventListener('offline', syncNow);
+  document.removeEventListener('visibilitychange', syncWhileVisible);
   window.removeEventListener('scroll', onScroll);
   for (const [type, listener] of DOCUMENT_LISTENERS) document.removeEventListener(type, listener as EventListener);
 });
@@ -357,6 +458,8 @@ const navTitle = computed(() => {
 });
 
 const savedKey = ref<string | null>(null);
+const savedRevision = ref<string | null>(null);
+const saving = ref(false);
 const unsaved = computed(() => Boolean(workout.value && hasUnsavedChanges(workout.value, extraColumn.value, savedKey.value)));
 
 function startEntry() {
@@ -368,32 +471,58 @@ function showReview(id: string | null) {
   window.history.pushState({ workout: true }, '', routeHash({ page: 'workout', id }));
 }
 
-function openEntry(id: string, push = true): boolean {
-  const entry = storage && loadHistory(storage).find((e) => e.id === id);
+async function openEntry(id: string, push = true): Promise<boolean> {
+  await readyHistory;
+  const savedEntry = history.value.find((entry) => entry.id === id);
+  const entry = savedEntry && parseEntry(JSON.parse(JSON.stringify(savedEntry)));
   if (!entry) return false;
   reset();
   reviewOrigin.value = 'history';
   historyId.value = entry.id;
   workout.value = entry.workout;
   extraColumn.value = entry.extraColumn;
+  savedRevision.value = savedEntry.revision;
   savedKey.value = draftKey(entry.workout, entry.extraColumn);
   if (push) showReview(entry.id);
   else stage.value = 'review';
   return true;
 }
 
-function saveWorkout() {
+async function saveWorkout() {
   const w = workout.value;
-  if (!storage || !historyId.value || !w || !isExportable(w, invalidCells.value)) return;
-  history.value = saveToHistory(storage, { id: historyId.value, workout: w, extraColumn: extraColumn.value });
-  savedKey.value = draftKey(w, extraColumn.value);
-  reviewOrigin.value = 'history';
-  window.history.replaceState(window.history.state, '', routeHash({ page: 'workout', id: historyId.value }));
+  const id = historyId.value;
+  if (saving.value || !id || !w || !isExportable(w, invalidCells.value)) return;
+  const base = savedRevision.value;
+  const data = draftKey(w, extraColumn.value);
+  const entry = parseEntry({ id, ...JSON.parse(data) })!;
+  saving.value = true;
+  if (notice.value === t('sync.deletedEdit')) notice.value = '';
+  try {
+    await readyHistory;
+    const saved = await repository.save(entry, base);
+    if (historyId.value === id && stage.value === 'review') {
+      if (!saved) {
+        notice.value = t('sync.deletedEdit');
+        return;
+      }
+      historyId.value = saved.id;
+      savedRevision.value = saved.revision;
+      savedKey.value = data;
+      reviewOrigin.value = 'history';
+      window.history.replaceState(window.history.state, '', routeHash({ page: 'workout', id: saved.id }));
+    }
+    storageError.value = false;
+    void syncNow();
+  } catch {
+    storageError.value = true;
+  } finally {
+    saving.value = false;
+  }
 }
 
 const saved = computed(() => savedKey.value !== null && !unsaved.value);
 watch(unsaved, (value) => value && (savedAs.value = ''));
-const canSave = computed(() => !saved.value && isExportable(workout.value, invalidCells.value));
+const canSave = computed(() => !saving.value && !saved.value && isExportable(workout.value, invalidCells.value));
 
 function confirmDiscard(): Promise<boolean> {
   return confirmDialog(savedKey.value === null ? 'discardNew' : 'discardChanges');
@@ -432,24 +561,31 @@ async function backFromReview() {
 
 async function removeEntries(entries: HistoryEntry[]) {
   const [first] = entries;
-  if (!storage || !first) return;
+  if (!first) return;
   const confirmed =
     entries.length === 1
       ? await confirmDialog('remove', { date: entryDateLabel(first.workout.startTime, locale.value) })
       : await confirmDialog('removeMany', { count: String(entries.length) });
   if (!confirmed) return;
   const ids = entries.map((e) => e.id);
-  history.value = removeFromHistory(storage, ids);
+  try {
+    await repository.remove(ids);
+    storageError.value = false;
+    void syncNow();
+  } catch {
+    storageError.value = true;
+    return;
+  }
   if (stage.value === 'review' && historyId.value !== null && ids.includes(historyId.value)) leaveReview();
 }
 
 async function selectEntry(entry: HistoryEntry) {
   if (stage.value !== 'review') {
-    openEntry(entry.id);
+    await openEntry(entry.id);
     return;
   }
   if (historyId.value === entry.id || (unsaved.value && !(await confirmDiscard()))) return;
-  openEntry(entry.id, false);
+  if (!(await openEntry(entry.id, false))) return;
   window.history.replaceState(window.history.state, '', routeHash({ page: 'workout', id: entry.id }));
 }
 
@@ -560,6 +696,7 @@ function reset() {
   addingRows = false;
   historyId.value = null;
   savedKey.value = null;
+  savedRevision.value = null;
   reviewOrigin.value = 'capture';
   workout.value = null;
   extraColumn.value = null;
@@ -703,7 +840,7 @@ function onScreenEnter() {
 }
 
 watch(
-  [stage, workout, extraColumn, savedKey, reviewOrigin],
+  [stage, workout, extraColumn, savedKey, savedRevision, reviewOrigin],
   () => {
     if (!session) return;
     if (stage.value !== 'review' || !workout.value || !historyId.value) {
@@ -715,6 +852,7 @@ watch(
       workout: workout.value,
       extraColumn: extraColumn.value,
       savedKey: savedKey.value,
+      revision: savedRevision.value ?? undefined,
       origin: reviewOrigin.value,
       rawText: rawText.value,
       notice: notice.value,
@@ -732,6 +870,9 @@ function restoreDraft(id: string | null): boolean {
   workout.value = draft.workout;
   extraColumn.value = draft.extraColumn;
   savedKey.value = draft.savedKey;
+  const existing = history.value.find((entry) => entry.id === draft.id);
+  savedRevision.value = draft.revision ?? (existing && draftKey(existing.workout, existing.extraColumn) === draft.savedKey ?
+    existing.revision : null);
   reviewOrigin.value = draft.origin;
   rawText.value = draft.rawText;
   notice.value = draft.notice;
@@ -740,8 +881,14 @@ function restoreDraft(id: string | null): boolean {
   return true;
 }
 
-if (initialRoute.page === 'workout' && !restoreDraft(initialRoute.id) && (initialRoute.id === null || !openEntry(initialRoute.id, false))) {
-  window.history.replaceState(null, '', baseUrl());
+if (initialRoute.page === 'workout') {
+  const route = initialRoute;
+  void readyHistory.then(async () => {
+    if (location.hash !== routeHash(route)) return;
+    if (!restoreDraft(route.id) && (route.id === null || !(await openEntry(route.id, false)))) {
+      window.history.replaceState(null, '', baseUrl());
+    }
+  });
 }
 
 function fitFile(): File {
@@ -893,6 +1040,8 @@ async function share() {
         ></div>
       </div>
 
+      <p v-if="storageError" class="banner banner-error" role="alert">{{ t('sync.storageFailed') }}</p>
+
       <Transition :name="transition" mode="out-in" @after-enter="onScreenEnter">
         <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />
 
@@ -1042,12 +1191,17 @@ async function share() {
               </label>
             </div>
 
+            <SyncSettings
+              v-if="syncEnabled" :store="repository" :device="linkedDevice" :pending="pendingSync" :status="syncStatus"
+              :incoming="incomingPair" :confirm="confirmDialog" @sync="syncNow" @dismiss="incomingPair = ''"
+            />
+
             <h2 class="group-header">{{ t('settings.data') }}</h2>
             <div class="group">
               <button type="button" class="group-row tappable settings-danger" @click="clearData">
                 <MdIcon name="delete_forever" class="row-icon" />
                 <span class="row-label">
-                  {{ t('settings.clear') }}
+                  {{ t(linkedDevice ? 'sync.clearDevice' : 'settings.clear') }}
                   <span class="row-detail">{{ t('settings.clearDetail', history.length) }}</span>
                 </span>
               </button>

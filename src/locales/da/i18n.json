@@ -194,7 +194,81 @@
     "saveFirst": "Gem træningen for at dele eller downloade FIT-filen.",
     "savedAs": "Gemt som {name}"
   },
+  "sync": {
+    "title": "Privat synkronisering",
+    "detail": "Forbind dine enheder for at synkronisere gemte træninger med ende-til-ende-kryptering. Du kan scanne, redigere og gemme offline.",
+    "enable": "Slå synkronisering til",
+    "link": "Forbind denne enhed",
+    "scan": "Scan koden med din forbundne enhed, eller kopiér koden dertil. Den udløber efter fem minutter.",
+    "qr": "QR-kode til at forbinde enheder",
+    "pairCode": "Forbindelseskode",
+    "cancelLink": "Annullér forbindelse",
+    "recoveryCode": "Gendannelsesnøgle",
+    "recover": "Gendan historik",
+    "keepRecovery": "Gem gendannelsesnøglen nu. Du skal bruge den, hvis du mister adgangen til alle forbundne enheder. Alle med nøglen kan åbne din synkroniserede historik.",
+    "downloadRecovery": "Hent gendannelsesnøglen",
+    "readQr": "Fotografér eller vælg en QR-kode",
+    "approve": "Godkend ny enhed",
+    "now": "Synkronisér nu",
+    "devices": "Vis forbundne enheder",
+    "disconnect": "Afbryd denne enhed",
+    "erase": "Slet synkroniseret historik",
+    "clearDevice": "Ryd denne enhed",
+    "thisDevice": "Denne enhed",
+    "otherDevice": "Enhed {id}",
+    "revoke": "Fjern",
+    "approved": "Enheden er godkendt. Den anden enhed kan nu fuldføre forbindelsen.",
+    "erased": "Den synkroniserede historik er slettet. Denne enhed har stadig sin lokale kopi.",
+    "requestRejected": "Koden eller enhedens adgang blev afvist. Kontrollér koden, og prøv igen.",
+    "requestFailed": "Synkroniseringen mislykkedes. Kontrollér forbindelsen, og prøv igen.",
+    "inviteExpired": "Koden er udløbet. Opret en ny kode for at forbinde enheden.",
+    "qrFailed": "Billedet indeholder ingen genkendelig QR-kode. Prøv igen, eller indsæt forbindelseskoden.",
+    "needLinked": "Åbn koden på en enhed, hvor synkronisering allerede er slået til.",
+    "storageFailed": "ErgScan kunne ikke få adgang til træningslageret. Dine ugemte ændringer er stadig i redigeringen. Kontrollér browserens ledige plads, og prøv igen.",
+    "conflict": "Kopi fra samtidig redigering",
+    "deletedEdit": "Denne træning blev slettet på en anden enhed. Du kan stadig eksportere ændringerne fra redigeringen.",
+    "pending": "1 ændring gemt på denne enhed | {count} ændringer gemt på denne enhed",
+    "state": {
+      "waiting": "Venter på synkronisering.",
+      "offline": "Offline. Træninger gemmes på denne enhed.",
+      "syncing": "Synkroniserer…",
+      "synced": "Historikken er synkroniseret.",
+      "unlinked": "Enhedens adgang er udløbet. Dine lokale træninger er stadig tilgængelige.",
+      "failed": "Synkroniseringen mislykkedes. Ændringer beholdes på denne enhed.",
+      "tooLarge": "Historikken overskrider størrelsesgrænsen. Ændringer beholdes på denne enhed."
+    }
+  },
   "dialog": {
+    "syncApprove": {
+      "title": "Godkend en ny enhed?",
+      "body": "Godkend kun, hvis du kan se koden på din anden enhed.",
+      "confirm": "Godkend enhed"
+    },
+    "syncRevoke": {
+      "title": "Fjern denne enhed?",
+      "body": "Den mister adgang til synkronisering. Kopier, der allerede er på enheden, kan stadig åbnes der.",
+      "confirm": "Fjern enhed"
+    },
+    "syncDisconnect": {
+      "title": "Afbryd denne enhed?",
+      "body": "Dine træninger bliver her. Ændringer, der venter, bliver på enheden, og forbundne enheder kan stadig se den synkroniserede historik.",
+      "confirm": "Afbryd"
+    },
+    "syncErase": {
+      "title": "Slet synkroniseret historik?",
+      "body": "Historikken på serveren slettes permanent, og alle enheder afbrydes. Lokale kopier kan stadig åbnes på de enkelte enheder.",
+      "confirm": "Slet synkroniseret historik"
+    },
+    "syncClear": {
+      "title": "Ryd denne enhed?",
+      "body": "Træninger og indstillinger slettes på denne enhed. Din synkroniserede historik bliver på serveren.",
+      "confirm": "Ryd denne enhed"
+    },
+    "syncClearPending": {
+      "title": "Ryd denne enhed?",
+      "body": "Træninger, indstillinger og ventende ændringer på enheden slettes. Din synkroniserede historik bliver på serveren.",
+      "confirm": "Ryd denne enhed"
+    },
     "cancel": "Annullér",
     "discardNew": {
       "title": "Vil du kassere træningen?",
