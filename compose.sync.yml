@@ -2,12 +2,11 @@ services:
   web:
     build:
       context: .
+      target: web-sync
       args:
         VITE_ERGSCAN_SYNC: "true"
     ports:
       - "127.0.0.1:8080:80"
-    volumes:
-      - ./server/nginx-sync.conf:/etc/nginx/ergscan-sync/sync.conf:ro
     depends_on:
       - sync
   sync:
