@@ -1,7 +1,8 @@
-import { parseEntry, type HistoryEntry, type HistoryStorage } from './history';
+import { draftKey, parseEntry, type HistoryEntry, type HistoryStorage } from './history';
 
 export interface Draft extends HistoryEntry {
   savedKey: string | null;
+  revision?: string;
   origin: 'capture' | 'history';
   rawText: string;
   notice: string;
@@ -33,11 +34,18 @@ export function loadDraft(storage: DraftStorage, id: string | null): Draft | nul
   }
   const entry = parseEntry(parsed);
   if (!entry) return null;
-  const savedKey = typeof parsed.savedKey === 'string' ? parsed.savedKey : null;
+  let savedKey = typeof parsed.savedKey === 'string' ? parsed.savedKey : null;
   if (id === null ? savedKey !== null : savedKey === null || entry.id !== id) return null;
+  if (savedKey && !parsed.revision) {
+    try {
+      const saved = parseEntry({ ...JSON.parse(savedKey), id: entry.id });
+      if (saved) savedKey = draftKey(saved.workout, saved.extraColumn);
+    } catch { /* Some saved drafts predate the current workout format. */ }
+  }
   return {
     ...entry,
     savedKey,
+    ...(typeof parsed.revision === 'string' ? { revision: parsed.revision } : {}),
     origin: parsed.origin === 'history' ? 'history' : 'capture',
     rawText: typeof parsed.rawText === 'string' ? parsed.rawText : '',
     notice: typeof parsed.notice === 'string' ? parsed.notice : '',

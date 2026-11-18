@@ -1,5 +1,5 @@
 import { asFeeling } from './feeling';
-import { isBlank, type ExtraColumn, type Workout } from './workout';
+import { emptyRow, isBlank, type ExtraColumn, type Workout, type WorkoutRow } from './workout';
 
 export interface HistoryEntry {
   id: string;
@@ -10,9 +10,8 @@ export interface HistoryEntry {
 export type HistoryStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
 export const HISTORY_KEY = 'ergscan.history';
-export const HISTORY_LIMIT = 100;
 
-export function loadHistory(storage: HistoryStorage): HistoryEntry[] {
+export function loadHistory(storage: Pick<Storage, 'getItem'>): HistoryEntry[] {
   let parsed: unknown;
   try {
     parsed = JSON.parse(storage.getItem(HISTORY_KEY) ?? '[]');
@@ -26,53 +25,48 @@ export function loadHistory(storage: HistoryStorage): HistoryEntry[] {
 export function parseEntry(item: unknown): HistoryEntry | null {
   const entry = item as {
     id?: unknown;
-    workout?: { startTime?: unknown; rows?: unknown; dragFactor?: unknown; name?: unknown; notes?: unknown; feeling?: unknown };
-    extraColumn?: ExtraColumn | null;
+    workout?: Omit<Partial<Workout>, 'startTime'> & { startTime?: unknown };
+    extraColumn?: unknown;
   };
-  if (typeof entry?.id !== 'string' || !entry.workout || !Array.isArray(entry.workout.rows)) return null;
-  const { workout } = entry;
-  const startTime = new Date(workout.startTime as string);
+  const workout = entry?.workout;
+  if (typeof entry?.id !== 'string' || !workout || !Array.isArray(workout.rows)) return null;
+  const rows = workout.rows;
+  const value = workout.startTime;
+  if (!(value instanceof Date) && typeof value !== 'string' && typeof value !== 'number') return null;
+  const startTime = new Date(value);
   if (Number.isNaN(startTime.getTime())) return null;
   return {
     id: entry.id,
     workout: {
-      ...(workout as Workout),
       startTime,
+      splitDistance: workout.splitDistance === 1000 ? 1000 : 500,
+      summary: parseRow(workout.summary),
+      rows: rows.map(parseRow),
       dragFactor: typeof workout.dragFactor === 'number' ? workout.dragFactor : null,
       name: typeof workout.name === 'string' ? workout.name : null,
       notes: typeof workout.notes === 'string' ? workout.notes : null,
       feeling: asFeeling(workout.feeling),
     },
-    extraColumn: entry.extraColumn ?? null,
+    extraColumn: entry.extraColumn === 'heartRate' || entry.extraColumn === 'watts' || entry.extraColumn === 'calories' ? entry.extraColumn : null,
   };
 }
 
-export function saveToHistory(storage: HistoryStorage, entry: HistoryEntry): HistoryEntry[] {
-  const others = loadHistory(storage).filter((e) => e.id !== entry.id);
-  const entries = [entry, ...others]
-    .sort((a, b) => b.workout.startTime.getTime() - a.workout.startTime.getTime())
-    .slice(0, HISTORY_LIMIT);
-  return write(storage, entries);
+function parseRow(input: Partial<WorkoutRow> | null | undefined): WorkoutRow {
+  const row = emptyRow();
+  const fields = ['durationDs', 'distanceM', 'splitDs', 'rate', 'heartRate', 'watts', 'calories'] as const;
+  for (const field of fields) {
+    const value = input?.[field];
+    if (typeof value === 'number' && Number.isFinite(value)) row[field] = value;
+  }
+  row.isRest = input?.isRest === true;
+  return row;
 }
 
 export function draftKey(workout: Workout, extraColumn: ExtraColumn | null): string {
-  return JSON.stringify({ workout, extraColumn });
+  const { startTime, splitDistance, summary, rows, dragFactor, name, notes, feeling } = workout;
+  return JSON.stringify({ workout: { startTime, splitDistance, summary, rows, dragFactor, name, notes, feeling }, extraColumn });
 }
 
 export function hasUnsavedChanges(workout: Workout, extraColumn: ExtraColumn | null, savedKey: string | null): boolean {
   return savedKey === null ? !isBlank(workout) : draftKey(workout, extraColumn) !== savedKey;
-}
-
-export function removeFromHistory(storage: HistoryStorage, ids: string | readonly string[]): HistoryEntry[] {
-  const remove = typeof ids === 'string' ? [ids] : ids;
-  return write(storage, loadHistory(storage).filter((e) => !remove.includes(e.id)));
-}
-
-function write(storage: HistoryStorage, entries: HistoryEntry[]): HistoryEntry[] {
-  try {
-    storage.setItem(HISTORY_KEY, JSON.stringify(entries));
-  } catch {
-    return loadHistory(storage);
-  }
-  return entries;
 }

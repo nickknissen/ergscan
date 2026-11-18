@@ -3,10 +3,7 @@ import {
   draftKey,
   hasUnsavedChanges,
   HISTORY_KEY,
-  HISTORY_LIMIT,
   loadHistory,
-  removeFromHistory,
-  saveToHistory,
   type HistoryEntry,
   type HistoryStorage,
 } from './history';
@@ -32,7 +29,7 @@ function entry(id: string, start: string): HistoryEntry {
 describe('history', () => {
   it('round-trips entries and restores the start time as a Date', () => {
     const storage = memoryStorage();
-    saveToHistory(storage, entry('a', '2026-11-16T07:00:00Z'));
+    storage.setItem(HISTORY_KEY, JSON.stringify([entry('a', '2026-11-16T07:00:00Z')]));
     const [loaded] = loadHistory(storage);
     expect(loaded!.workout.startTime).toBeInstanceOf(Date);
     expect(loaded).toEqual(entry('a', '2026-11-16T07:00:00Z'));
@@ -42,7 +39,7 @@ describe('history', () => {
     const storage = memoryStorage();
     const withDrag = entry('a', '2026-11-16T07:00:00Z');
     withDrag.workout.dragFactor = 125;
-    saveToHistory(storage, withDrag);
+    storage.setItem(HISTORY_KEY, JSON.stringify([withDrag]));
     expect(loadHistory(storage)[0]!.workout.dragFactor).toBe(125);
   });
 
@@ -51,7 +48,7 @@ describe('history', () => {
     const named = entry('a', '2026-11-16T07:00:00Z');
     named.workout.name = 'Test day';
     named.workout.notes = 'Felt strong';
-    saveToHistory(storage, named);
+    storage.setItem(HISTORY_KEY, JSON.stringify([named]));
     expect(loadHistory(storage)[0]!.workout).toMatchObject({ name: 'Test day', notes: 'Felt strong' });
   });
 
@@ -59,7 +56,7 @@ describe('history', () => {
     const storage = memoryStorage();
     const rated = entry('a', '2026-11-16T07:00:00Z');
     rated.workout.feeling = 4;
-    saveToHistory(storage, rated);
+    storage.setItem(HISTORY_KEY, JSON.stringify([rated]));
     expect(loadHistory(storage)[0]!.workout.feeling).toBe(4);
   });
 
@@ -74,61 +71,10 @@ describe('history', () => {
     expect(loadHistory(memoryStorage(old))[0]!.workout).toMatchObject({ dragFactor: null, name: null, notes: null, feeling: null });
   });
 
-  it('replaces an entry with the same id instead of duplicating it', () => {
-    const storage = memoryStorage();
-    saveToHistory(storage, entry('a', '2026-11-16T07:00:00Z'));
-    const edited = entry('a', '2026-11-16T07:00:00Z');
-    edited.workout.summary.distanceM = 2100;
-    const entries = saveToHistory(storage, edited);
-    expect(entries).toHaveLength(1);
-    expect(loadHistory(storage)[0]!.workout.summary.distanceM).toBe(2100);
-  });
-
-  it('lists the newest workout first', () => {
-    const storage = memoryStorage();
-    saveToHistory(storage, entry('new', '2026-11-16T07:00:00Z'));
-    saveToHistory(storage, entry('old', '2026-11-01T07:00:00Z'));
-    expect(loadHistory(storage).map((e) => e.id)).toEqual(['new', 'old']);
-  });
-
-  it(`keeps at most ${HISTORY_LIMIT} entries, dropping the oldest`, () => {
-    const storage = memoryStorage();
-    for (let i = 0; i <= HISTORY_LIMIT; i++) saveToHistory(storage, entry(`e${i}`, new Date(Date.UTC(2026, 0, 1) + i * 86_400_000).toISOString()));
-    const entries = loadHistory(storage);
-    expect(entries).toHaveLength(HISTORY_LIMIT);
-    expect(entries.some((e) => e.id === 'e0')).toBe(false);
-  });
-
-  it('removes an entry by id', () => {
-    const storage = memoryStorage();
-    saveToHistory(storage, entry('a', '2026-11-16T07:00:00Z'));
-    saveToHistory(storage, entry('b', '2026-11-15T07:00:00Z'));
-    expect(removeFromHistory(storage, 'a').map((e) => e.id)).toEqual(['b']);
-    expect(loadHistory(storage).map((e) => e.id)).toEqual(['b']);
-  });
-
-  it('removes several entries at once', () => {
-    const storage = memoryStorage();
-    saveToHistory(storage, entry('a', '2026-11-16T07:00:00Z'));
-    saveToHistory(storage, entry('b', '2026-11-15T07:00:00Z'));
-    saveToHistory(storage, entry('c', '2026-11-14T07:00:00Z'));
-    expect(removeFromHistory(storage, ['a', 'c']).map((e) => e.id)).toEqual(['b']);
-    expect(loadHistory(storage).map((e) => e.id)).toEqual(['b']);
-  });
-
   it('ignores corrupt or malformed storage', () => {
     expect(loadHistory(memoryStorage('not json'))).toEqual([]);
     expect(loadHistory(memoryStorage('{}'))).toEqual([]);
     expect(loadHistory(memoryStorage('[{"id":1},{"id":"x","workout":{"startTime":"nope","rows":[]}}]'))).toEqual([]);
-  });
-
-  it('keeps the stored history when writing fails', () => {
-    const storage = memoryStorage();
-    saveToHistory(storage, entry('a', '2026-11-16T07:00:00Z'));
-    storage.setItem = () => {
-      throw new DOMException('full', 'QuotaExceededError');
-    };
-    expect(saveToHistory(storage, entry('b', '2026-11-17T07:00:00Z')).map((e) => e.id)).toEqual(['a']);
   });
 });
 

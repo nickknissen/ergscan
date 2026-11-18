@@ -123,6 +123,7 @@ function entrySummary(entry: HistoryEntry): string {
           <span class="row-label">
             {{ entrySummary(entry) }}
             <span class="row-detail">{{ entryDetail(entry) }}</span>
+            <span v-if="entry.id.includes('~')" class="row-detail">{{ t('sync.conflict') }}</span>
           </span>
           <span
             v-if="entry.workout.feeling !== null"

@@ -7,9 +7,11 @@ import en from './src/locales/en/i18n.json' with { type: 'json' };
 const versionOf = (pkg: string): string =>
   (JSON.parse(readFileSync(new URL(`./node_modules/${pkg}/package.json`, import.meta.url), 'utf8')) as { version: string }).version;
 
+const proxy = { '/api/sync': process.env.ERGSCAN_SYNC_ORIGIN ?? 'http://127.0.0.1:8787' };
+
 export default defineConfig({
-  server: { allowedHosts: ['.ts.net'] },
-  preview: { allowedHosts: ['.ts.net'] },
+  server: { allowedHosts: ['.ts.net'], proxy },
+  preview: { allowedHosts: ['.ts.net'], proxy },
   define: {
     __OCR_VERSION__: JSON.stringify(`${versionOf('tesseract.js')}-${versionOf('tesseract.js-core')}`),
   },

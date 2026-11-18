@@ -194,7 +194,81 @@
     "saveFirst": "Save the workout to share or download the FIT file.",
     "savedAs": "Saved as {name}"
   },
+  "sync": {
+    "title": "Private sync",
+    "detail": "Link your devices to sync saved workouts with end-to-end encryption. Scanning, editing and saving work offline.",
+    "enable": "Enable sync",
+    "link": "Link this device",
+    "scan": "Scan this code with your linked device, or copy the pairing code there. It expires in five minutes.",
+    "qr": "Device pairing QR code",
+    "pairCode": "Pairing code",
+    "cancelLink": "Cancel pairing",
+    "recoveryCode": "Recovery key",
+    "recover": "Recover history",
+    "keepRecovery": "Save this recovery key now. You’ll need it if you lose access to all your linked devices. Anyone with the key can access your synced history.",
+    "downloadRecovery": "Download recovery key",
+    "readQr": "Photograph or choose a pairing QR code",
+    "approve": "Approve new device",
+    "now": "Sync now",
+    "devices": "Show linked devices",
+    "disconnect": "Disconnect this device",
+    "erase": "Delete synced history",
+    "clearDevice": "Clear this device",
+    "thisDevice": "This device",
+    "otherDevice": "Device {id}",
+    "revoke": "Remove",
+    "approved": "Device approved. The other device can now finish linking.",
+    "erased": "Synced history deleted. This device still has its local copy.",
+    "requestRejected": "The code or device access was rejected. Check the code and try again.",
+    "requestFailed": "The sync request failed. Check your connection and try again.",
+    "inviteExpired": "The pairing code expired. Create a new one to link.",
+    "qrFailed": "No pairing QR code was found in the image. Try again or paste the pairing code.",
+    "needLinked": "Open the code on a device that already has sync enabled.",
+    "storageFailed": "ErgScan couldn’t access workout storage. Your unsaved edits are still in the editor. Try again after checking available browser storage.",
+    "conflict": "Copy from a concurrent edit",
+    "deletedEdit": "This workout was deleted on another device. You can still export the edits in this editor.",
+    "pending": "1 change saved on this device | {count} changes saved on this device",
+    "state": {
+      "waiting": "Waiting to sync.",
+      "offline": "Offline. Workouts are saved on this device.",
+      "syncing": "Syncing…",
+      "synced": "History is synced.",
+      "unlinked": "This device’s access ended. Your local workouts are available here.",
+      "failed": "Sync failed. Changes are kept on this device.",
+      "tooLarge": "History exceeds the sync size limit. Changes are kept on this device."
+    }
+  },
   "dialog": {
+    "syncApprove": {
+      "title": "Approve a new device?",
+      "body": "Approve only if you can see the pairing code on your other device.",
+      "confirm": "Approve device"
+    },
+    "syncRevoke": {
+      "title": "Remove this device?",
+      "body": "It will lose access to sync. Copies already on that device can still be opened there.",
+      "confirm": "Remove device"
+    },
+    "syncDisconnect": {
+      "title": "Disconnect this device?",
+      "body": "Your current workouts stay here. Pending changes will stay local and synced history remains available on other linked devices.",
+      "confirm": "Disconnect"
+    },
+    "syncErase": {
+      "title": "Delete synced history?",
+      "body": "This permanently deletes the history on the sync server and disconnects all devices. Local copies can still be opened on each device.",
+      "confirm": "Delete synced history"
+    },
+    "syncClear": {
+      "title": "Clear this device?",
+      "body": "This deletes the workouts and settings on this device. Your synced history stays on the server.",
+      "confirm": "Clear this device"
+    },
+    "syncClearPending": {
+      "title": "Clear this device?",
+      "body": "This deletes workouts, settings and pending changes saved on this device. Your existing synced history stays on the server.",
+      "confirm": "Clear this device"
+    },
     "cancel": "Cancel",
     "discardNew": {
       "title": "Discard workout?",
