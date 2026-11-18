@@ -7,3 +7,5 @@ public/tesseract
 re
 eval-results
 .scratch
+
+ergscan-sync.sqlite*

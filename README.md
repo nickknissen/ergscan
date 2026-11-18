@@ -12,9 +12,10 @@ No Bluetooth pairing, no ErgData and no account needed: row first, photograph
 the screen afterwards. Works with the Concept2 RowErg (Model D and Model E)
 on iPhone, Android and desktop.
 
-Everything runs on your device. The photo is never uploaded: text recognition
-happens in the browser, saved workouts and settings stay in the browser's
-local storage, and the app keeps working offline once it has been opened.
+Photos and text recognition stay on your device. Workouts are saved in your
+browser and the app keeps working offline once it has been opened. Deployments
+with private sync enabled can share saved workouts across linked devices
+using end-to-end encryption.
 
 ## Features
 
@@ -37,7 +38,7 @@ local storage, and the app keeps working offline once it has been opened.
 - Name workouts and add notes; both are written into the FIT file.
 - Rate how you felt, from weary to beaming. The face shows in the history list
   and goes into the FIT file as the session's workout feel.
-- History of saved workouts, kept on the device.
+- Local workout history and optional encrypted sync between linked devices.
 - FIT export as an indoor rowing activity: one lap per split or interval, rest
   laps marked as rest, and per-lap distance, stroke rate, power and heart rate.
   Power is derived from pace when the screen has no watts column.
@@ -129,6 +130,41 @@ The `Dockerfile` builds the app and serves `dist/` with nginx on port 80:
 docker build -t ergscan .
 docker run -p 8080:80 ergscan
 ```
+
+### Private sync
+
+For local development, run `npm run sync:serve` with Node.js 24 alongside
+`npm run dev`. Vite proxies `/api/sync/*` to port 8787. Set
+`ERGSCAN_SYNC_DB` to choose where the server stores its SQLite file.
+
+For a sync-enabled deployment, run:
+
+```sh
+docker compose -f compose.sync.yml up --build -d
+```
+
+The stack listens on `127.0.0.1:8080`. In production, serve it through an HTTPS
+reverse proxy on one origin. The database lives in a named volume. Configure
+rate limits and storage monitoring at the deployment, and apply a documented
+retention policy to any database backups. Deleting a vault removes the live
+server copy and revokes its credentials. Copies previously downloaded to other
+devices and copies in backups follow their own retention.
+
+Enable sync on the device with your existing history and save the generated
+recovery key. On the second device, open **Settings → Private sync → Link this
+device**. Scan its QR code or paste the displayed pairing code into Settings
+on the first device, then approve the link. Recovery on a new device requires
+the recovery key and access to the same sync deployment.
+
+Sync sends an encrypted snapshot of saved history, including workout notes,
+splits, and heart rate when recorded. Photos, raw OCR output, drafts, and
+settings stay local. The server handles device credentials and can observe
+request timing and encrypted payload size. Browser storage and the app code
+served by the deployment are trusted by linked devices.
+
+Workouts always save locally first. Sync runs when connected and the app is
+open. The server accepts encrypted history payloads of up to 8 MiB. Past this
+limit, ErgScan keeps saving locally and shows the pending sync state.
 
 ### Project layout
 

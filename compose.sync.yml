@@ -1,0 +1,24 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        VITE_ERGSCAN_SYNC: "true"
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./server/nginx-sync.conf:/etc/nginx/ergscan-sync/sync.conf:ro
+    depends_on:
+      - sync
+  sync:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      ERGSCAN_SYNC_HOST: "0.0.0.0"
+      ERGSCAN_SYNC_DB: /data/history.sqlite
+    volumes:
+      - sync-data:/data
+
+volumes:
+  sync-data:

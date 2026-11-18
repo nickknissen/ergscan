@@ -18,3 +18,5 @@ eval-results/
 !.env.example
 .DS_Store
 Thumbs.db
+
+/ergscan-sync.sqlite*
