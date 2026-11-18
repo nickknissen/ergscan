@@ -58,6 +58,9 @@ Useful flags, passed after `--`:
 | `src/core/` | Framework-free logic: time parsing, PM4/PM5 parser, workout model, FIT export, heart rate zones, history, settings, routing |
 | `src/ocr/` | Screen detection, image preprocessing, Tesseract worker and OCR asset caching |
 | `src/sync/` | Sync client: end-to-end encryption, history store, merging edits from linked devices |
+| `src/App.vue` | App shell: navigation bar, tabs, history pane, routing between screens and the review session |
+| `src/views/` | One component per screen: capture, scanning, review, history and settings |
+| `src/composables/` | App state shared across screens: settings, and saved history with sync |
 | `src/components/` | Vue components: camera, review table, PM guide, sync settings, Material 3 dialogs and menus |
 | `src/ui/` | Framework-free UI behavior: icons, menus, ripples, transitions, confirm dialogs |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
