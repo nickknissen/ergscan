@@ -30,7 +30,8 @@
         "look": "Grey monitor with Change Units, Change Display and Menu {'|'} Back buttons",
         "menu": "Menu {'|'} Back",
         "memoryPath": "More Options › Memory › List by Date › 🔍",
-        "memoryNote": "The PM4 only keeps the 10 most recent workouts, so open the results before your next session."
+        "memoryNote": "The PM4 only keeps the 10 most recent workouts, so open the results before your next session.",
+        "logCardNote": "If a LogCard is in the monitor, the workout is saved on the card instead: open LogCard Menu › List by Date › 🔍 from the Welcome screen."
       }
     },
     "intro": "ErgScan reads the results table with the total and the splits. Follow these steps on the monitor so that table is what you photograph.",

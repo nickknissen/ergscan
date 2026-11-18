@@ -30,7 +30,8 @@
         "look": "Grå monitor med knapperne Change Units, Change Display og Menu {'|'} Back",
         "menu": "Menu {'|'} Back",
         "memoryPath": "More Options › Memory › List by Date › 🔍",
-        "memoryNote": "PM4 gemmer kun de 10 seneste træninger, så åbn resultatet før din næste træning."
+        "memoryNote": "PM4 gemmer kun de 10 seneste træninger, så åbn resultatet før din næste træning.",
+        "logCardNote": "Sidder der et LogCard i monitoren, gemmes træningen på kortet i stedet: åbn LogCard Menu › List by Date › 🔍 fra velkomstskærmen."
       }
     },
     "intro": "ErgScan læser resultattabellen med totalen og dine splits. Følg disse trin på monitoren, så det er den tabel, du fotograferer.",

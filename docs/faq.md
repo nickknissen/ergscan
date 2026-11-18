@@ -12,8 +12,9 @@ stroke rate, power and heart rate.
 ## I forgot to connect my phone or watch before rowing. Can I still log the workout?
 
 Yes. As long as the workout is in the monitor's memory, open it from the
-PM5 or PM4 memory menu, photograph the results screen and export it. The
-in-app guide shows where to find it.
+PM5 or PM4 memory menu, photograph the results screen and export it. A PM4
+with a LogCard inserted saves to the card instead, so look under LogCard Menu.
+The in-app guide shows where to find it.
 
 ## Does it work with interval workouts?
 
