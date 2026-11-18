@@ -6,6 +6,8 @@ import {
   recoverVault, revokeDevice, SyncError, type Invite,
 } from '../sync/client';
 import type { Device, HistoryStore } from '../sync/store';
+import type { IconName } from '../ui/icons';
+import MdIcon from './MdIcon.vue';
 
 const props = defineProps<{
   store: HistoryStore;
@@ -27,6 +29,13 @@ const devices = ref<Awaited<ReturnType<typeof listDevices>>>([]);
 const invite = shallowRef<Invite | null>(null);
 const qr = ref('');
 const linkCode = computed(() => invite.value ? inviteCode(invite.value) : '');
+const STATUS_ICONS: Record<string, IconName> = {
+  synced: 'cloud_done',
+  syncing: 'cloud_sync',
+  waiting: 'cloud_sync',
+  offline: 'cloud_off',
+};
+const statusIcon = computed<IconName>(() => STATUS_ICONS[props.status] ?? 'sync_problem');
 let poll: number | undefined;
 let active = true;
 
@@ -210,81 +219,217 @@ onBeforeUnmount(() => {
 <template>
   <div class="settings-section">
     <h2 class="group-header">{{ t('sync.title') }}</h2>
-    <div class="group sync-settings">
-      <p>{{ t('sync.detail') }}</p>
-      <p v-if="device" role="status">
-        {{ t('sync.state.' + status) }}
-        <span v-if="pending">{{ t('sync.pending', pending) }}</span>
-      </p>
-      <p v-if="error" class="banner banner-error" role="alert">{{ t('sync.' + error) }}</p>
-      <p v-if="message" role="status">{{ t('sync.' + message) }}</p>
+    <p v-if="error" class="banner banner-error" role="alert">{{ t('sync.' + error) }}</p>
+    <p v-if="message" class="banner" role="status">{{ t('sync.' + message) }}</p>
+    <p v-if="!device && incoming" class="banner" role="status">{{ t('sync.needLinked') }}</p>
+
+    <div class="group">
+      <p class="group-row sync-supporting">{{ t('sync.detail') }}</p>
 
       <template v-if="!device">
-        <p v-if="incoming" role="status">{{ t('sync.needLinked') }}</p>
-        <div v-if="!invite" class="sync-actions">
-          <button type="button" :disabled="busy" @click="enable">{{ t('sync.enable') }}</button>
-          <button type="button" :disabled="busy" @click="startLink">{{ t('sync.link') }}</button>
-        </div>
-        <template v-if="invite">
-          <p>{{ t('sync.scan') }}</p>
-          <img :src="qr" width="228" height="228" :alt="t('sync.qr')" />
-          <label>{{ t('sync.pairCode') }} <input :value="linkCode" readonly @focus="($event.target as HTMLInputElement).select()" /></label>
-          <button type="button" @click="cancelLink">{{ t('sync.cancelLink') }}</button>
+        <template v-if="!invite">
+          <button type="button" class="group-row tappable" :disabled="busy" @click="enable">
+            <MdIcon name="cloud_sync" class="row-icon" />
+            <span class="row-label">{{ t('sync.enable') }}</span>
+          </button>
+          <button type="button" class="group-row tappable" :disabled="busy" @click="startLink">
+            <MdIcon name="link" class="row-icon" />
+            <span class="row-label">{{ t('sync.link') }}</span>
+          </button>
+          <form class="group-row stacked" @submit.prevent="restore">
+            <label class="sync-field">
+              <span class="sync-field-head">
+                <MdIcon name="key" class="row-icon" />
+                <span class="row-label">{{ t('sync.recoveryCode') }}</span>
+              </span>
+              <input v-model="recovery" type="password" autocomplete="off" spellcheck="false" />
+            </label>
+            <div class="sync-buttons">
+              <button class="tonal" :disabled="busy || !recovery.trim()">{{ t('sync.recover') }}</button>
+            </div>
+          </form>
         </template>
-        <form v-else class="sync-form" @submit.prevent="restore">
-          <label>{{ t('sync.recoveryCode') }} <input v-model="recovery" type="password" autocomplete="off" spellcheck="false" /></label>
-          <button :disabled="busy || !recovery.trim()">{{ t('sync.recover') }}</button>
-        </form>
+
+        <div v-else class="group-row stacked">
+          <span class="sync-field-head">
+            <MdIcon name="link" class="row-icon" />
+            <span class="row-label">
+              {{ t('sync.link') }}
+              <span class="row-detail">{{ t('sync.scan') }}</span>
+            </span>
+          </span>
+          <img class="sync-qr" :src="qr" width="228" height="228" :alt="t('sync.qr')" />
+          <label class="sync-field">
+            <span class="sync-field-label">{{ t('sync.pairCode') }}</span>
+            <input :value="linkCode" readonly @focus="($event.target as HTMLInputElement).select()" />
+          </label>
+          <div class="sync-buttons">
+            <button type="button" @click="cancelLink">{{ t('sync.cancelLink') }}</button>
+          </div>
+        </div>
       </template>
 
       <template v-else>
-        <div v-if="recoveryKey" class="sync-form">
-          <p>{{ t('sync.keepRecovery') }}</p>
-          <label>{{ t('sync.recoveryCode') }} <input :value="recoveryKey" readonly @focus="($event.target as HTMLInputElement).select()" /></label>
-          <a :href="'data:text/plain;charset=utf-8,' + encodeURIComponent(recoveryKey)" download="ergscan-recovery.txt">{{ t('sync.downloadRecovery') }}</a>
+        <div class="group-row" role="status">
+          <MdIcon :name="statusIcon" class="row-icon" />
+          <span class="row-label">
+            {{ t('sync.state.' + status) }}
+            <span v-if="pending" class="row-detail">{{ t('sync.pending', pending) }}</span>
+          </span>
         </div>
-        <form class="sync-form" @submit.prevent="approve">
-          <label>{{ t('sync.pairCode') }} <input v-model="code" autocomplete="off" spellcheck="false" /></label>
-          <label class="sync-file">{{ t('sync.readQr') }} <input type="file" accept="image/*" capture="environment" :disabled="busy" @change="readQr" /></label>
-          <button :disabled="busy || !code.trim()">{{ t('sync.approve') }}</button>
+
+        <div v-if="recoveryKey" class="group-row stacked">
+          <span class="sync-field-head">
+            <MdIcon name="key" class="row-icon" />
+            <span class="row-label">
+              {{ t('sync.recoveryCode') }}
+              <span class="row-detail">{{ t('sync.keepRecovery') }}</span>
+            </span>
+          </span>
+          <input :value="recoveryKey" :aria-label="t('sync.recoveryCode')" readonly @focus="($event.target as HTMLInputElement).select()" />
+          <div class="sync-buttons">
+            <a
+              class="button tonal tappable"
+              :href="'data:text/plain;charset=utf-8,' + encodeURIComponent(recoveryKey)"
+              download="ergscan-recovery.txt"
+            ><MdIcon name="download" />{{ t('sync.downloadRecovery') }}</a>
+          </div>
+        </div>
+
+        <form class="group-row stacked" @submit.prevent="approve">
+          <label class="sync-field">
+            <span class="sync-field-head">
+              <MdIcon name="devices" class="row-icon" />
+              <span class="row-label">{{ t('sync.pairCode') }}</span>
+            </span>
+            <input v-model="code" autocomplete="off" spellcheck="false" />
+          </label>
+          <div class="sync-buttons">
+            <label class="button tonal tappable sync-file" :class="{ disabled: busy }">
+              <MdIcon name="qr_code_scanner" />
+              {{ t('sync.readQr') }}
+              <input type="file" accept="image/*" capture="environment" :disabled="busy" @change="readQr" />
+            </label>
+            <button class="primary" :disabled="busy || !code.trim()">{{ t('sync.approve') }}</button>
+          </div>
         </form>
-        <div class="sync-actions">
-          <button type="button" :disabled="status === 'syncing'" @click="emit('sync')">{{ t('sync.now') }}</button>
-          <button type="button" :disabled="busy" @click="loadDevices">{{ t('sync.devices') }}</button>
-          <button type="button" :disabled="busy" @click="disconnect">{{ t('sync.disconnect') }}</button>
-          <button type="button" class="settings-danger" :disabled="busy" @click="erase">{{ t('sync.erase') }}</button>
+
+        <button type="button" class="group-row tappable" :disabled="status === 'syncing'" @click="emit('sync')">
+          <MdIcon name="sync" class="row-icon" />
+          <span class="row-label">{{ t('sync.now') }}</span>
+        </button>
+        <button type="button" class="group-row tappable" :disabled="busy" @click="loadDevices">
+          <MdIcon name="devices" class="row-icon" />
+          <span class="row-label">{{ t('sync.devices') }}</span>
+        </button>
+        <div v-for="item in devices" :key="item.id" class="group-row sync-device">
+          <span class="row-label">
+            {{ item.id === device.id ? t('sync.thisDevice') : t('sync.otherDevice', { id: item.id.slice(0, 8) }) }}
+            <span class="row-detail">{{ new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(item.linkedAt) }}</span>
+          </span>
+          <button v-if="item.id !== device.id" type="button" :disabled="busy" @click="revoke(item.id)">{{ t('sync.revoke') }}</button>
         </div>
-        <ul v-if="devices.length" class="sync-devices">
-          <li v-for="item in devices" :key="item.id">
-            <span>{{ item.id === device.id ? t('sync.thisDevice') : t('sync.otherDevice', { id: item.id.slice(0, 8) }) }}
-              · {{ new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(item.linkedAt) }}</span>
-            <button v-if="item.id !== device.id" type="button" :disabled="busy" @click="revoke(item.id)">{{ t('sync.revoke') }}</button>
-          </li>
-        </ul>
+        <button type="button" class="group-row tappable" :disabled="busy" @click="disconnect">
+          <MdIcon name="link_off" class="row-icon" />
+          <span class="row-label">{{ t('sync.disconnect') }}</span>
+        </button>
+        <button type="button" class="group-row tappable settings-danger" :disabled="busy" @click="erase">
+          <MdIcon name="delete_forever" class="row-icon" />
+          <span class="row-label">{{ t('sync.erase') }}</span>
+        </button>
       </template>
     </div>
   </div>
 </template>
 
 <style scoped>
-.sync-settings, .sync-form {
-  display: grid;
-  gap: 0.65rem;
-  justify-items: start;
+.sync-supporting {
+  min-height: 0;
+  padding-block: 16px;
+  color: var(--on-surface-variant);
+  font: var(--body-medium);
 }
-.sync-settings { padding: 1rem; }
-.sync-settings p, .sync-devices { margin: 0; }
-.sync-settings label { display: grid; gap: 0.3rem; }
-.sync-settings input { max-width: 100%; font: inherit; }
-.sync-settings img { max-width: 100%; height: auto; }
-.sync-actions, .sync-devices li { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-.sync-devices { padding-inline-start: 1rem; }
-.sync-settings button {
-  border: 1px solid currentColor;
-  border-radius: 1rem;
-  padding: 0.45rem 0.8rem;
-  color: inherit;
-  background: transparent;
-  font: inherit;
+
+.sync-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sync-field-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sync-field-label {
+  color: var(--on-surface-variant);
+  font: var(--body-small);
+}
+
+.sync-field input,
+.group-row.stacked > input {
+  width: 100%;
+  font-family: ui-monospace, monospace;
+}
+
+.sync-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sync-buttons .button {
+  text-decoration: none;
+  text-align: center;
+}
+
+.sync-buttons .button svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.sync-file {
+  position: relative;
+  cursor: pointer;
+}
+
+.sync-file input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sync-file:focus-within {
+  outline: 3px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+.sync-file.disabled {
+  background-color: color-mix(in srgb, var(--on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--on-surface) 38%, transparent);
+  pointer-events: none;
+}
+
+.sync-qr {
+  align-self: center;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--shape-medium);
+  background: #fff;
+}
+
+.sync-device {
+  padding-inline-start: 72px;
+}
+
+.group-row.tappable:disabled .row-icon {
+  opacity: 0.38;
 }
 </style>
