@@ -53,6 +53,7 @@ const menuButton = computed(() => (props.monitor ? t(key('menu')) : ''));
             <template v-if="step === 'results'">
               <p class="step-path">{{ t(key('memoryPath')) }}</p>
               <p v-if="te(key('memoryNote'))" class="step-note">{{ t(key('memoryNote')) }}</p>
+              <p v-if="te(key('logCardNote'))" class="step-note">{{ t(key('logCardNote')) }}</p>
               <p class="step-note">{{ t('guide.results.note') }}</p>
             </template>
           </div>
