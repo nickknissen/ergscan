@@ -2,43 +2,18 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CameraCapture from './components/CameraCapture.vue';
-import HeartRateZones from './components/HeartRateZones.vue';
 import HistoryList from './components/HistoryList.vue';
 import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
 import MdMenu from './components/MdMenu.vue';
 import PmGuide from './components/PmGuide.vue';
-import SyncSettings from './components/SyncSettings.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
-import WorkoutEditor from './components/WorkoutEditor.vue';
+import { useAppSettings } from './composables/useAppSettings';
+import { useHistorySync } from './composables/useHistorySync';
 import { entryDateLabel, fitFileName, startTimeFor } from './core/dates';
 import { clearDraft, loadDraft, saveDraft } from './core/draft';
-import { draftKey, hasUnsavedChanges, HISTORY_KEY, parseEntry, type HistoryEntry } from './core/history';
-import { ACCENTS, accentSwatch, type Accent } from './core/palette';
-import {
-  applyTheme,
-  clampListWidth,
-  clearAppData,
-  estimatedMaxHeartRate,
-  LIST_WIDTH,
-  listPaneKey,
-  loadAccent,
-  loadHeartRate,
-  loadIntroHidden,
-  loadListPane,
-  loadTheme,
-  maxHeartRate,
-  parseWholeNumber,
-  saveAccent,
-  saveHeartRate,
-  saveIntroHidden,
-  saveListPane,
-  saveTheme,
-  THEMES,
-  type HeartRateSettings,
-  type ListPane,
-  type Theme,
-} from './core/settings';
+import { draftKey, hasUnsavedChanges, parseEntry, type HistoryEntry } from './core/history';
+import { clampListWidth, clearAppData, LIST_WIDTH, listPaneKey } from './core/settings';
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createUndoStack } from './core/undo';
@@ -46,15 +21,17 @@ import type { ParsedScan } from './core/pm5Parser';
 import { mergeScans, rowsMissing, withAddedRows } from './core/scanMerge';
 import type { ScanOutcome } from './ocr/firstParsed';
 import { scanFailure } from './ocr/scanFailure';
-import { SyncError, syncHistory } from './sync/client';
-import { historyStore, workouts, type Device, type SavedWorkout } from './sync/store';
 import { createConfirm } from './ui/confirm';
-import { handleRadioKeydown } from './ui/keyboardNav';
 import { historyPane, listDetail } from './ui/layout';
 import { carriesFiles, downloadUrlData, pickImage } from './ui/imageInput';
 import { appShortcut, IMAGE_STAGES, isTextField } from './ui/shortcuts';
 import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
+import CaptureView from './views/CaptureView.vue';
+import HistoryView from './views/HistoryView.vue';
+import ReviewView from './views/ReviewView.vue';
+import ScanningView from './views/ScanningView.vue';
+import SettingsView from './views/SettingsView.vue';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
@@ -197,67 +174,8 @@ const storage: Storage | null = (() => {
     return null;
   }
 })();
-const repository = historyStore(storage);
-const history = shallowRef<SavedWorkout[]>([]);
-const linkedDevice = shallowRef<Device | null>(null);
-const pendingSync = ref(0);
-const syncStatus = ref('waiting');
-const storageError = ref(false);
-let refreshSequence = 0;
-let syncing = false;
-
-async function refreshHistory() {
-  const sequence = ++refreshSequence;
-  const state = await repository.read();
-  if (sequence !== refreshSequence) return;
-  history.value = workouts(state);
-  if (linkedDevice.value?.token !== state.device?.token) syncStatus.value = 'waiting';
-  linkedDevice.value = state.device;
-  pendingSync.value = state.pending.length;
-}
-
-const readyHistory = repository.initialize().then(refreshHistory).catch(() => { storageError.value = true; });
-const unsubscribeHistory = repository.subscribe(() => {
-  void refreshHistory().catch(() => { storageError.value = true; });
-});
-
-async function syncNow() {
-  if (!syncEnabled || syncing) return;
-  syncing = true;
-  try {
-    await readyHistory;
-    const { device } = await repository.read();
-    if (!device) return;
-    if (!navigator.onLine) {
-      syncStatus.value = 'offline';
-      return;
-    }
-    syncStatus.value = 'syncing';
-    try {
-      await syncHistory(repository);
-      const current = await repository.read();
-      if (current.device?.token === device.token) syncStatus.value = current.pending.length ? 'waiting' : 'synced';
-    } catch (error) {
-      if ((await repository.read()).device?.token !== device.token) return;
-      syncStatus.value = error instanceof SyncError && error.status === 401 ? 'unlinked' :
-        error instanceof SyncError && error.status === 413 ? 'tooLarge' : 'failed';
-    }
-  } catch {
-    storageError.value = true;
-  } finally {
-    syncing = false;
-  }
-}
-
-function migrateLegacyWrite(event: StorageEvent) {
-  if (event.key === HISTORY_KEY && event.newValue !== null) {
-    void repository.initialize().then(syncNow).catch(() => { storageError.value = true; });
-  }
-}
-
-function syncWhileVisible() {
-  if (document.visibilityState === 'visible') void syncNow();
-}
+const { repository, history, linkedDevice, pendingSync, syncStatus, storageError, readyHistory, refreshHistory, syncNow } =
+  useHistorySync(storage, syncEnabled);
 
 const historyId = ref<string | null>(null);
 const reviewOrigin = ref<Tab>('capture');
@@ -271,48 +189,7 @@ const session: Storage | null = (() => {
   }
 })();
 
-const theme = ref<Theme>(loadTheme(storage));
-const accent = ref<Accent>(loadAccent(storage));
-const swatches = ACCENTS.map((option) => ({ option, colors: accentSwatch(option) }));
-
-watch(theme, (value) => {
-  if (storage) saveTheme(storage, value);
-  applyTheme(document, value, accent.value);
-});
-
-watch(accent, (value) => {
-  if (storage) saveAccent(storage, value);
-  applyTheme(document, theme.value, value);
-});
-
-const introHidden = ref(loadIntroHidden(storage));
-const showIntro = computed({
-  get: () => !introHidden.value,
-  set: (value: boolean) => {
-    introHidden.value = !value;
-    if (storage) saveIntroHidden(storage, !value);
-  },
-});
-
-const heartRate = ref<HeartRateSettings>(loadHeartRate(storage));
-const maxHr = computed(() => maxHeartRate(heartRate.value));
-const ageEstimate = computed(() => (heartRate.value.age === null ? null : estimatedMaxHeartRate(heartRate.value.age)));
-
-const ageDetail = computed(() => {
-  if (heartRate.value.measuredMax !== null && heartRate.value.age !== null) return t('settings.ageUnused');
-  return ageEstimate.value === null ? t('settings.ageDetail') : t('settings.ageEstimate', { bpm: ageEstimate.value });
-});
-
-watch(heartRate, (value) => {
-  if (storage) saveHeartRate(storage, value);
-});
-
-function setHeartRate(key: keyof HeartRateSettings, event: Event) {
-  const input = event.target as HTMLInputElement;
-  const value = parseWholeNumber(input.value);
-  if (value !== null || input.value.trim() === '') heartRate.value = { ...heartRate.value, [key]: value };
-  input.value = String(heartRate.value[key] ?? '');
-}
+const { theme, accent, showIntro, heartRate, maxHr, listPane, reset: resetSettings } = useAppSettings(storage);
 
 const dialog = createConfirm();
 
@@ -333,11 +210,7 @@ async function clearData() {
     storageError.value = true;
     return;
   }
-  theme.value = 'system';
-  accent.value = 'default';
-  introHidden.value = false;
-  heartRate.value = { measuredMax: null, age: null };
-  listPane.value = { width: LIST_WIDTH.initial, collapsed: false };
+  resetSettings();
 }
 const transition = ref<ScreenTransition>('fade-through');
 watch(stage, (to, from) => (transition.value = screenTransition(from, to)), { flush: 'sync' });
@@ -422,16 +295,7 @@ const DOCUMENT_LISTENERS = [
   ['paste', onPaste],
 ] as const;
 
-let syncTimer: number | undefined;
 onMounted(() => {
-  void syncNow();
-  window.addEventListener('online', syncNow);
-  window.addEventListener('storage', migrateLegacyWrite);
-  window.addEventListener('offline', syncNow);
-  document.addEventListener('visibilitychange', syncWhileVisible);
-  syncTimer = window.setInterval(() => {
-    if (linkedDevice.value && syncStatus.value !== 'unlinked') syncWhileVisible();
-  }, 15_000);
   window.launchQueue?.setConsumer(async ({ files }) => {
     if (files.length) await scanPicked(await Promise.all(files.map((handle) => handle.getFile())));
   });
@@ -439,12 +303,6 @@ onMounted(() => {
   for (const [type, listener] of DOCUMENT_LISTENERS) document.addEventListener(type, listener as EventListener);
 });
 onBeforeUnmount(() => {
-  unsubscribeHistory();
-  window.clearInterval(syncTimer);
-  window.removeEventListener('online', syncNow);
-  window.removeEventListener('storage', migrateLegacyWrite);
-  window.removeEventListener('offline', syncNow);
-  document.removeEventListener('visibilitychange', syncWhileVisible);
   window.removeEventListener('scroll', onScroll);
   for (const [type, listener] of DOCUMENT_LISTENERS) document.removeEventListener(type, listener as EventListener);
 });
@@ -651,8 +509,6 @@ const showListDetail = computed(() => listDetail(layout.value));
 const showHistoryPane = computed(() => historyPane(layout.value));
 const historyTab = computed(() => stage.value === 'history' || showListDetail.value);
 
-const listPane = ref<ListPane>(loadListPane(storage));
-watch(listPane, (value) => storage && saveListPane(storage, value));
 let resizeStart: { x: number; width: number } | null = null;
 
 function onDividerKeydown(event: KeyboardEvent) {
@@ -1045,223 +901,63 @@ async function share() {
       <Transition :name="transition" mode="out-in" @after-enter="onScreenEnter">
         <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />
 
-        <section v-else-if="stage === 'capture'" class="capture">
-          <div v-if="showIntro" class="hero">
-            <img src="/icon.svg" alt="" class="hero-icon" width="56" height="56" />
-            <p class="hero-tagline">{{ t('app.tagline') }}</p>
-            <p class="hero-hint">{{ t('capture.hint') }}</p>
-            <button type="button" class="tonal" @click="openGuide">
-              <MdIcon name="menu_book" />
-              {{ t('guide.open') }}
-            </button>
-          </div>
+        <CaptureView
+          v-else-if="stage === 'capture'"
+          :show-intro="showIntro"
+          :camera-error="cameraError"
+          :camera-supported="cameraSupported"
+          @guide="openGuide"
+          @photo="photoInput?.click()"
+          @choose="chooseImage"
+          @manual="enterManually"
+        />
 
-          <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
+        <HistoryView
+          v-else-if="stage === 'history'"
+          :entries="history"
+          :pane-shown="showHistoryPane"
+          @open="selectEntry"
+          @remove="removeEntries"
+          @scan="stage = 'capture'"
+        />
 
-          <div class="group">
-            <button v-if="!showIntro" type="button" class="group-row tappable" @click="openGuide">
-              <MdIcon name="menu_book" class="row-icon" />
-              <span class="row-label">{{ t('guide.open') }}</span>
-            </button>
-            <button v-if="!cameraSupported || cameraError" type="button" class="group-row tappable" @click="photoInput?.click()">
-              <MdIcon name="photo_camera" class="row-icon" />
-              <span class="row-label">{{ t('capture.takePhoto') }}</span>
-            </button>
-            <button type="button" class="group-row tappable" @click="chooseImage">
-              <MdIcon name="photo_library" class="row-icon" />
-              <span class="row-label">{{ t('capture.chooseImage') }}</span>
-            </button>
-            <button type="button" class="group-row tappable" @click="enterManually">
-              <MdIcon name="edit" class="row-icon" />
-              <span class="row-label">{{ t('capture.manual') }}</span>
-            </button>
-          </div>
-        </section>
+        <SettingsView
+          v-else-if="stage === 'settings'"
+          v-model:theme="theme"
+          v-model:accent="accent"
+          v-model:show-intro="showIntro"
+          v-model:heart-rate="heartRate"
+          :entry-count="history.length"
+          :linked="Boolean(linkedDevice)"
+          :sync="syncEnabled ? {
+            store: repository, device: linkedDevice, pending: pendingSync, status: syncStatus,
+            incoming: incomingPair, confirm: confirmDialog,
+          } : null"
+          @sync-now="syncNow"
+          @dismiss-pair="incomingPair = ''"
+          @clear="clearData"
+        />
 
-        <section v-else-if="stage === 'history'" class="history">
-          <div v-if="!history.length" class="history-empty">
-            <MdIcon name="history" />
-            <h2>{{ t('history.emptyTitle') }}</h2>
-            <p>{{ t('history.empty') }}</p>
-            <button type="button" class="primary" @click="stage = 'capture'">{{ t('history.scanFirst') }}</button>
-          </div>
-          <div v-else-if="showHistoryPane" class="history-empty">
-            <MdIcon name="rowing" />
-            <h2>{{ t('history.pickTitle') }}</h2>
-            <p>{{ t('history.pick') }}</p>
-          </div>
-          <HistoryList v-else :entries="history" :current="null" @open="selectEntry" @remove="removeEntries" />
-        </section>
+        <ScanningView v-else-if="stage === 'scanning'" :photo-url="photoUrl" :progress="progress" :progress-text="progressText" />
 
-        <section v-else-if="stage === 'settings'" class="settings">
-          <div class="settings-section">
-            <h2 class="group-header">{{ t('settings.appearance') }}</h2>
-            <div class="group">
-              <div class="group-row settings-theme">
-                <MdIcon name="contrast" class="row-icon" />
-                <span class="row-label">{{ t('settings.theme') }}</span>
-                <div
-                  class="segmented"
-                  role="radiogroup"
-                  :aria-label="t('settings.theme')"
-                  @keydown="handleRadioKeydown($event, THEMES, theme, (value) => (theme = value))"
-                >
-                  <button
-                    v-for="option in THEMES"
-                    :key="option"
-                    type="button"
-                    role="radio"
-                    :aria-checked="theme === option"
-                    :tabindex="theme === option ? 0 : -1"
-                    @click="theme = option"
-                  >
-                    <MdIcon v-if="theme === option" name="check" />
-                    {{ t(`settings.themes.${option}`) }}
-                  </button>
-                </div>
-              </div>
-              <div class="group-row settings-theme">
-                <MdIcon name="palette" class="row-icon" />
-                <span class="row-label">{{ t('settings.color') }}</span>
-                <div
-                  class="swatches"
-                  role="radiogroup"
-                  :aria-label="t('settings.color')"
-                  @keydown="handleRadioKeydown($event, ACCENTS, accent, (value) => (accent = value))"
-                >
-                  <button
-                    v-for="{ option, colors } in swatches"
-                    :key="option"
-                    type="button"
-                    role="radio"
-                    class="swatch"
-                    :aria-checked="accent === option"
-                    :tabindex="accent === option ? 0 : -1"
-                    :aria-label="t(`settings.accents.${option}`)"
-                    :title="t(`settings.accents.${option}`)"
-                    :style="{ '--swatch-1': colors[0], '--swatch-2': colors[1], '--swatch-3': colors[2] }"
-                    @click="accent = option"
-                  >
-                    <MdIcon v-if="accent === option" name="check" />
-                  </button>
-                </div>
-              </div>
-              <label class="group-row tappable">
-                <MdIcon name="view_day" class="row-icon" />
-                <span class="row-label">
-                  {{ t('settings.showIntro') }}
-                  <span class="row-detail">{{ t('settings.showIntroDetail') }}</span>
-                </span>
-                <input v-model="showIntro" type="checkbox" role="switch" class="switch" />
-              </label>
-            </div>
-          </div>
-
-          <div class="settings-section">
-            <h2 class="group-header">{{ t('settings.heartRate') }}</h2>
-            <div class="group">
-              <label class="group-row">
-                <MdIcon name="monitor_heart" class="row-icon" />
-                <span class="row-label">
-                  {{ t('settings.maxHr') }}
-                  <span class="row-detail">{{ t('settings.maxHrDetail') }}</span>
-                </span>
-                <input
-                  :value="heartRate.measuredMax ?? ''"
-                  class="settings-number"
-                  inputmode="numeric"
-                  autocomplete="off"
-                  :placeholder="ageEstimate === null ? undefined : String(ageEstimate)"
-                  @change="setHeartRate('measuredMax', $event)"
-                />
-              </label>
-              <label class="group-row">
-                <MdIcon name="cake" class="row-icon" />
-                <span class="row-label">
-                  {{ t('settings.age') }}
-                  <span class="row-detail">{{ ageDetail }}</span>
-                </span>
-                <input
-                  :value="heartRate.age ?? ''"
-                  class="settings-number"
-                  inputmode="numeric"
-                  autocomplete="off"
-                  @change="setHeartRate('age', $event)"
-                />
-              </label>
-            </div>
-
-            <SyncSettings
-              v-if="syncEnabled" :store="repository" :device="linkedDevice" :pending="pendingSync" :status="syncStatus"
-              :incoming="incomingPair" :confirm="confirmDialog" @sync="syncNow" @dismiss="incomingPair = ''"
-            />
-
-            <h2 class="group-header">{{ t('settings.data') }}</h2>
-            <div class="group">
-              <button type="button" class="group-row tappable settings-danger" @click="clearData">
-                <MdIcon name="delete_forever" class="row-icon" />
-                <span class="row-label">
-                  {{ t(linkedDevice ? 'sync.clearDevice' : 'settings.clear') }}
-                  <span class="row-detail">{{ t('settings.clearDetail', history.length) }}</span>
-                </span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section v-else-if="stage === 'scanning'" class="scanning" aria-live="polite">
-          <div v-if="photoUrl" class="scan-photo">
-            <img :src="photoUrl" :alt="t('review.photo')" />
-            <span class="scan-line" aria-hidden="true"></span>
-          </div>
-          <div class="progress" :class="{ indeterminate: progress === null }" role="progressbar" :aria-valuenow="progress === null ? undefined : Math.round(progress * 100)" aria-valuemin="0" aria-valuemax="100">
-            <span :style="progress === null ? undefined : { width: `${Math.round(progress * 100)}%` }"></span>
-          </div>
-          <p class="scan-status">{{ progressText }}</p>
-        </section>
-
-        <section v-else-if="workout" class="review" :class="{ 'review-split': reviewPanel }">
-          <div class="review-main">
-            <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
-            <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
-            <p v-if="extraImages" class="banner">{{ t('drop.extra', extraImages) }}</p>
-            <div v-if="moreRows" class="banner banner-action">
-              <p>{{ t('review.moreRows') }}</p>
-              <button type="button" class="tonal" @click="scanMoreRows">
-                <MdIcon name="photo_camera" />
-                {{ t('review.scanMoreRows') }}
-              </button>
-            </div>
-
-            <WorkoutEditor v-model:workout="workout" v-model:extra-column="extraColumn" v-model:invalid-count="invalidCells" />
-
-            <p v-if="!saved && !invalidCells" class="review-hint">{{ canSave ? t('export.saveFirst') : t('export.invalid') }}</p>
-            <p v-else-if="savedAs" class="review-hint">{{ t('export.savedAs', { name: savedAs }) }}</p>
-
-            <HeartRateZones :workout="workout" :max-hr="maxHr" />
-
-            <details v-if="!reviewPanel && (photoUrls.length || rawText)" class="group disclosure">
-              <summary class="group-row tappable">
-                <span class="row-label">{{ t('review.rawText') }}</span>
-                <MdIcon name="keyboard_arrow_down" class="chevron" />
-              </summary>
-              <div class="disclosure-body">
-                <img v-for="url in photoUrls" :key="url" :src="url" :alt="t('review.photo')" class="photo" />
-                <pre>{{ rawText }}</pre>
-              </div>
-            </details>
-          </div>
-
-          <aside v-if="reviewPanel" class="review-panel" :aria-label="t('review.rawText')">
-            <h2 class="group-header">{{ t('review.rawText') }}</h2>
-            <div class="group">
-              <div class="disclosure-body">
-                <img v-for="url in photoUrls" :key="url" :src="url" :alt="t('review.photo')" class="photo" />
-                <pre>{{ rawText }}</pre>
-              </div>
-            </div>
-          </aside>
-        </section>
+        <ReviewView
+          v-else-if="workout"
+          v-model:workout="workout"
+          v-model:extra-column="extraColumn"
+          v-model:invalid-cells="invalidCells"
+          :notice="notice"
+          :computed-summary="computedSummary"
+          :extra-images="extraImages"
+          :more-rows="moreRows"
+          :saved="saved"
+          :saved-as="savedAs"
+          :can-save="canSave"
+          :max-hr="maxHr"
+          :photo-urls="photoUrls"
+          :raw-text="rawText"
+          :source-panel="reviewPanel"
+          @scan-more-rows="scanMoreRows"
+        />
       </Transition>
 
       <Transition name="fab">
