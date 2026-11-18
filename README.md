@@ -143,6 +143,10 @@ For a sync-enabled deployment, run:
 docker compose -f compose.sync.yml up --build -d
 ```
 
+On Coolify, use the Docker Compose build pack with `/docker-compose.yaml` and
+assign the domain to the `web` service. That file binds no host ports and keeps
+the database in the `ergscan-sync-data` volume.
+
 The stack listens on `127.0.0.1:8080`. In production, serve it through an HTTPS
 reverse proxy on one origin. The database lives in a named volume. Configure
 rate limits and storage monitoring at the deployment, and apply a documented
