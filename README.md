@@ -38,7 +38,12 @@ using end-to-end encryption.
 - Name workouts and add notes; both are written into the FIT file.
 - Rate how you felt, from weary to beaming. The face shows in the history list
   and goes into the FIT file as the session's workout feel.
-- Local workout history and optional encrypted sync between linked devices.
+- Workout history kept on the device.
+- Optional private sync on self-hosted deployments: link your phone, tablet
+  and computer with a QR code and keep the same history on all of them.
+  History is end-to-end encrypted before it leaves the device, and a recovery
+  key restores it if you lose every linked device. See
+  [Private sync](#private-sync).
 - FIT export as an indoor rowing activity: one lap per split or interval, rest
   laps marked as rest, and per-lap distance, stroke rate, power and heart rate.
   Power is derived from pace when the screen has no watts column.
@@ -78,6 +83,18 @@ rest laps.
 
 No. ErgScan is a progressive web app that runs in the browser. You can add it
 to the home screen and use it offline.
+
+### Can I see my workouts on several devices?
+
+Yes, on a deployment with private sync enabled. Open **Settings → Private
+sync → Enable sync** on the device that has your history and save the recovery
+key it shows. On the next device, choose **Link this device**, then scan its
+QR code or paste its pairing code into **Settings → Private sync** on the
+first device and approve it. Workouts saved on any linked device appear on the
+others the next time they are online with the app open.
+
+Lost every linked device? Open **Settings → Private sync** on a new device,
+enter the recovery key and choose **Recover history**.
 
 ### Is it free?
 
@@ -124,7 +141,8 @@ Useful flags, passed after `--`:
 
 ### Docker
 
-The `Dockerfile` builds the app and serves `dist/` with nginx on port 80:
+The `Dockerfile` builds the app without sync and serves `dist/` with nginx on
+port 80:
 
 ```sh
 docker build -t ergscan .
@@ -133,32 +151,13 @@ docker run -p 8080:80 ergscan
 
 ### Private sync
 
-For local development, run `npm run sync:serve` with Node.js 24 alongside
-`npm run dev`. Vite proxies `/api/sync/*` to port 8787. Set
-`ERGSCAN_SYNC_DB` to choose where the server stores its SQLite file.
+Sync is off in production builds unless the app is built with
+`VITE_ERGSCAN_SYNC=true`, and it needs the sync server in `server/` on the same
+origin under `/api/sync/`. The server is a small Node.js API that stores one
+encrypted history snapshot per vault in SQLite. It never sees workouts in
+plain text.
 
-For a sync-enabled deployment, run:
-
-```sh
-docker compose -f compose.sync.yml up --build -d
-```
-
-On Coolify, use the Docker Compose build pack with `/docker-compose.yaml` and
-assign the domain to the `web` service. That file binds no host ports and keeps
-the database in the `ergscan-sync-data` volume.
-
-The stack listens on `127.0.0.1:8080`. In production, serve it through an HTTPS
-reverse proxy on one origin. The database lives in a named volume. Configure
-rate limits and storage monitoring at the deployment, and apply a documented
-retention policy to any database backups. Deleting a vault removes the live
-server copy and revokes its credentials. Copies previously downloaded to other
-devices and copies in backups follow their own retention.
-
-Enable sync on the device with your existing history and save the generated
-recovery key. On the second device, open **Settings → Private sync → Link this
-device**. Scan its QR code or paste the displayed pairing code into Settings
-on the first device, then approve the link. Recovery on a new device requires
-the recovery key and access to the same sync deployment.
+#### What is synced
 
 Sync sends an encrypted snapshot of saved history, including workout notes,
 splits, and heart rate when recorded. Photos, raw OCR output, drafts, and
@@ -169,6 +168,58 @@ served by the deployment are trusted by linked devices.
 Workouts always save locally first. Sync runs when connected and the app is
 open. The server accepts encrypted history payloads of up to 8 MiB. Past this
 limit, ErgScan keeps saving locally and shows the pending sync state.
+Recovery on a new device requires the recovery key and access to the same
+sync deployment.
+
+#### Local development
+
+Sync is always enabled in `npm run dev`. Run the server with Node.js 24
+alongside it:
+
+```sh
+npm run sync:serve   # API on 127.0.0.1:8787
+npm run dev          # Vite proxies /api/sync/* to the API
+```
+
+| Variable | Default | Used by |
+| --- | --- | --- |
+| `ERGSCAN_SYNC_PORT` | `8787` | Sync server port |
+| `ERGSCAN_SYNC_HOST` | `127.0.0.1` | Sync server bind address |
+| `ERGSCAN_SYNC_DB` | `ergscan-sync.sqlite` | SQLite file path |
+| `ERGSCAN_SYNC_ORIGIN` | `http://127.0.0.1:8787` | Where Vite proxies `/api/sync/*` |
+
+#### Self-hosting with Docker Compose
+
+```sh
+docker compose -f compose.sync.yml up --build -d
+```
+
+This builds the `web-sync` image stage, which bundles the app with sync turned
+on and adds the nginx rule that proxies `/api/sync/` to the `sync` service.
+The stack listens on `127.0.0.1:8080`; serve it through an HTTPS reverse proxy
+on one origin. The database lives in a named volume.
+
+#### Coolify
+
+`docker-compose.yaml` is the same stack prepared for Coolify: it binds no host
+ports, has health checks, and keeps the database in the `ergscan-sync-data`
+volume.
+
+1. Create or switch the application to the **Docker Compose** build pack with
+   compose file `/docker-compose.yaml`.
+2. Click **Reload Compose File**, then assign the domain to the `web` service.
+   Without a domain on `web`, the proxy answers 503.
+3. Deploy. Pushes to the configured branch redeploy through the webhook.
+
+If a CDN sits in front, make sure it does not cache `/sw.js`, `/index.html` or
+`/api/sync/*` longer than nginx says, or installed apps pick up updates late.
+
+#### Operating a deployment
+
+Configure rate limits and storage monitoring at the deployment, and apply a
+documented retention policy to any database backups. Deleting a vault removes
+the live server copy and revokes its credentials. Copies previously downloaded
+to other devices and copies in backups follow their own retention.
 
 ### Project layout
 
@@ -176,6 +227,8 @@ limit, ErgScan keeps saving locally and shows the pending sync state.
 | --- | --- |
 | `src/core/` | Framework-free logic: time parsing, PM4/PM5 parser, workout model, FIT export, heart rate zones, history, settings, routing |
 | `src/ocr/` | Screen detection, image preprocessing, Tesseract worker and OCR asset caching |
+| `src/sync/` | Sync client: end-to-end encryption, history store, merging edits from linked devices |
+| `server/` | Sync API server, its Dockerfile and the nginx rule for sync deployments |
 | `src/components/` | Vue components: camera, review table, PM guide, Material 3 dialogs and menus |
 | `src/ui/` | Framework-free UI behavior: icons, menus, ripples, transitions, confirm dialogs |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
