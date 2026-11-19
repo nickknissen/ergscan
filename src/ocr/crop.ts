@@ -67,10 +67,12 @@ export function findScreen(gray: Uint8Array, width: number, height: number): Rec
   const h = Math.max(1, Math.round(height * scale));
   const small = scale < 1 ? resizeGray(gray, width, height, w, h) : gray;
   const threshold = otsuThreshold(small);
-  const best =
+  let best =
     brightestPanel(small, w, h, threshold, false) ??
     brightestPanel(small, w, h, otsuThreshold(small.filter((v) => v <= threshold)), true);
   if (!best) return null;
+  const inner = darkerInnerPanel(small, w, best);
+  if (inner) best = inner;
 
   const pad = 0.02;
   const x0 = Math.max(0, Math.floor((best.x - best.width * pad) / scale));
@@ -78,6 +80,54 @@ export function findScreen(gray: Uint8Array, width: number, height: number): Rec
   const x1 = Math.min(width, Math.ceil((best.x + best.width * (1 + pad)) / scale));
   const y1 = Math.min(height, Math.ceil((best.y + best.height * (1 + pad)) / scale));
   return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+}
+
+/**
+ * A silver PM4 case is brighter than its LCD, so the brightest panel can be the
+ * case (or the whole photo). Look inside it for a large, darker, screen-shaped
+ * region that doesn't touch the panel's edges: the LCD with its text.
+ */
+function darkerInnerPanel(small: Uint8Array, w: number, outer: Rect): Rect | null {
+  const region = cropGray(small, w, outer);
+  const threshold = otsuThreshold(region);
+  const ow = outer.width;
+  const oh = outer.height;
+  const dark = new Uint8Array(ow * oh);
+  for (let i = 0; i < dark.length; i++) dark[i] = region[i]! <= threshold ? 1 : 0;
+
+  const seen = new Uint8Array(ow * oh);
+  const stack: number[] = [];
+  let best: { rect: Rect; area: number } | null = null;
+  for (let start = 0; start < ow * oh; start++) {
+    if (seen[start] || !dark[start]) continue;
+    let minX = ow, minY = oh, maxX = 0, maxY = 0, area = 0;
+    seen[start] = 1;
+    stack.push(start);
+    while (stack.length > 0) {
+      const p = stack.pop()!;
+      const x = p % ow;
+      const y = (p - x) / ow;
+      area++;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+      for (const q of [x > 0 ? p - 1 : -1, x < ow - 1 ? p + 1 : -1, y > 0 ? p - ow : -1, y < oh - 1 ? p + ow : -1]) {
+        if (q >= 0 && !seen[q] && dark[q]) {
+          seen[q] = 1;
+          stack.push(q);
+        }
+      }
+    }
+    if (minX === 0 || minY === 0 || maxX === ow - 1 || maxY === oh - 1) continue;
+    const boxW = maxX - minX + 1;
+    const boxH = maxY - minY + 1;
+    const aspect = boxW / boxH;
+    if (area / (boxW * boxH) < 0.6 || aspect < 0.7 || aspect > 1.6) continue;
+    if (boxW * boxH < ow * oh * 0.15) continue;
+    if (!best || area > best.area) best = { rect: { x: outer.x + minX, y: outer.y + minY, width: boxW, height: boxH }, area };
+  }
+  return best?.rect ?? null;
 }
 
 function brightMask(small: Uint8Array, w: number, h: number, threshold: number, radius: number): Uint8Array {
