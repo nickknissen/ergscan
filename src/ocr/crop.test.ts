@@ -73,6 +73,25 @@ describe('findScreen', () => {
     expect(rect.y + rect.height).toBeLessThan(595);
   });
 
+  it('finds the darker LCD inside a silver PM4 case that is brighter than the screen', () => {
+    const width = 800;
+    const height = 1000;
+    const { gray, fill } = scene(width, height);
+    fill(60, 150, 740, 900, 210);
+    fill(150, 300, 650, 780, 120);
+    for (let row = 0; row < 6; row++) fill(200, 340 + row * 70, 600, 370 + row * 70, 40);
+
+    const rect = findScreen(gray, width, height)!;
+    expect(rect.x).toBeGreaterThan(130);
+    expect(rect.x).toBeLessThan(155);
+    expect(rect.y).toBeGreaterThan(280);
+    expect(rect.y).toBeLessThan(305);
+    expect(rect.x + rect.width).toBeGreaterThan(645);
+    expect(rect.x + rect.width).toBeLessThan(670);
+    expect(rect.y + rect.height).toBeGreaterThan(775);
+    expect(rect.y + rect.height).toBeLessThan(800);
+  });
+
   it('returns null when nothing screen-like is present', () => {
     const { gray } = scene(100, 100);
     expect(findScreen(gray, 100, 100)).toBeNull();

@@ -1,0 +1,34 @@
+{
+  "image": "pm4-time-splits-40min-calhr.webp",
+  "monitor": "PM4",
+  "capture": "phone photo of the whole silver PM4 at the gym, greenish LCD, straight on, ceiling light above the monitor",
+  "screenRect": { "x": 0.113, "y": 0.223, "width": 0.683, "height": 0.512 },
+  "screen": {
+    "title": "40:00",
+    "date": "Nov 18 2026",
+    "header": ["time", "meter", "cal/hr", "s/m", "♡"],
+    "rows": [
+      ["40:00.0", "7690", "617", "23"],
+      ["8:00.0", "1453", "567", "25"],
+      ["16:00.0", "1712", "737", "27"],
+      ["24:00.0", "1552", "625", "23"],
+      ["32:00.0", "1637", "682", "24"],
+      ["40:00.0", "1336", "507", "19"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-11-18",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "40:00.0", "meters": 7690, "split": "2:36.0", "rate": 23 },
+    "laps": [
+      { "time": "8:00.0", "meters": 1453, "rate": 25 },
+      { "time": "8:00.0", "meters": 1712, "rate": 27 },
+      { "time": "8:00.0", "meters": 1552, "rate": 23 },
+      { "time": "8:00.0", "meters": 1637, "rate": 24 },
+      { "time": "8:00.0", "meters": 1336, "rate": 19 }
+    ]
+  },
+  "notes": "Units set to cal/hr, so the pace column shows calories per hour instead of a split; the summary split is derived from time and meters. Time column is cumulative. Opened from Memory › View Detail."
+}
