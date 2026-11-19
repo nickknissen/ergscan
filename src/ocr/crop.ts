@@ -71,7 +71,7 @@ export function findScreen(gray: Uint8Array, width: number, height: number): Rec
     brightestPanel(small, w, h, threshold, false) ??
     brightestPanel(small, w, h, otsuThreshold(small.filter((v) => v <= threshold)), true);
   if (!best) return null;
-  const inner = darkerInnerPanel(small, w, best);
+  const inner = darkerInnerPanel(small, w, best) ?? enclosingDarkerPanel(small, w, h, best);
   if (inner) best = inner;
 
   const pad = 0.02;
@@ -128,6 +128,22 @@ function darkerInnerPanel(small: Uint8Array, w: number, outer: Rect): Rect | nul
     if (!best || area > best.area) best = { rect: { x: outer.x + minX, y: outer.y + minY, width: boxW, height: boxH }, area };
   }
   return best?.rect ?? null;
+}
+
+/**
+ * Uneven light can leave only part of a silver PM4's LCD above the brightness
+ * threshold, so the brightest panel is that part. When a darker screen-shaped
+ * region in the whole photo contains it, that region is the LCD.
+ */
+function enclosingDarkerPanel(small: Uint8Array, w: number, h: number, part: Rect): Rect | null {
+  const panel = darkerInnerPanel(small, w, { x: 0, y: 0, width: w, height: h });
+  if (!panel) return null;
+  const contains =
+    part.x >= panel.x &&
+    part.y >= panel.y &&
+    part.x + part.width <= panel.x + panel.width &&
+    part.y + part.height <= panel.y + panel.height;
+  return contains ? panel : null;
 }
 
 function brightMask(small: Uint8Array, w: number, h: number, threshold: number, radius: number): Uint8Array {

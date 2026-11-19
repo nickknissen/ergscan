@@ -92,6 +92,26 @@ describe('findScreen', () => {
     expect(rect.y + rect.height).toBeLessThan(800);
   });
 
+  it('finds the whole PM4 LCD when uneven light leaves only part of it bright', () => {
+    const width = 800;
+    const height = 1000;
+    const { gray, fill } = scene(width, height);
+    fill(60, 250, 740, 830, 210);
+    fill(100, 300, 700, 780, 30);
+    fill(110, 310, 340, 770, 200);
+    fill(340, 310, 690, 770, 70);
+
+    const rect = findScreen(gray, width, height)!;
+    expect(rect.x).toBeGreaterThan(80);
+    expect(rect.x).toBeLessThan(105);
+    expect(rect.y).toBeGreaterThan(280);
+    expect(rect.y).toBeLessThan(305);
+    expect(rect.x + rect.width).toBeGreaterThan(695);
+    expect(rect.x + rect.width).toBeLessThan(720);
+    expect(rect.y + rect.height).toBeGreaterThan(775);
+    expect(rect.y + rect.height).toBeLessThan(800);
+  });
+
   it('returns null when nothing screen-like is present', () => {
     const { gray } = scene(100, 100);
     expect(findScreen(gray, 100, 100)).toBeNull();
