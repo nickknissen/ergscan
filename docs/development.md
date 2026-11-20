@@ -46,7 +46,7 @@ Useful flags, passed after `--`:
 | --- | --- |
 | `--only <text>` | Only images whose name contains the text |
 | `--sens <n>`, `--blur <n>`, `--long <n>`, `--crop <n>` | Override a preprocessing option |
-| `--framed` | Skip screen detection and use the labelled screen position |
+| `--framed` | Skip screen detection and the heading-row retry, and use the labelled screen position |
 | `--show` | Print the OCR text |
 | `--dump` | Write the preprocessed images to `eval-results/images/` |
 | `--label <name>` | Add a label to the saved result file name |

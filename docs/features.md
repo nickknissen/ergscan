@@ -7,7 +7,9 @@
 - Take a photo of the PM4/PM5 results screen, or pick an image you already have.
   A step-by-step guide shows how to reach the results screen on a PM5 or PM4.
 - Finds the LCD in the image before reading it, so cropped photos and
-  screenshots of social media posts work as well as close-ups.
+  screenshots of social media posts work as well as close-ups. When the splits
+  don't add up to the total, it also finds the table by its column headings,
+  reads that crop, and keeps whichever read checks out better.
 - Offline OCR with [Tesseract.js](https://github.com/naptha/tesseract.js),
   with image thresholding to cope with glare and uneven light on the LCD.
 - Parses the PM4/PM5 table: time, meters, split (/500m or /1000m), stroke rate,

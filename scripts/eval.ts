@@ -2,14 +2,15 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
-import { createWorker } from 'tesseract.js';
+import { createWorker, PSM } from 'tesseract.js';
 import { cropGray } from '../src/ocr/crop';
 import type { ParsedScan } from '../src/core/pm5Parser';
 import { mergeScans } from '../src/core/scanMerge';
-import { firstParsed, type ScanOutcome } from '../src/ocr/firstParsed';
+import type { ScanOutcome } from '../src/ocr/firstParsed';
 import { SCREEN_GUIDE } from '../src/ocr/guide';
-import { OCR_ENGINE, OCR_PARAMS } from '../src/ocr/ocrConfig';
-import { DEFAULT_PREPROCESS, ocrInputs, type PreprocessOptions } from '../src/ocr/preprocess';
+import { OCR_ENGINE, OCR_PARAMS, wordBoxes } from '../src/ocr/ocrConfig';
+import { DEFAULT_PREPROCESS, type PreprocessOptions } from '../src/ocr/preprocess';
+import { readPhoto } from '../src/ocr/readPhoto';
 import { toGrayscale } from '../src/ocr/threshold';
 import { loadFacts, loadMultiFacts, TESTDATA_DIR } from '../testdata/facts';
 import { scoreOcr, scoreWorkout, type OcrScore, type WorkoutScore } from '../testdata/score';
@@ -87,10 +88,26 @@ for (const { name, facts } of allFacts) {
   const started = Date.now();
   const loaded = await loadGray(join(TESTDATA_DIR, facts.image), options.longSide);
   const { gray, width, height } = args.framed ? frameAroundScreen(loaded.gray, loaded.width, loaded.height, facts.screenRect) : loaded;
-  const inputs = ocrInputs(gray, width, height, options);
-  const pngs = await Promise.all(inputs.images.map((img) => toPng(img, inputs.width, inputs.height)));
-  if (args.dump) pngs.forEach((png, i) => writeFileSync(join(dumpDir, `${name}-${i}.png`), png));
-  const outcome = await firstParsed(pngs.map((png) => async () => (await worker.recognize(png)).data.text));
+  let dumped = 0;
+  const outcome = await readPhoto(
+    gray,
+    width,
+    height,
+    {
+      text: async (img) => {
+        const png = await toPng(img.values, img.width, img.height);
+        if (args.dump) writeFileSync(join(dumpDir, `${name}-${dumped++}.png`), png);
+        return (await worker.recognize(png)).data.text;
+      },
+      words: async (img) => {
+        await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT });
+        const { data } = await worker.recognize(await toPng(img.values, img.width, img.height), {}, { blocks: true, text: false });
+        await worker.setParameters(OCR_PARAMS);
+        return wordBoxes(data.blocks);
+      },
+    },
+    options,
+  );
   outcomes.set(name, outcome);
   if (!listed) continue;
   const result = { name, ms: Date.now() - started, ...scoreOcr(outcome.text, facts.screen.rows), ...scoreWorkout(outcome.scan, facts.workout) };
