@@ -36,7 +36,7 @@ const { t, locale } = useI18n();
 
 const syncEnabled = import.meta.env.DEV || import.meta.env.VITE_ERGSCAN_SYNC === 'true';
 const nav = useNavigation({ syncEnabled });
-const { stage, guideMonitor, incomingPair, show, goTo, openGuide, closeGuide, pickMonitor, changeMonitor, discardWorkout, selectEntry, saveWorkout } =
+const { stage, guideMonitor, incomingPair, goTo, openGuide, closeGuide, pickMonitor, changeMonitor, discardWorkout, selectEntry, saveWorkout } =
   nav;
 
 function webStorage(get: () => Storage): Storage | null {
@@ -148,7 +148,7 @@ async function removeEntries(entries: HistoryEntry[]) {
 let focusOnEnter: string | null = null;
 
 function enterManually() {
-  nav.reset();
+  review.clear();
   review.startEntry();
   workout.value = newWorkout();
   focusOnEnter = 'tr.summary .cell';
@@ -302,7 +302,7 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
           :pane-shown="showHistoryPane"
           @open="selectEntry"
           @remove="removeEntries"
-          @scan="show('capture')"
+          @scan="goTo('capture')"
         />
 
         <SettingsView

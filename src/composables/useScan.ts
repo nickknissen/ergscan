@@ -108,7 +108,7 @@ export function useScan(options: {
     const previous = addingRows ? scanSoFar.value : null;
     addingRows = false;
     if (previous && workout.value) return addRowsFrom(image, framed, previous);
-    nav.reset();
+    review.clear();
     review.startEntry();
     photoUrls.value = [URL.createObjectURL(image)];
 

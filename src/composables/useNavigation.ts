@@ -107,12 +107,6 @@ export function useNavigation(options: { syncEnabled: boolean }) {
     void goTo('capture');
   }
 
-  /** Clears the open workout and everything that belongs to it, back on the scan screen. */
-  function reset() {
-    review.clear();
-    stage.value = 'capture';
-  }
-
   function showReview(id: string | null) {
     stage.value = 'review';
     window.history.pushState({ workout: true }, '', routeHash({ page: 'workout', id }));
@@ -121,7 +115,7 @@ export function useNavigation(options: { syncEnabled: boolean }) {
   async function openEntry(id: string, push = true): Promise<boolean> {
     const found = await review.findEntry(id);
     if (!found) return false;
-    reset();
+    review.clear();
     review.applyEntry(found);
     if (push) showReview(found.entry.id);
     else stage.value = 'review';
@@ -131,7 +125,7 @@ export function useNavigation(options: { syncEnabled: boolean }) {
   function restoreDraft(id: string | null): boolean {
     const draft = review.findDraft(id);
     if (!draft) return false;
-    reset();
+    review.clear();
     review.applyDraft(draft);
     stage.value = 'review';
     return true;
@@ -144,7 +138,7 @@ export function useNavigation(options: { syncEnabled: boolean }) {
 
   function closeReview() {
     const origin = review.reviewOrigin.value;
-    reset();
+    review.clear();
     stage.value = origin;
   }
 
@@ -237,7 +231,6 @@ export function useNavigation(options: { syncEnabled: boolean }) {
     incomingPair,
     connect,
     show,
-    reset,
     goTo,
     openGuide,
     closeGuide,
