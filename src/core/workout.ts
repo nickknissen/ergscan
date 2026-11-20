@@ -37,6 +37,11 @@ export function emptyRow(): WorkoutRow {
   };
 }
 
+/** An empty workout starting now, with 500 m splits. */
+export function newWorkout(): Workout {
+  return { startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: emptyRow(), rows: [] };
+}
+
 export function isExportable(workout: Workout | null, invalidCells: number): boolean {
   return Boolean(workout?.summary.durationDs && workout.summary.distanceM) && invalidCells === 0;
 }
