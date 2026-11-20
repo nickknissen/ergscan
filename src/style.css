@@ -695,7 +695,7 @@ button svg {
   position: fixed;
   left: max(16px, env(safe-area-inset-left));
   right: max(16px, env(safe-area-inset-right));
-  bottom: calc(88px + env(safe-area-inset-bottom));
+  bottom: calc(16px + env(safe-area-inset-bottom));
   z-index: 12;
   display: flex;
   align-items: center;
@@ -710,7 +710,16 @@ button svg {
   box-shadow: var(--elevation-3);
 }
 
+/* 16px above whatever sits below: the screen edge, the 80px tab bar, and a 56px FAB when one shows. */
+.shell:has(.fab) .snackbar {
+  bottom: calc(88px + env(safe-area-inset-bottom));
+}
+
 .shell-tabbed .snackbar {
+  bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.shell-tabbed:has(.fab) .snackbar {
   bottom: calc(168px + env(safe-area-inset-bottom));
 }
 
@@ -2149,6 +2158,13 @@ tr.rest .cell {
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+
+  /* The tab bar is a rail on the left and its FAB sits at the top of it, so nothing is below. */
+  .shell-tabbed .snackbar,
+  .shell-tabbed:has(.fab) .snackbar {
+    left: calc(96px + env(safe-area-inset-left));
+    bottom: calc(16px + env(safe-area-inset-bottom));
   }
 }
 
