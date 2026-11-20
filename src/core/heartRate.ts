@@ -1,6 +1,7 @@
 import type { Workout, WorkoutRow } from './workout';
 
-const ZONE_BOUNDARY_PERCENTS = [60, 70, 80, 90] as const;
+/** Lower bounds, in percent of max HR, of the rowing bands UT2, UT1, AT, TR and AN; everything below is UT3. */
+const ZONE_BOUNDARY_PERCENTS = [55, 70, 80, 85, 90] as const;
 const ZONE_COUNT = ZONE_BOUNDARY_PERCENTS.length + 1;
 
 type Timed = WorkoutRow & { heartRate: number; durationDs: number };

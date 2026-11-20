@@ -128,11 +128,12 @@
     "basis": "Ud fra gennemsnitspulsen i hver split og en maksimal puls på {bpm} slag/min.",
     "basisWatch": "Ud fra pulsen fra dit ur, sekund for sekund, og en maksimal puls på {bpm} slag/min.",
     "missingMax": "Angiv din maksimale puls eller alder under Indstillinger for at se tid i pulszoner.",
-    "z1": { "name": "Restitution", "range": "Under 60 % af maks.", "description": "Meget let, til opvarmning og nedkøling" },
-    "z2": { "name": "Udholdenhed", "range": "60–70 % af maks.", "description": "Let, jævn roning, der opbygger din aerobe base" },
-    "z3": { "name": "Aerob", "range": "70–80 % af maks.", "description": "Moderat, behageligt hårdt" },
-    "z4": { "name": "Tærskel", "range": "80–90 % af maks.", "description": "Hårdt, et tempo du kan holde i 20 til 60 minutter" },
-    "z5": { "name": "Maksimal", "range": "90 % af maks. og op", "description": "Helt ud, kun til korte indsatser" }
+    "z1": { "name": "UT3", "range": "Under 55 % af makspuls", "description": "Restitution, meget let, til opvarmning og nedkøling" },
+    "z2": { "name": "UT2", "range": "55–70 % af makspuls", "description": "Udholdenhed 2, lang, let roning, der opbygger din aerobe base" },
+    "z3": { "name": "UT1", "range": "70–80 % af makspuls", "description": "Udholdenhed 1, jævn og behageligt hårdt" },
+    "z4": { "name": "AT", "range": "80–85 % af makspuls", "description": "Anaerob tærskel, hårdt, men muligt at holde i 20 til 30 minutter" },
+    "z5": { "name": "TR", "range": "85–90 % af makspuls", "description": "Transport, intervaller i løbstempo, der hæver din VO₂-maks." },
+    "z6": { "name": "AN", "range": "90 % af makspuls og op", "description": "Anaerob, helt ud, kun til korte indsatser" }
   },
   "tabs": {
     "scan": "Scan"
