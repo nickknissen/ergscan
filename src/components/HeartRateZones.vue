@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { heartRateZones } from '../core/heartRate';
+import { heartRateZoneRanges, heartRateZones, type ZoneRange } from '../core/heartRate';
 import { formatTime } from '../core/time';
 import type { Workout } from '../core/workout';
 
@@ -16,8 +16,15 @@ const zones = computed(() => {
   const times = heartRateZones(props.workout, props.maxHr);
   const total = times.reduce((a, b) => a + b, 0);
   if (total === 0) return null;
-  return times.map((ds, index) => ({ number: index + 1, ds, percent: (ds / total) * 100 }));
+  const ranges = heartRateZoneRanges();
+  return times.map((ds, index) => ({ number: index + 1, ds, percent: (ds / total) * 100, range: rangeText(ranges[index]!) }));
 });
+
+function rangeText({ from, to }: ZoneRange): string {
+  if (from === null) return t('zones.rangeUnder', { to });
+  if (to === null) return t('zones.rangeFrom', { from });
+  return t('zones.rangeBetween', { from, to });
+}
 </script>
 
 <template>
@@ -39,7 +46,7 @@ const zones = computed(() => {
         <span class="row-label">
           {{ t('zones.zone', { number: zone.number, name: t(`zones.z${zone.number}.name`) }) }}
           <span class="row-detail">
-            {{ t('zones.detail', { range: t(`zones.z${zone.number}.range`), description: t(`zones.z${zone.number}.description`) }) }}
+            {{ t('zones.detail', { range: zone.range, description: t(`zones.z${zone.number}.description`) }) }}
           </span>
         </span>
         <span class="zone-time">

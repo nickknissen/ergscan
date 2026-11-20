@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { heartRateZones } from './heartRate';
+import { heartRateZoneRanges, heartRateZones } from './heartRate';
 import { emptyRow, type Workout, type WorkoutRow } from './workout';
 
 function row(durationDs: number | null, heartRate: number | null, isRest = false): WorkoutRow {
@@ -38,5 +38,18 @@ describe('heartRateZones', () => {
   it('adds each split time to the zone of its HR and skips rest', () => {
     const splits = [row(1200, 130), row(1200, 165), row(600, 120, true), row(1200, 170), row(1200, 185)];
     expect(heartRateZones(workout(row(4800, 162), splits), 200)).toEqual([0, 1200, 0, 1200, 1200, 1200]);
+  });
+});
+
+describe('heartRateZoneRanges', () => {
+  it('gives each rowing band its percent of max HR range, open below UT2 and above AN', () => {
+    expect(heartRateZoneRanges()).toEqual([
+      { from: null, to: 55 },
+      { from: 55, to: 70 },
+      { from: 70, to: 80 },
+      { from: 80, to: 85 },
+      { from: 85, to: 90 },
+      { from: 90, to: null },
+    ]);
   });
 });
