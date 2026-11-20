@@ -16,6 +16,7 @@ import { useImageInput } from './composables/useImageInput';
 import { useNavigation } from './composables/useNavigation';
 import { useReviewSession } from './composables/useReviewSession';
 import { useScan } from './composables/useScan';
+import { useWatchHeartRate } from './composables/useWatchHeartRate';
 import { entryDateLabel } from './core/dates';
 import { clearDraft } from './core/draft';
 import type { HistoryEntry } from './core/history';
@@ -102,6 +103,9 @@ const {
   onImage,
 } = scan;
 const photoUrl = computed(() => photoUrls.value.at(-1) ?? null);
+
+const watchInput = useTemplateRef<HTMLInputElement>('watchInput');
+const { watchMessage, readingWatch, onWatchFile } = useWatchHeartRate({ review, t, locale });
 
 const { savedAs, canExport, canShare, download, share, dragFit } = useFitExport({ workout, invalidCells, stage });
 review.onClear(() => (savedAs.value = ''));
@@ -211,6 +215,7 @@ onBeforeUnmount(() => {
 const overflowItems = computed(() => [
   ...(undoAvailable.value.undo ? [{ id: 'undo', label: t('review.undo'), icon: 'undo' as const }] : []),
   ...(undoAvailable.value.redo ? [{ id: 'redo', label: t('review.redo'), icon: 'redo' as const }] : []),
+  { id: 'watch', label: t('watch.add'), icon: 'monitor_heart' as const },
   ...(saved.value && canShare.value ? [{ id: 'download', label: t('export.download'), icon: 'download' as const }] : []),
   { id: 'print', label: t('review.print'), icon: 'print' as const },
 ]);
@@ -218,6 +223,7 @@ const overflowItems = computed(() => [
 function onReviewMenu(id: string) {
   if (id === 'undo') review.undo();
   else if (id === 'redo') review.redo();
+  else if (id === 'watch') watchInput.value?.click();
   else if (id === 'download') void download();
   else if (id === 'print') window.print();
 }
@@ -242,6 +248,7 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
 <template>
   <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" @cancel="stopAddingRows" />
   <input ref="imageInput" type="file" accept="image/*" hidden @change="onImage" />
+  <input ref="watchInput" type="file" accept=".fit,.zip,application/zip" hidden @change="onWatchFile" />
   <MdDialog :pending="dialog.pending.value" @settle="dialog.settle" />
 
   <CameraCapture
@@ -340,6 +347,8 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
           :photo-urls="photoUrls"
           :raw-text="rawText"
           :source-panel="reviewPanel"
+          :watch-message="watchMessage"
+          :reading-watch="readingWatch"
           @scan-more-rows="scanMoreRows"
         />
       </Transition>

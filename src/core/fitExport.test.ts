@@ -35,7 +35,7 @@ function decodeDeveloperFields(bytes: Uint8Array) {
 
 function workoutFrom(text: string): Workout {
   const scan = parsePm5Text(text)!;
-  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, dragFactor: null, name: null, notes: null, feeling: null, summary: scan.summary, rows: scan.rows };
+  return { startTime: new Date('2026-11-16T07:00:00Z'), splitDistance: scan.splitDistance, dragFactor: null, name: null, notes: null, feeling: null, summary: scan.summary, rows: scan.rows, heartRates: null };
 }
 
 describe('workoutToFit', () => {
@@ -123,6 +123,17 @@ describe('workoutToFit', () => {
     const { fieldDescriptions, sessions } = decodeDeveloperFields(workoutToFit(workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24')));
     expect(fieldDescriptions).toEqual([]);
     expect(sessions).toEqual([{}]);
+  });
+
+  it('writes a record every second with its own heart rate when a watch recording was added', () => {
+    const heartRates = Array.from({ length: 240 }, (_, s) => (s < 10 ? null : 100 + Math.floor(s / 10)));
+    const workout = { ...workoutFrom('time meter /500m s/m\n4:00.0 1000 2:00.0 24'), heartRates };
+    const records = decode(workoutToFit(workout)).recordMesgs;
+    expect(records).toHaveLength(241);
+    expect(records[0]!.heartRate).toBeUndefined();
+    expect(records[10]!.heartRate).toBe(101);
+    expect(records[239]!.heartRate).toBe(123);
+    expect(records[240]!.heartRate).toBe(123);
   });
 
   it('falls back to the summary as a single lap when there are no split rows', () => {

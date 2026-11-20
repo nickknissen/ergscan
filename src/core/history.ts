@@ -46,6 +46,7 @@ export function parseEntry(item: unknown): HistoryEntry | null {
       name: typeof workout.name === 'string' ? workout.name : null,
       notes: typeof workout.notes === 'string' ? workout.notes : null,
       feeling: asFeeling(workout.feeling),
+      heartRates: parseHeartRates(workout.heartRates),
     },
     extraColumn: entry.extraColumn === 'heartRate' || entry.extraColumn === 'watts' || entry.extraColumn === 'calories' ? entry.extraColumn : null,
   };
@@ -62,9 +63,15 @@ function parseRow(input: Partial<WorkoutRow> | null | undefined): WorkoutRow {
   return row;
 }
 
+function parseHeartRates(value: unknown): (number | null)[] | null {
+  if (!Array.isArray(value) || value.length === 0) return null;
+  const valid = value.every((v) => v === null || (typeof v === 'number' && Number.isFinite(v)));
+  return valid ? (value as (number | null)[]) : null;
+}
+
 export function draftKey(workout: Workout, extraColumn: ExtraColumn | null): string {
-  const { startTime, splitDistance, summary, rows, dragFactor, name, notes, feeling } = workout;
-  return JSON.stringify({ workout: { startTime, splitDistance, summary, rows, dragFactor, name, notes, feeling }, extraColumn });
+  const { startTime, splitDistance, summary, rows, dragFactor, name, notes, feeling, heartRates } = workout;
+  return JSON.stringify({ workout: { startTime, splitDistance, summary, rows, dragFactor, name, notes, feeling, heartRates }, extraColumn });
 }
 
 export function hasUnsavedChanges(workout: Workout, extraColumn: ExtraColumn | null, savedKey: string | null): boolean {

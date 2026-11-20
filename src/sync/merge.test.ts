@@ -9,7 +9,7 @@ function saved(sequence: number, revision: string, base: string | null = null): 
       id: 'workout', extraColumn: 'heartRate',
       workout: {
         startTime: new Date('2026-11-18T13:00:00Z'), splitDistance: 500, summary: emptyRow(), rows: [],
-        dragFactor: null, name: revision, notes: null, feeling: null,
+        dragFactor: null, name: revision, notes: null, feeling: null, heartRates: null,
       },
     },
   };

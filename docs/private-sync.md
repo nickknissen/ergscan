@@ -46,7 +46,8 @@ only works with the same sync deployment.
 ## What is synced
 
 Sync sends an encrypted snapshot of saved history, including workout notes,
-splits, and heart rate when recorded. Photos, raw OCR output, drafts, and
+splits, and heart rate when recorded, including second-by-second heart rate
+added from a watch. Photos, raw OCR output, drafts, and
 settings stay local. The server handles device credentials and can observe
 request timing and encrypted payload size. Browser storage and the app code
 served by the deployment are trusted by linked devices.

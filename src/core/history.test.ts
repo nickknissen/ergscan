@@ -21,7 +21,7 @@ function memoryStorage(initial?: string): HistoryStorage & { data: Map<string, s
 function entry(id: string, start: string): HistoryEntry {
   return {
     id,
-    workout: { startTime: new Date(start), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [] },
+    workout: { startTime: new Date(start), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: { ...emptyRow(), durationDs: 4500, distanceM: 2000 }, rows: [], heartRates: null },
     extraColumn: 'watts',
   };
 }
@@ -66,9 +66,29 @@ describe('history', () => {
     for (const bad of [0, 6, 2.5, '3', null]) expect(loadHistory(memoryStorage(stored(bad)))[0]!.workout.feeling, String(bad)).toBeNull();
   });
 
-  it('loads workouts saved before the drag factor, name, notes and feeling existed without them', () => {
+  it('keeps heart rate from a watch, gaps included', () => {
+    const storage = memoryStorage();
+    const recorded = entry('a', '2026-11-16T07:00:00Z');
+    recorded.workout.heartRates = [null, 120, 121, null, 125];
+    storage.setItem(HISTORY_KEY, JSON.stringify([recorded]));
+    expect(loadHistory(storage)[0]!.workout.heartRates).toEqual([null, 120, 121, null, 125]);
+  });
+
+  it('drops heart rate data that is not a list of numbers', () => {
+    const stored = (heartRates: unknown) =>
+      JSON.stringify([{ id: 'a', workout: { startTime: '2026-11-16T07:00:00Z', splitDistance: 500, summary: {}, rows: [], heartRates }, extraColumn: null }]);
+    for (const bad of ['120', [120, '121'], {}, []]) expect(loadHistory(memoryStorage(stored(bad)))[0]!.workout.heartRates, JSON.stringify(bad)).toBeNull();
+  });
+
+  it('counts adding heart rate as an unsaved change', () => {
+    const saved = entry('a', '2026-11-16T07:00:00Z').workout;
+    const key = draftKey(saved, null);
+    expect(hasUnsavedChanges({ ...saved, heartRates: [120] }, null, key)).toBe(true);
+  });
+
+  it('loads workouts saved before the drag factor, name, notes, feeling and heart rates existed without them', () => {
     const old = '[{"id":"a","workout":{"startTime":"2026-11-16T07:00:00Z","splitDistance":500,"summary":{},"rows":[]},"extraColumn":null}]';
-    expect(loadHistory(memoryStorage(old))[0]!.workout).toMatchObject({ dragFactor: null, name: null, notes: null, feeling: null });
+    expect(loadHistory(memoryStorage(old))[0]!.workout).toMatchObject({ dragFactor: null, name: null, notes: null, feeling: null, heartRates: null });
   });
 
   it('ignores corrupt or malformed storage', () => {
