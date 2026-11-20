@@ -1,15 +1,23 @@
-import { firstParsed, type ScanOutcome } from './firstParsed';
-import { DEFAULT_PREPROCESS, ocrInputs } from './preprocess';
-import { recognizeText, type OcrProgress } from './tesseract';
+import type { ScanOutcome } from './firstParsed';
+import { DEFAULT_PREPROCESS } from './preprocess';
+import { readPhoto, type GrayImage } from './readPhoto';
+import { recognizeText, recognizeWords, type OcrProgress } from './tesseract';
 import { toGrayscale } from './threshold';
 
 export type { ScanOutcome } from './firstParsed';
 
 export async function scanImage(image: Blob, onProgress?: OcrProgress, framed = false): Promise<ScanOutcome> {
   const { gray, width, height } = await loadGray(image, DEFAULT_PREPROCESS.longSide);
-  const inputs = ocrInputs(gray, width, height, { ...DEFAULT_PREPROCESS, detectScreen: !framed });
-  const canvases = inputs.images.map((values) => canvasFromGray(values, inputs.width, inputs.height));
-  return firstParsed(canvases.map((canvas) => () => recognizeText(canvas, onProgress)));
+  return readPhoto(
+    gray,
+    width,
+    height,
+    {
+      text: (img) => recognizeText(canvasFromGray(img), onProgress),
+      words: (img) => recognizeWords(canvasFromGray(img)),
+    },
+    { ...DEFAULT_PREPROCESS, detectScreen: !framed },
+  );
 }
 
 async function loadGray(image: Blob, longSide: number): Promise<{ gray: Uint8Array; width: number; height: number }> {
@@ -33,7 +41,7 @@ function canvasOf(width: number, height: number): HTMLCanvasElement {
   return canvas;
 }
 
-function canvasFromGray(values: Uint8Array, width: number, height: number): HTMLCanvasElement {
+function canvasFromGray({ values, width, height }: GrayImage): HTMLCanvasElement {
   const canvas = canvasOf(width, height);
   const ctx = canvas.getContext('2d')!;
   const data = ctx.createImageData(width, height);

@@ -1,6 +1,7 @@
-import { createWorker, type Worker } from 'tesseract.js';
+import { createWorker, PSM, type Worker } from 'tesseract.js';
 import { ocrAssetUrl } from './assets';
-import { OCR_ENGINE, OCR_PARAMS } from './ocrConfig';
+import type { WordBox } from './headerRow';
+import { OCR_ENGINE, OCR_PARAMS, wordBoxes } from './ocrConfig';
 
 export type OcrProgress = (status: string, progress: number) => void;
 
@@ -23,6 +24,18 @@ export function getOcrWorker(): Promise<Worker> {
     throw error;
   });
   return workerPromise;
+}
+
+/** Words and their boxes from a sparse-text pass, for finding the table's heading row anywhere in the photo. */
+export async function recognizeWords(image: HTMLCanvasElement): Promise<WordBox[]> {
+  const worker = await getOcrWorker();
+  await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT });
+  try {
+    const { data } = await worker.recognize(image, {}, { blocks: true, text: false });
+    return wordBoxes(data.blocks);
+  } finally {
+    await worker.setParameters(OCR_PARAMS);
+  }
 }
 
 export async function recognizeText(image: HTMLCanvasElement, onProgress?: OcrProgress): Promise<string> {
