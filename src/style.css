@@ -1973,10 +1973,14 @@ tr.rest .cell {
 }
 
 .zone-4 {
-  --zone: light-dark(#fb8c00, #ffb74d);
+  --zone: light-dark(#fbc02d, #fff176);
 }
 
 .zone-5 {
+  --zone: light-dark(#fb8c00, #ffb74d);
+}
+
+.zone-6 {
   --zone: light-dark(#e53935, #e57373);
 }
 

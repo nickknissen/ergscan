@@ -29,7 +29,8 @@
   strokes), each split gets its average heart rate, the start time comes from
   the watch clock, and the second-by-second heart rate goes into the FIT file.
   Everything happens in the browser; undo takes it back.
-- Time in heart rate zones (60/70/80/90% of max) on the result page, using a
+- Time in the rowing training bands UT3, UT2, UT1, AT, TR and AN (from 55, 70,
+  80, 85 and 90% of max heart rate) on the result page, using a
   measured max heart rate or one estimated from your age. With heart rate from
   a watch, every second counts towards its own zone.
 - Reads the drag factor and keeps it with the workout.

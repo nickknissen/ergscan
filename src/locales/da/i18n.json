@@ -128,11 +128,15 @@
     "basis": "Ud fra gennemsnitspulsen i hver split og en maksimal puls på {bpm} slag/min.",
     "basisWatch": "Ud fra pulsen fra dit ur, sekund for sekund, og en maksimal puls på {bpm} slag/min.",
     "missingMax": "Angiv din maksimale puls eller alder under Indstillinger for at se tid i pulszoner.",
-    "z1": { "name": "Restitution", "range": "Under 60 % af maks.", "description": "Meget let, til opvarmning og nedkøling" },
-    "z2": { "name": "Udholdenhed", "range": "60–70 % af maks.", "description": "Let, jævn roning, der opbygger din aerobe base" },
-    "z3": { "name": "Aerob", "range": "70–80 % af maks.", "description": "Moderat, behageligt hårdt" },
-    "z4": { "name": "Tærskel", "range": "80–90 % af maks.", "description": "Hårdt, et tempo du kan holde i 20 til 60 minutter" },
-    "z5": { "name": "Maksimal", "range": "90 % af maks. og op", "description": "Helt ud, kun til korte indsatser" }
+    "rangeUnder": "Under {to} % af makspuls",
+    "rangeBetween": "{from}–{to} % af makspuls",
+    "rangeFrom": "{from} % af makspuls og op",
+    "z1": { "name": "UT3", "description": "Restitution, meget let, til opvarmning og nedkøling" },
+    "z2": { "name": "UT2", "description": "Let, jævn roning på 18–20 tag i minuttet, der opbygger din aerobe base, ikke hård roning i lavt tempo" },
+    "z3": { "name": "UT1", "description": "Jævn og behageligt hård, på 20–24 tag i minuttet" },
+    "z4": { "name": "AT", "description": "Anaerob tærskel, hårdt, men muligt at holde i 20 til 30 minutter, på 24–28 tag i minuttet" },
+    "z5": { "name": "TR", "description": "Transport, intervaller i kaproningstempo på 28–32 tag i minuttet" },
+    "z6": { "name": "AN", "description": "Anaerob, helt ud i højt tempo, kun til korte indsatser" }
   },
   "tabs": {
     "scan": "Scan"

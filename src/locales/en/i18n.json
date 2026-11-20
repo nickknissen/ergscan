@@ -128,11 +128,15 @@
     "basis": "From the average heart rate of each split and a max heart rate of {bpm} bpm.",
     "basisWatch": "From your watch's heart rate, second by second, and a max heart rate of {bpm} bpm.",
     "missingMax": "Set your max heart rate or age in Settings to see time in heart rate zones.",
-    "z1": { "name": "Recovery", "range": "Under 60% of max", "description": "Very easy, for warm-up and cool-down" },
-    "z2": { "name": "Endurance", "range": "60–70% of max", "description": "Easy steady rowing that builds your aerobic base" },
-    "z3": { "name": "Aerobic", "range": "70–80% of max", "description": "Moderate, comfortably hard" },
-    "z4": { "name": "Threshold", "range": "80–90% of max", "description": "Hard, a pace you can hold for 20 to 60 minutes" },
-    "z5": { "name": "Maximum", "range": "90% of max and up", "description": "All out, only for short efforts" }
+    "rangeUnder": "Under {to}% of max",
+    "rangeBetween": "{from}–{to}% of max",
+    "rangeFrom": "{from}% of max and up",
+    "z1": { "name": "UT3", "description": "Recovery, very easy, for warm-up and cool-down" },
+    "z2": { "name": "UT2", "description": "Easy, steady rowing at 18–20 strokes a minute that builds your aerobic base, not hard rowing at a low rate" },
+    "z3": { "name": "UT1", "description": "Steady and comfortably hard, at 20–24 strokes a minute" },
+    "z4": { "name": "AT", "description": "Anaerobic threshold, hard but sustainable for 20 to 30 minutes, at 24–28 strokes a minute" },
+    "z5": { "name": "TR", "description": "Transport, race-pace intervals at 28–32 strokes a minute" },
+    "z6": { "name": "AN", "description": "Anaerobic, all out at a high rate, only for short efforts" }
   },
   "tabs": {
     "scan": "Scan"

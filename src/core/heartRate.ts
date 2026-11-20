@@ -1,9 +1,19 @@
 import type { Workout, WorkoutRow } from './workout';
 
-const ZONE_BOUNDARY_PERCENTS = [60, 70, 80, 90] as const;
+/** Lower bounds, in percent of max HR, of the rowing bands UT2, UT1, AT, TR and AN; everything below is UT3. */
+const ZONE_BOUNDARY_PERCENTS = [55, 70, 80, 85, 90] as const;
 const ZONE_COUNT = ZONE_BOUNDARY_PERCENTS.length + 1;
 
-type Timed = WorkoutRow & { heartRate: number; durationDs: number };
+/** A band's range in percent of max HR: from is inclusive, to is exclusive, and null leaves that side open. */
+export type ZoneRange = { from: number | null; to: number | null };
+
+/** The range of each band, in the order heartRateZones returns their times. */
+export function heartRateZoneRanges(): ZoneRange[] {
+  const edges = [null, ...ZONE_BOUNDARY_PERCENTS, null];
+  return edges.slice(0, -1).map((from, i) => ({ from, to: edges[i + 1] ?? null }));
+}
+
+type Timed =WorkoutRow & { heartRate: number; durationDs: number };
 
 /** Time in each zone in tenths of a second: every recorded second when there is a watch series, else each work split's average. */
 export function heartRateZones(workout: Workout, maxHr: number): number[] {
