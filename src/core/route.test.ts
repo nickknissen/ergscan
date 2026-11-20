@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Route } from './route';
+import { parseRoute, popAction, routeHash, routeTab, TABS, tabRoute, type Route } from './route';
 
 describe('parseRoute', () => {
   it('reads the tabs', () => {
@@ -70,5 +70,50 @@ describe('tabs', () => {
   it('shows the scan tab behind non-tab pages', () => {
     expect(routeTab({ page: 'guide', monitor: 'pm4' })).toBe('capture');
     expect(routeTab({ page: 'workout', id: null })).toBe('capture');
+  });
+});
+
+describe('popAction', () => {
+  const home: Route = { page: 'home' };
+  const history: Route = { page: 'history' };
+  const saved: Route = { page: 'workout', id: 'abc' };
+
+  it('asks before leaving the review screen for any other page', () => {
+    expect(popAction('review', home, null)).toEqual({ kind: 'backFromReview' });
+    expect(popAction('review', { page: 'guide', monitor: null }, null)).toEqual({ kind: 'backFromReview' });
+  });
+
+  it('stays put on the review screen when the page is still a workout', () => {
+    expect(popAction('review', saved, null)).toEqual({ kind: 'none' });
+  });
+
+  it('shows the guide page it moved to', () => {
+    expect(popAction('capture', { page: 'guide', monitor: 'pm4' }, null)).toEqual({ kind: 'guide', monitor: 'pm4' });
+    expect(popAction('guide', { page: 'guide', monitor: null }, null)).toEqual({ kind: 'guide', monitor: null });
+  });
+
+  it('leaves the guide for the tab chosen before stepping back, even through guide pages', () => {
+    expect(popAction('guide', { page: 'guide', monitor: null }, 'history')).toEqual({ kind: 'closeGuide', to: 'history' });
+    expect(popAction('guide', home, 'settings')).toEqual({ kind: 'closeGuide', to: 'settings' });
+  });
+
+  it('leaves the guide for the page underneath when no tab was chosen', () => {
+    expect(popAction('guide', history, null)).toEqual({ kind: 'closeGuide', to: 'history' });
+    expect(popAction('guide', home, null)).toEqual({ kind: 'closeGuide', to: 'capture' });
+  });
+
+  it('opens a workout moved to with Forward', () => {
+    expect(popAction('history', saved, null)).toEqual({ kind: 'openWorkout', id: 'abc' });
+    expect(popAction('capture', { page: 'workout', id: null }, null)).toEqual({ kind: 'openWorkout', id: null });
+  });
+
+  it('switches tabs between tab pages', () => {
+    expect(popAction('history', home, null)).toEqual({ kind: 'tab', to: 'capture' });
+    expect(popAction('capture', { page: 'settings' }, null)).toEqual({ kind: 'tab', to: 'settings' });
+  });
+
+  it('ignores moves while scanning or using the camera', () => {
+    expect(popAction('scanning', home, null)).toEqual({ kind: 'none' });
+    expect(popAction('camera', history, null)).toEqual({ kind: 'none' });
   });
 });
