@@ -20,6 +20,11 @@ describe('heartRateZones', () => {
     expect(heartRateZones(workout(row(127, 150), splits), 200)).toEqual([1, 2, 4, 8, 16, 96]);
   });
 
+  it('keeps a heart rate just under a band boundary in the band below', () => {
+    const splits = [row(1, 139), row(2, 159), row(4, 169), row(8, 179)];
+    expect(heartRateZones(workout(row(15, 150), splits), 200)).toEqual([0, 1, 2, 4, 8, 0]);
+  });
+
   it('is all zero when the workout has no HR', () => {
     expect(heartRateZones(workout(row(4800, null), [row(1200, null)]), 200)).toEqual([0, 0, 0, 0, 0, 0]);
   });
