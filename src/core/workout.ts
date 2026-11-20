@@ -22,6 +22,8 @@ export interface Workout {
   feeling: Feeling | null;
   summary: WorkoutRow;
   rows: WorkoutRow[];
+  /** Heart rate for each second from the start, from a watch recording; null where it has none. */
+  heartRates: (number | null)[] | null;
 }
 
 export function emptyRow(): WorkoutRow {
@@ -39,7 +41,17 @@ export function emptyRow(): WorkoutRow {
 
 /** An empty workout starting now, with 500 m splits. */
 export function newWorkout(): Workout {
-  return { startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: emptyRow(), rows: [] };
+  return {
+    startTime: new Date(),
+    splitDistance: 500,
+    dragFactor: null,
+    name: null,
+    notes: null,
+    feeling: null,
+    summary: emptyRow(),
+    rows: [],
+    heartRates: null,
+  };
 }
 
 export function isExportable(workout: Workout | null, invalidCells: number): boolean {

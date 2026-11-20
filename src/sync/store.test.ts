@@ -17,7 +17,7 @@ function workout(id: string): HistoryEntry {
     workout: {
       startTime: new Date('2026-11-18T10:00:00Z'), splitDistance: 500, rows: [],
       summary: { ...emptyRow(), distanceM: 2000, durationDs: 4500 },
-      dragFactor: null, name: null, notes: null, feeling: null,
+      dragFactor: null, name: null, notes: null, feeling: null, heartRates: null,
     },
   };
 }

@@ -37,6 +37,7 @@ describe('moveExtraColumn', () => {
       feeling: null,
       summary: row({ heartRate: 203 }),
       rows: [row({ heartRate: 197 }), row({ isRest: true })],
+      heartRates: null,
     };
     moveExtraColumn(workout, 'heartRate', 'watts');
     expect(workout.summary).toMatchObject({ heartRate: null, watts: 203 });
@@ -73,6 +74,7 @@ describe('isExportable', () => {
     feeling: null,
     summary: row({ durationDs, distanceM }),
     rows: [],
+    heartRates: null,
   });
 
   it('needs a total time and distance', () => {
@@ -88,7 +90,7 @@ describe('isExportable', () => {
 });
 
 describe('isBlank', () => {
-  const blank = (): Workout => ({ startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: emptyRow(), rows: [] });
+  const blank = (): Workout => ({ startTime: new Date(), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary: emptyRow(), rows: [], heartRates: null });
 
   it('is true for an untouched manual entry', () => {
     expect(isBlank(blank())).toBe(true);

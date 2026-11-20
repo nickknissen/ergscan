@@ -103,6 +103,10 @@ export function workoutToFit(workout: Workout): Uint8Array {
     eventType: FIT.eventTypeStart,
   });
 
+  // With heart rate from a watch, every second keeps its own value; otherwise each split's average repeats.
+  const series = workout.heartRates;
+  const interval = series ? 1 : RECORD_INTERVAL_S;
+  const heartRateAt = (seconds: number, row: WorkoutRow) => (series ? series[Math.floor(seconds)] ?? null : row.heartRate);
   let elapsed = 0;
   let distance = 0;
   const lapMesgs: Encodable<LapMesg>[] = [];
@@ -112,12 +116,13 @@ export function workoutToFit(workout: Workout): Uint8Array {
     const lapDistance = row.distanceM ?? 0;
     const power = powerOf(row, workout.splitDistance);
 
-    for (let t = 0; t < duration; t += RECORD_INTERVAL_S) {
-      writeRecord(encoder, at(lapStart + t), row.isRest ? distance : distance + (lapDistance * t) / duration, row, power);
+    for (let t = 0; t < duration; t += interval) {
+      const lapDistanceSoFar = row.isRest ? distance : distance + (lapDistance * t) / duration;
+      writeRecord(encoder, at(lapStart + t), lapDistanceSoFar, row, power, heartRateAt(lapStart + t, row));
     }
     elapsed += duration;
     if (!row.isRest) distance += lapDistance;
-    writeRecord(encoder, at(elapsed), distance, row, power);
+    writeRecord(encoder, at(elapsed), distance, row, power, heartRateAt(elapsed - 1, row));
 
     lapMesgs.push({
       mesgNum: MesgNum.LAP,
@@ -212,14 +217,14 @@ function fitString(text: string | null): string | undefined {
   return text.slice(0, end);
 }
 
-function writeRecord(encoder: Encoder, timestamp: Date, distance: number, row: WorkoutRow, power: number | null): void {
+function writeRecord(encoder: Encoder, timestamp: Date, distance: number, row: WorkoutRow, power: number | null, heartRate: number | null): void {
   write<RecordMesg>(encoder, {
     mesgNum: MesgNum.RECORD,
     timestamp,
     distance,
     cadence: row.isRest ? 0 : (row.rate ?? undefined),
     power: row.isRest ? 0 : (power ?? undefined),
-    heartRate: row.heartRate ?? undefined,
+    heartRate: heartRate ?? undefined,
   });
 }
 

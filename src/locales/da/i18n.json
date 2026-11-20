@@ -126,6 +126,7 @@
     "detail": "{range}. {description}",
     "share": "{percent} %",
     "basis": "Ud fra gennemsnitspulsen i hver split og en maksimal puls på {bpm} slag/min.",
+    "basisWatch": "Ud fra pulsen fra dit ur, sekund for sekund, og en maksimal puls på {bpm} slag/min.",
     "missingMax": "Angiv din maksimale puls eller alder under Indstillinger for at se tid i pulszoner.",
     "z1": { "name": "Restitution", "range": "Under 60 % af maks.", "description": "Meget let, til opvarmning og nedkøling" },
     "z2": { "name": "Udholdenhed", "range": "60–70 % af maks.", "description": "Let, jævn roning, der opbygger din aerobe base" },
@@ -305,6 +306,16 @@
   "drop": {
     "overlay": "Slip billedet for at scanne det",
     "extra": "Kun det første billede scannes. | Kun det første billede scannes; 1 andet blev ignoreret. | Kun det første billede scannes; {count} andre blev ignoreret."
+  },
+  "watch": {
+    "add": "Tilføj puls fra ur",
+    "reading": "Læser optagelsen fra uret…",
+    "matched": "Puls tilføjet fra dit ur, afstemt efter tagtallet i hver split. Starttiden er nu {time}.",
+    "matchedByStart": "Puls tilføjet fra dit ur fra det første tag, uret talte. Starttiden er nu {time}; tjek at splittene ser rigtige ud.",
+    "noFit": "Den ZIP-fil indeholder ingen FIT-fil. Åbn aktiviteten i Garmin Connect og vælg Eksportér original, eller vælg selve FIT-filen.",
+    "unreadable": "Filen kunne ikke læses som en aktivitet fra et ur. Vælg FIT-filen eller ZIP-filen fra Eksportér original i Garmin Connect.",
+    "noHeartRate": "Optagelsen indeholder ingen puls.",
+    "tooShort": "Optagelsen fra uret dækker under halvdelen af træningen, så den kan ikke afstemmes med splittene."
   },
   "feelings": {
     "1": "Udmattet",

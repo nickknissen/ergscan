@@ -7,7 +7,7 @@ function row(durationDs: number | null, heartRate: number | null, isRest = false
 }
 
 function workout(summary: WorkoutRow, rows: WorkoutRow[] = []): Workout {
-  return { startTime: new Date(2026, 0, 1), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary, rows };
+  return { startTime: new Date(2026, 0, 1), splitDistance: 500, dragFactor: null, name: null, notes: null, feeling: null, summary, rows, heartRates: null };
 }
 
 describe('heartRateZones', () => {
@@ -22,6 +22,12 @@ describe('heartRateZones', () => {
 
   it('is all zero when the workout has no HR', () => {
     expect(heartRateZones(workout(row(4800, null), [row(1200, null)]), 200)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it('counts every second of a watch recording, rest included, instead of split averages', () => {
+    const splits = [row(600, 190), row(600, 100, true)];
+    const heartRates = [...Array(30).fill(110), ...Array(20).fill(150), null, ...Array(69).fill(185)];
+    expect(heartRateZones({ ...workout(row(1200, 150), splits), heartRates }, 200)).toEqual([300, 0, 200, 0, 690]);
   });
 
   it('adds each split time to the zone of its HR and skips rest', () => {

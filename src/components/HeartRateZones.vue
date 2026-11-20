@@ -48,7 +48,7 @@ const zones = computed(() => {
         </span>
       </div>
     </div>
-    <p class="review-hint">{{ t('zones.basis', { bpm: maxHr }) }}</p>
+    <p class="review-hint">{{ t(workout.heartRates ? 'zones.basisWatch' : 'zones.basis', { bpm: maxHr }) }}</p>
   </section>
   <p v-else-if="maxHr === null && hasHeartRate" class="banner">{{ t('zones.missingMax') }}</p>
 </template>

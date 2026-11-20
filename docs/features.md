@@ -23,8 +23,15 @@
 
 - Editable review table to fix anything the OCR got wrong, add or remove rows,
   set the start time and recalculate the total. Unsaved edits survive a reload.
+- Add heart rate from a watch that recorded the same session: pick its FIT
+  file, or the ZIP from Export Original in Garmin Connect. The recording is
+  matched to the splits by stroke rate (or by when the watch first counted
+  strokes), each split gets its average heart rate, the start time comes from
+  the watch clock, and the second-by-second heart rate goes into the FIT file.
+  Everything happens in the browser; undo takes it back.
 - Time in heart rate zones (60/70/80/90% of max) on the result page, using a
-  measured max heart rate or one estimated from your age.
+  measured max heart rate or one estimated from your age. With heart rate from
+  a watch, every second counts towards its own zone.
 - Reads the drag factor and keeps it with the workout.
 - Name workouts and add notes; both are written into the FIT file.
 - Rate how you felt, from weary to beaming. The face shows in the history list
@@ -33,7 +40,8 @@
 ## Exporting
 
 - FIT export as an indoor rowing activity: one lap per split or interval, rest
-  laps marked as rest, and per-lap distance, stroke rate, power and heart rate.
+  laps marked as rest, and per-lap distance, stroke rate, power and heart rate,
+  plus heart rate for every second when it came from a watch.
   Power is derived from pace when the screen has no watts column.
 - Share the file straight to another app, or download it and upload it to
   Strava, Garmin Connect or intervals.icu.

@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import HeartRateZones from '../components/HeartRateZones.vue';
 import MdIcon from '../components/MdIcon.vue';
 import WorkoutEditor from '../components/WorkoutEditor.vue';
+import type { WatchMessage } from '../composables/useWatchHeartRate';
 import type { ExtraColumn, Workout } from '../core/workout';
 
 const workout = defineModel<Workout>('workout', { required: true });
@@ -22,6 +23,8 @@ defineProps<{
   photoUrls: string[];
   rawText: string;
   sourcePanel: boolean;
+  watchMessage: WatchMessage | null;
+  readingWatch: boolean;
 }>();
 const emit = defineEmits<{ scanMoreRows: [] }>();
 const { t } = useI18n();
@@ -31,6 +34,10 @@ const { t } = useI18n();
   <section class="review" :class="{ 'review-split': sourcePanel }">
     <div class="review-main">
       <p v-if="notice" class="banner banner-error" role="alert">{{ notice }}</p>
+      <p v-if="readingWatch" class="banner" role="status">{{ t('watch.reading') }}</p>
+      <p v-else-if="watchMessage" class="banner" :class="{ 'banner-error': watchMessage.error }" :role="watchMessage.error ? 'alert' : 'status'">
+        {{ watchMessage.text }}
+      </p>
       <p v-if="computedSummary" class="banner">{{ t('review.computedSummary') }}</p>
       <p v-if="extraImages" class="banner">{{ t('drop.extra', extraImages) }}</p>
       <div v-if="moreRows" class="banner banner-action">

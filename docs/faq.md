@@ -16,6 +16,16 @@ PM5 or PM4 memory menu, photograph the results screen and export it. A PM4
 with a LogCard inserted saves to the card instead, so look under LogCard Menu.
 The in-app guide shows where to find it.
 
+## My watch recorded the session too. Can I get its heart rate into the workout?
+
+Yes. In Garmin Connect on the web, open the watch activity, choose the gear
+menu and Export Original, then in ErgScan open the workout's ⋮ menu and pick
+Add heart rate from watch. Choose the ZIP you downloaded, or a FIT file from
+any watch. ErgScan lines the recording up with the splits, fills in each
+split's heart rate, and puts the full heart rate graph in the exported FIT
+file. Once you upload that file you can delete the watch's own activity, so the
+session isn't counted twice.
+
 ## Does it work with interval workouts?
 
 Yes. Each interval becomes its own lap, and rest intervals are exported as
