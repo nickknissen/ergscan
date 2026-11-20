@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppBar from './components/AppBar.vue';
 import CameraCapture from './components/CameraCapture.vue';
-import HistoryList from './components/HistoryList.vue';
+import HistoryPane from './components/HistoryPane.vue';
 import MdDialog from './components/MdDialog.vue';
 import MdIcon from './components/MdIcon.vue';
-import MdMenu from './components/MdMenu.vue';
 import PmGuide from './components/PmGuide.vue';
+import TabBar from './components/TabBar.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
 import { useAppSettings } from './composables/useAppSettings';
+import { useFitExport } from './composables/useFitExport';
 import { useHistorySync } from './composables/useHistorySync';
-import { entryDateLabel, fitFileName, startTimeFor } from './core/dates';
+import { useImageInput } from './composables/useImageInput';
+import { entryDateLabel, startTimeFor } from './core/dates';
 import { clearDraft, loadDraft, saveDraft } from './core/draft';
 import { draftKey, hasUnsavedChanges, parseEntry, type HistoryEntry } from './core/history';
-import { clampListWidth, clearAppData, LIST_WIDTH, listPaneKey } from './core/settings';
+import { clearAppData } from './core/settings';
 import { parseRoute, routeHash, routeTab, TABS, tabRoute, type Monitor, type TabStage } from './core/route';
 import { emptyRow, isExportable, type ExtraColumn, type Workout } from './core/workout';
 import { createUndoStack } from './core/undo';
@@ -23,7 +26,7 @@ import type { ScanOutcome } from './ocr/firstParsed';
 import { scanFailure } from './ocr/scanFailure';
 import { createConfirm } from './ui/confirm';
 import { historyPane, listDetail } from './ui/layout';
-import { carriesFiles, downloadUrlData, pickImage } from './ui/imageInput';
+import { pickImage } from './ui/imageInput';
 import { appShortcut, IMAGE_STAGES, isTextField } from './ui/shortcuts';
 import { useMediaQuery } from './ui/mediaQuery';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
@@ -35,7 +38,6 @@ import SettingsView from './views/SettingsView.vue';
 
 type Stage = 'guide' | 'capture' | 'history' | 'settings' | 'camera' | 'scanning' | 'review';
 type Tab = 'capture' | 'history';
-type FitModule = typeof import('./core/fitExport');
 
 const { t, locale } = useI18n();
 
@@ -165,7 +167,8 @@ const computedSummary = ref(false);
 const progressText = ref('');
 const progress = ref<number | null>(null);
 const extraImages = ref(0);
-const savedAs = ref('');
+const invalidCells = ref(0);
+const { savedAs, canExport, canShare, download, share, dragFit } = useFitExport({ workout, invalidCells, stage });
 
 const storage: Storage | null = (() => {
   try {
@@ -251,35 +254,6 @@ async function saveFromKeyboard() {
   focused?.focus();
 }
 
-const dragging = ref(false);
-const acceptsImages = () => IMAGE_STAGES.includes(stage.value);
-
-function onDragOver(event: DragEvent) {
-  if (!acceptsImages() || !carriesFiles(event.dataTransfer?.types)) return;
-  event.preventDefault();
-  event.dataTransfer!.dropEffect = 'copy';
-  dragging.value = true;
-}
-
-function onDragLeave(event: DragEvent) {
-  if (event.relatedTarget === null) dragging.value = false;
-}
-
-function onDrop(event: DragEvent) {
-  dragging.value = false;
-  if (!acceptsImages() || !carriesFiles(event.dataTransfer?.types)) return;
-  event.preventDefault();
-  void scanPicked([...(event.dataTransfer?.files ?? [])]);
-}
-
-function onPaste(event: ClipboardEvent) {
-  if (!acceptsImages() || isTextField(document.activeElement as HTMLInputElement | null)) return;
-  const files = [...(event.clipboardData?.files ?? [])];
-  if (!pickImage(files)) return;
-  event.preventDefault();
-  void scanPicked(files);
-}
-
 async function scanPicked(files: File[]) {
   const picked = pickImage(files);
   if (!picked) return;
@@ -287,32 +261,15 @@ async function scanPicked(files: File[]) {
   if (picked.extra) extraImages.value = picked.extra;
 }
 
-const DOCUMENT_LISTENERS = [
-  ['keydown', onKeydown],
-  ['dragover', onDragOver],
-  ['dragleave', onDragLeave],
-  ['drop', onDrop],
-  ['paste', onPaste],
-] as const;
+const { dragging } = useImageInput({ acceptsImages: () => IMAGE_STAGES.includes(stage.value), onFiles: scanPicked });
 
 onMounted(() => {
-  window.launchQueue?.setConsumer(async ({ files }) => {
-    if (files.length) await scanPicked(await Promise.all(files.map((handle) => handle.getFile())));
-  });
   window.addEventListener('scroll', onScroll, { passive: true });
-  for (const [type, listener] of DOCUMENT_LISTENERS) document.addEventListener(type, listener as EventListener);
+  document.addEventListener('keydown', onKeydown);
 });
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll);
-  for (const [type, listener] of DOCUMENT_LISTENERS) document.removeEventListener(type, listener as EventListener);
-});
-
-const navTitle = computed(() => {
-  if (stage.value === 'review') return t('review.title');
-  if (stage.value === 'guide') return t('guide.title');
-  if (stage.value === 'history') return t('history.title');
-  if (stage.value === 'settings') return t('settings.title');
-  return t('app.title');
+  document.removeEventListener('keydown', onKeydown);
 });
 
 const savedKey = ref<string | null>(null);
@@ -447,15 +404,6 @@ async function selectEntry(entry: HistoryEntry) {
   window.history.replaceState(window.history.state, '', routeHash({ page: 'workout', id: entry.id }));
 }
 
-const fitModule = shallowRef<FitModule | null>(null);
-
-watch(stage, (value) => {
-  if (value === 'review' && !fitModule.value) void import('./core/fitExport').then((m) => (fitModule.value = m));
-});
-
-const invalidCells = ref(0);
-const canExport = computed(() => Boolean(fitModule.value) && isExportable(workout.value, invalidCells.value));
-const canShare = computed(() => typeof navigator.canShare === 'function');
 const overflowItems = computed(() => [
   ...(undoAvailable.value.undo ? [{ id: 'undo', label: t('review.undo'), icon: 'undo' as const }] : []),
   ...(undoAvailable.value.redo ? [{ id: 'redo', label: t('review.redo'), icon: 'redo' as const }] : []),
@@ -508,35 +456,6 @@ const layout = computed(() => ({
 const showListDetail = computed(() => listDetail(layout.value));
 const showHistoryPane = computed(() => historyPane(layout.value));
 const historyTab = computed(() => stage.value === 'history' || showListDetail.value);
-
-let resizeStart: { x: number; width: number } | null = null;
-
-function onDividerKeydown(event: KeyboardEvent) {
-  const next = listPaneKey(listPane.value, event.key);
-  if (!next) return;
-  event.preventDefault();
-  listPane.value = next;
-  if (next.collapsed) void nextTick(() => document.querySelector<HTMLElement>('.pane-toggle')?.focus());
-}
-
-function onDividerPointerDown(event: PointerEvent) {
-  if (event.button !== 0) return;
-  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-  resizeStart = { x: event.clientX, width: listPane.value.collapsed ? LIST_WIDTH.min : listPane.value.width };
-}
-
-function onDividerPointerMove(event: PointerEvent) {
-  if (!resizeStart) return;
-  listPane.value = { width: clampListWidth(resizeStart.width + event.clientX - resizeStart.x), collapsed: false };
-}
-
-function onDividerPointerUp() {
-  resizeStart = null;
-}
-
-function toggleListPane() {
-  listPane.value = { ...listPane.value, collapsed: !listPane.value.collapsed };
-}
 const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('history.title') : t('tabs.scan')));
 const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
 const cameraError = ref('');
@@ -747,65 +666,11 @@ if (initialRoute.page === 'workout') {
   });
 }
 
-function fitFile(): File {
-  const w = workout.value!;
-  const bytes = fitModule.value!.workoutToFit(w);
-  return new File([bytes.slice().buffer], fitFileName(w.startTime), { type: 'application/vnd.ant.fit' });
-}
-
-async function download() {
-  const file = fitFile();
-  if (window.showSaveFilePicker) {
-    try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: file.name,
-        types: [{ description: 'FIT', accept: { [file.type]: ['.fit'] } }],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(file);
-      await writable.close();
-      savedAs.value = handle.name;
-      return;
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return;
-    }
-  }
-  const url = URL.createObjectURL(file);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = file.name;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  savedAs.value = file.name;
-}
-
 function onReviewMenu(id: string) {
   if (id === 'undo') applyUndo(undoStack.undo());
   else if (id === 'redo') applyUndo(undoStack.redo());
   else if (id === 'download') void download();
   else if (id === 'print') window.print();
-}
-
-function dragFit(event: DragEvent) {
-  if (!event.dataTransfer || !canExport.value) return;
-  const file = fitFile();
-  const url = URL.createObjectURL(file);
-  event.dataTransfer.effectAllowed = 'copy';
-  event.dataTransfer.setData('DownloadURL', downloadUrlData(file, url));
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
-}
-
-async function share() {
-  const file = fitFile();
-  if (!navigator.canShare({ files: [file] })) {
-    await download();
-    return;
-  }
-  try {
-    await navigator.share({ files: [file], title: file.name });
-  } catch (error) {
-    if (!(error instanceof DOMException && error.name === 'AbortError')) await download();
-  }
 }
 </script>
 
@@ -823,78 +688,32 @@ async function share() {
   />
 
   <div v-else class="shell" :class="{ 'shell-tabbed': tabbed }">
-    <header class="navbar" :class="{ 'navbar-scrolled': scrolled }">
-      <div class="navbar-side">
-        <button
-          v-if="stage === 'review'"
-          type="button"
-          class="nav-button"
-          :aria-label="t('review.back', { screen: originTitle })"
-          :title="t('review.back', { screen: originTitle })"
-          @click="discardWorkout"
-        >
-          <MdIcon name="arrow_back" />
-        </button>
-        <button
-          v-else-if="stage === 'guide'"
-          type="button"
-          class="nav-button"
-          :aria-label="t('review.back', { screen: t('tabs.scan') })"
-          :title="t('review.back', { screen: t('tabs.scan') })"
-          @click="closeGuide"
-        >
-          <MdIcon name="arrow_back" />
-        </button>
-      </div>
-      <h1 class="navbar-title">{{ navTitle }}</h1>
-      <div class="navbar-side">
-        <button v-if="stage === 'review' && workout" type="button" class="primary nav-action" :disabled="!canSave" @click="saveWorkout">
-          {{ saved ? t('review.saved') : t('review.save') }}
-        </button>
-        <MdMenu v-if="stage === 'review' && workout" :label="t('review.more')" :items="overflowItems" @select="onReviewMenu" />
-      </div>
-    </header>
+    <AppBar
+      :stage="stage"
+      :scrolled="scrolled"
+      :origin-title="originTitle"
+      :show-actions="stage === 'review' && Boolean(workout)"
+      :can-save="canSave"
+      :saved="saved"
+      :overflow-items="overflowItems"
+      @back="stage === 'review' ? discardWorkout() : closeGuide()"
+      @save="saveWorkout"
+      @menu="onReviewMenu"
+    />
 
     <main
       class="screen"
       :class="[`screen-${stage}`, { 'screen-split': showHistoryPane, 'list-collapsed': showHistoryPane && listPane.collapsed }]"
       :style="showHistoryPane ? { '--list-width': `${listPane.width}px` } : undefined"
     >
-      <aside v-if="showHistoryPane" v-show="!listPane.collapsed" id="history-pane" class="history-pane" :aria-label="t('history.title')">
-        <HistoryList :entries="history" :current="stage === 'review' ? historyId : null" @open="selectEntry" @remove="removeEntries" />
-      </aside>
-      <div v-if="showHistoryPane" class="pane-divider">
-        <button
-          type="button"
-          class="icon pane-toggle"
-          :aria-label="listPane.collapsed ? t('history.expand') : t('history.collapse')"
-          :title="listPane.collapsed ? t('history.expand') : t('history.collapse')"
-          aria-controls="history-pane"
-          :aria-expanded="!listPane.collapsed"
-          @click="toggleListPane"
-        >
-          <MdIcon :name="listPane.collapsed ? 'left_panel_open' : 'left_panel_close'" />
-        </button>
-        <div
-          v-if="!listPane.collapsed"
-          class="pane-handle"
-          role="separator"
-          tabindex="0"
-          aria-orientation="vertical"
-          aria-controls="history-pane"
-          :aria-label="t('history.resize')"
-          :title="t('history.resize')"
-          :aria-valuemin="LIST_WIDTH.min"
-          :aria-valuemax="LIST_WIDTH.max"
-          :aria-valuenow="listPane.width"
-          @keydown="onDividerKeydown"
-          @pointerdown="onDividerPointerDown"
-          @pointermove="onDividerPointerMove"
-          @pointerup="onDividerPointerUp"
-          @pointercancel="onDividerPointerUp"
-          @dblclick="listPane = { width: LIST_WIDTH.initial, collapsed: false }"
-        ></div>
-      </div>
+      <HistoryPane
+        v-if="showHistoryPane"
+        v-model:list-pane="listPane"
+        :entries="history"
+        :current="stage === 'review' ? historyId : null"
+        @open="selectEntry"
+        @remove="removeEntries"
+      />
 
       <p v-if="storageError" class="banner banner-error" role="alert">{{ t('sync.storageFailed') }}</p>
 
@@ -989,25 +808,6 @@ async function share() {
       {{ t('drop.overlay') }}
     </div>
 
-    <nav v-if="tabbed" class="tabbar">
-      <button type="button" class="tab" :aria-current="stage === 'capture' || stage === 'guide' ? 'page' : undefined" @click="goTo('capture')">
-        <span class="tab-indicator">
-          <MdIcon name="document_scanner" :filled="stage === 'capture' || stage === 'guide'" />
-        </span>
-        <span>{{ t('tabs.scan') }}</span>
-      </button>
-      <button type="button" class="tab" :aria-current="historyTab ? 'page' : undefined" @click="goTo('history')">
-        <span class="tab-indicator">
-          <MdIcon name="history" :filled="historyTab" />
-        </span>
-        <span>{{ t('history.title') }}</span>
-      </button>
-      <button type="button" class="tab" :aria-current="stage === 'settings' ? 'page' : undefined" @click="goTo('settings')">
-        <span class="tab-indicator">
-          <MdIcon name="settings" :filled="stage === 'settings'" />
-        </span>
-        <span>{{ t('settings.title') }}</span>
-      </button>
-    </nav>
+    <TabBar v-if="tabbed" :stage="stage" :history-tab="historyTab" @go="goTo" />
   </div>
 </template>
