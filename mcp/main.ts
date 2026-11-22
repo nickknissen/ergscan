@@ -2,18 +2,22 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import QRCode from 'qrcode';
 import { parseArgs } from 'node:util';
 import { revokeDevice, SyncError } from '../src/sync/client';
+import { COMMAND, VERSION } from './command';
 import {
   approvalUrl, devicePath, forgetLinked, historyLoader, link, readLinked, saveLinked, serverOrigin,
 } from './local';
 import { createMcpServer, type LoadHistory } from './server';
 
-const USAGE = `ErgScan MCP server: lets an agent read your synced ErgScan workouts.
+const USAGE = `ErgScan MCP server ${VERSION}: lets an agent read your synced ErgScan workouts.
 The history is decrypted on this computer; the sync server only ever sees it encrypted.
 
 Usage:
-  ergscan-mcp link --server <https://your-ergscan>   Link this computer to your synced history
-  ergscan-mcp unlink                                  Remove this computer from your linked devices
-  ergscan-mcp                                         Run the MCP server over stdio (for the agent)
+  ${COMMAND} link --server <https://your-ergscan>
+      Link this computer to your synced history
+  ${COMMAND} unlink
+      Remove this computer from your linked devices
+  ${COMMAND}
+      Run the MCP server over stdio (for the agent)
 
 The device file is ${devicePath()}
 (set ERGSCAN_MCP_DEVICE to keep it elsewhere).`;
@@ -23,10 +27,10 @@ async function linkCommand(args: string[]) {
   const path = devicePath();
   const existing = await readLinked(path);
   if (existing) {
-    console.log(`Already linked to ${existing.server}. Run \`ergscan-mcp unlink\` first to link again.`);
+    console.log(`Already linked to ${existing.server}. Run \`${COMMAND} unlink\` first to link again.`);
     return;
   }
-  if (!values.server) throw new Error('Pass the address of your ErgScan deployment: ergscan-mcp link --server https://…');
+  if (!values.server) throw new Error(`Pass the address of your ErgScan deployment: ${COMMAND} link --server https://…`);
   const server = serverOrigin(values.server);
 
   const controller = new AbortController();
@@ -48,9 +52,10 @@ async function linkCommand(args: string[]) {
   const linked = { server, device };
   await saveLinked(path, linked);
   const workouts = await historyLoader(linked)();
-  console.log(`\nLinked. ${workouts.length} workouts in your history. The key is saved in ${path}.`);
+  const count = workouts.length === 1 ? '1 workout' : `${workouts.length} workouts`;
+  console.log(`\nLinked. ${count} in your history. The key is saved in ${path}.`);
   console.log('Add the server to your agent, for example in Claude Code:');
-  console.log(`  claude mcp add ergscan -- node ${process.argv[1]}`);
+  console.log(`  claude mcp add ergscan -- ${COMMAND}`);
 }
 
 async function unlinkCommand() {
@@ -74,10 +79,10 @@ async function unlinkCommand() {
 async function serve() {
   const linked = await readLinked(devicePath());
   const load: LoadHistory = linked ? historyLoader(linked) : () => Promise.reject(new Error(
-    'ErgScan is not linked on this computer yet. Run `ergscan-mcp link --server https://…` in a terminal first.',
+    `ErgScan is not linked on this computer yet. Run \`${COMMAND} link --server https://…\` in a terminal first.`,
   ));
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  await createMcpServer(load, timeZone).connect(new StdioServerTransport());
+  await createMcpServer(load, timeZone, VERSION).connect(new StdioServerTransport());
 }
 
 const [command, ...args] = process.argv.slice(2);

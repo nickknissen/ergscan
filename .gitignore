@@ -20,3 +20,6 @@ eval-results/
 Thumbs.db
 
 /ergscan-sync.sqlite*
+# Copied from the root LICENSE by npm run mcp:build
+/mcp/LICENSE
+*.tgz

@@ -7,6 +7,7 @@ import {
   claimInvite, closeInvite, createInvite, downloadHistory, inviteCode, SyncError, type Invite,
 } from '../src/sync/client';
 import type { Device } from '../src/sync/store';
+import { COMMAND } from './command';
 import type { LoadHistory } from './server';
 
 /**
@@ -36,7 +37,7 @@ export async function readLinked(path: string): Promise<LinkedDevice | null> {
   const device = value.device;
   if (typeof value.server !== 'string' || !device ||
       !(['id', 'vault', 'token', 'key'] as const).every((field) => typeof device[field] === 'string')) {
-    throw new Error(`${path} is not an ErgScan device file. Delete it and run \`ergscan-mcp link\` again.`);
+    throw new Error(`${path} is not an ErgScan device file. Delete it and run \`${COMMAND} link\` again.`);
   }
   return { server: value.server, device };
 }
@@ -93,7 +94,7 @@ export async function link(
         // Anything else may pass, like a dropped connection; keep waiting until the invite expires.
       }
     }
-    throw new Error('The pairing code expired before it was approved. Run `ergscan-mcp link` again.');
+    throw new Error(`The pairing code expired before it was approved. Run \`${COMMAND} link\` again.`);
   } finally {
     await closeInvite(invite, origin).catch(() => {});
   }
@@ -111,7 +112,7 @@ export function historyLoader({ server, device }: LinkedDevice): LoadHistory {
       downloaded = await downloadHistory(device, { origin: server, etag: cached?.etag });
     } catch (error) {
       if (error instanceof SyncError && error.status === 401) {
-        throw new Error(`This computer is no longer linked to ErgScan at ${server}. Run \`ergscan-mcp link\` in a terminal to link it again.`);
+        throw new Error(`This computer is no longer linked to ErgScan at ${server}. Run \`${COMMAND} link\` in a terminal to link it again.`);
       }
       if (error instanceof SyncError) throw new Error(`ErgScan at ${server} answered with status ${error.status}.`);
       throw new Error(`Could not reach ErgScan at ${server}: ${error instanceof Error ? error.message : String(error)}`);

@@ -15,8 +15,8 @@ workout's shape as the monitor shows it, like "2000m", "30:00" or "8x500m/3:30r"
 feeling runs from 1 (weary) to 5 (beaming). Fields the workout does not have are left out.`;
 
 /** The read-only ErgScan tools over the rower's saved workout history. */
-export function createMcpServer(loadHistory: LoadHistory, timeZone: string): McpServer {
-  const server = new McpServer({ name: 'ergscan', version: '0.1.0' }, {
+export function createMcpServer(loadHistory: LoadHistory, timeZone: string, version = '0.0.0-dev'): McpServer {
+  const server = new McpServer({ name: 'ergscan', version }, {
     instructions: 'Workouts the rower saved in ErgScan, read from photos of a Concept2 rowing machine ' +
       `monitor (PM5/PM4). The time zone is ${timeZone}. Use list_workouts to find workouts and get_workout for ` +
       'the splits of one.',

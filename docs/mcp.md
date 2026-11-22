@@ -15,13 +15,14 @@ model.
 
 ## Set it up
 
-You need Node.js 20.19+ or 22.12+ and a copy of this repository with its
-dependencies installed (`npm install`).
+You need Node.js 20.19 or later. The server is published on npm as
+[`@nickknissen/ergscan-mcp`](https://www.npmjs.com/package/@nickknissen/ergscan-mcp),
+so `npx` runs it without installing anything else.
 
 1. Link your computer, with the address of your ErgScan deployment:
 
    ```sh
-   node mcp/ergscan-mcp.mjs link --server https://ergscan.example
+   npx -y @nickknissen/ergscan-mcp link --server https://ergscan.example
    ```
 
    It shows a QR code and a link, valid for five minutes.
@@ -31,7 +32,7 @@ dependencies installed (`npm install`).
 3. Add the server to your agent. In Claude Code:
 
    ```sh
-   claude mcp add ergscan -e TZ=Europe/Copenhagen -- node /path/to/ergscan/mcp/ergscan-mcp.mjs
+   claude mcp add ergscan -e TZ=Europe/Copenhagen -- npx -y @nickknissen/ergscan-mcp
    ```
 
    `TZ` sets the time zone for workout times and for the days you ask about.
@@ -57,10 +58,23 @@ save on your phone show up straight away.
 ## Unlink
 
 ```sh
-node mcp/ergscan-mcp.mjs unlink
+npx -y @nickknissen/ergscan-mcp unlink
 ```
 
 This removes your computer from your linked devices and deletes the key file.
 Removing it under **Settings → Private sync → Show linked devices** on
 another device also works. The tools then report that the computer is no
 longer linked.
+
+## Develop and publish
+
+From a checkout, `node mcp/ergscan-mcp.mjs` runs the TypeScript source
+directly through tsx, with the same commands, e.g.
+`node mcp/ergscan-mcp.mjs link --server http://localhost:5173`.
+
+The npm package lives in `mcp/package.json`. `npm run mcp:build` bundles the
+MCP server and the app code it uses into `mcp/dist/ergscan-mcp.js`. Its
+dependencies stay external, and the build fails if the bundle imports a package
+that `mcp/package.json` does not list. To release, bump the version in
+`mcp/package.json`, then run `npm publish --access public` in `mcp/`, which
+builds first.
