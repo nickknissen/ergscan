@@ -96,123 +96,127 @@ function recalculate() {
 
 <template>
   <section class="editor">
-    <h2 class="group-header">{{ t('review.details') }}</h2>
-    <div class="group">
-      <label class="group-row">
-        <span class="row-label">{{ t('review.name') }}</span>
-        <input v-model.trim="name" class="row-value" type="text" :placeholder="suggestedName" autocomplete="off" />
-      </label>
-      <label class="group-row">
-        <span class="row-label">{{ t('review.start') }}</span>
-        <input v-model="startInput" class="row-value" type="datetime-local" />
-      </label>
-      <div class="group-row">
-        <span :id="`${id}-split`" class="row-label">{{ t('review.splitDistance') }}</span>
-        <MdSelect v-model="workout.splitDistance" :options="splitOptions" :labelledby="`${id}-split`" />
-      </div>
-      <div class="group-row">
-        <span :id="`${id}-extra`" class="row-label">{{ t('review.extraColumn') }}</span>
-        <MdSelect v-model="extraSelection" :options="extraSelectOptions" :labelledby="`${id}-extra`" />
-      </div>
-      <label class="group-row">
-        <span class="row-label">{{ t('review.dragFactor') }}</span>
-        <NumberCell v-model="workout.dragFactor" class="row-value" :label="t('review.dragFactor')" />
-      </label>
-      <label class="group-row stacked">
-        <span class="row-label">{{ t('review.notes') }}</span>
-        <textarea v-model="notes" class="row-notes" rows="3"></textarea>
-      </label>
-      <div class="group-row feeling-row">
-        <span :id="`${id}-feeling`" class="row-label">{{ t('review.feeling') }}</span>
-        <div class="feelings" role="group" :aria-labelledby="`${id}-feeling`">
-          <button
-            v-for="feeling in FEELINGS"
-            :key="feeling"
-            type="button"
-            class="icon"
-            :aria-pressed="workout.feeling === feeling"
-            :aria-label="t(`feelings.${feeling}`)"
-            :title="t(`feelings.${feeling}`)"
-            @click="toggleFeeling(feeling)"
-          >
-            <MdIcon :name="FEELING_ICONS[feeling]" :filled="workout.feeling === feeling" />
-          </button>
+    <div class="editor-details">
+      <h2 class="group-header">{{ t('review.details') }}</h2>
+      <div class="group">
+        <label class="group-row">
+          <span class="row-label">{{ t('review.name') }}</span>
+          <input v-model.trim="name" class="row-value" type="text" :placeholder="suggestedName" autocomplete="off" />
+        </label>
+        <label class="group-row">
+          <span class="row-label">{{ t('review.start') }}</span>
+          <input v-model="startInput" class="row-value" type="datetime-local" />
+        </label>
+        <div class="group-row">
+          <span :id="`${id}-split`" class="row-label">{{ t('review.splitDistance') }}</span>
+          <MdSelect v-model="workout.splitDistance" :options="splitOptions" :labelledby="`${id}-split`" />
+        </div>
+        <div class="group-row">
+          <span :id="`${id}-extra`" class="row-label">{{ t('review.extraColumn') }}</span>
+          <MdSelect v-model="extraSelection" :options="extraSelectOptions" :labelledby="`${id}-extra`" />
+        </div>
+        <label class="group-row">
+          <span class="row-label">{{ t('review.dragFactor') }}</span>
+          <NumberCell v-model="workout.dragFactor" class="row-value" :label="t('review.dragFactor')" />
+        </label>
+        <label class="group-row stacked">
+          <span class="row-label">{{ t('review.notes') }}</span>
+          <textarea v-model="notes" class="row-notes" rows="3"></textarea>
+        </label>
+        <div class="group-row feeling-row">
+          <span :id="`${id}-feeling`" class="row-label">{{ t('review.feeling') }}</span>
+          <div class="feelings" role="group" :aria-labelledby="`${id}-feeling`">
+            <button
+              v-for="feeling in FEELINGS"
+              :key="feeling"
+              type="button"
+              class="icon"
+              :aria-pressed="workout.feeling === feeling"
+              :aria-label="t(`feelings.${feeling}`)"
+              :title="t(`feelings.${feeling}`)"
+              @click="toggleFeeling(feeling)"
+            >
+              <MdIcon :name="FEELING_ICONS[feeling]" :filled="workout.feeling === feeling" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <h2 class="group-header">{{ t('review.splits') }}</h2>
-    <div class="group table-wrap">
-      <table :class="{ 'has-extra': extraColumn }">
-        <thead>
-          <tr>
-            <th>{{ t('columns.time') }}</th>
-            <th>{{ t('columns.meter') }}</th>
-            <th>{{ splitHeader }}</th>
-            <th class="col-small"><abbr :title="t('columns.rateLong')">{{ t('columns.rate') }}</abbr></th>
-            <th v-if="extraColumn" class="col-small">{{ t(`columns.${extraColumn}`) }}</th>
-            <th class="col-tight">{{ t('columns.rest') }}</th>
-            <th class="col-tight"></th>
-          </tr>
-        </thead>
-        <tbody @keydown="handleCellKeydown($event, '.cell')">
-          <tr class="row-caption">
-            <th :colspan="extraColumn ? 7 : 6" scope="rowgroup">{{ t('review.total') }}</th>
-          </tr>
-          <tr class="summary">
-            <td><TimeCell v-model="workout.summary.durationDs" :label="label(t('columns.time'), workout.summary)" /></td>
-            <td><NumberCell v-model="workout.summary.distanceM" :label="label(t('columns.meter'), workout.summary)" /></td>
-            <td><TimeCell v-model="workout.summary.splitDs" :label="label(splitHeader, workout.summary)" /></td>
-            <td><NumberCell v-model="workout.summary.rate" :label="label(t('columns.rateLong'), workout.summary)" /></td>
-            <td v-if="extraColumn">
-              <NumberCell v-model="workout.summary[extraColumn]" :label="label(t(`columns.${extraColumn}`), workout.summary)" />
-            </td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr v-if="workout.rows.length" class="row-caption">
-            <th :colspan="extraColumn ? 7 : 6" scope="rowgroup">{{ t('review.splits') }}</th>
-          </tr>
-          <tr v-for="(row, index) in workout.rows" :key="index" :class="{ rest: row.isRest }">
-            <td><TimeCell v-model="row.durationDs" :label="label(t('columns.time'), row)" /></td>
-            <td><NumberCell v-model="row.distanceM" :label="label(t('columns.meter'), row)" /></td>
-            <td><TimeCell v-model="row.splitDs" :label="label(splitHeader, row)" /></td>
-            <td><NumberCell v-model="row.rate" :label="label(t('columns.rateLong'), row)" /></td>
-            <td v-if="extraColumn">
-              <NumberCell v-model="row[extraColumn]" :label="label(t(`columns.${extraColumn}`), row)" />
-            </td>
-            <td class="center">
-              <label class="check-hit">
-                <input v-model="row.isRest" type="checkbox" class="check" :aria-label="label(t('columns.rest'), row)" />
-                <MdIcon name="check" class="check-mark" />
-              </label>
-            </td>
-            <td class="center">
-              <button
-                type="button"
-                class="icon"
-                :aria-label="t('review.removeRow', { number: index + 1 })"
-                :title="t('review.removeRow', { number: index + 1 })"
-                @click="removeRow(index)"
-              >
-                <MdIcon name="do_not_disturb_on" />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p v-if="invalidCells.size" :id="CELL_HINT_ID" class="field-error" role="alert">{{ t('review.invalidCells') }}</p>
+    <div class="editor-splits">
+      <h2 class="group-header">{{ t('review.splits') }}</h2>
+      <div class="group table-wrap">
+        <table :class="{ 'has-extra': extraColumn }">
+          <thead>
+            <tr>
+              <th>{{ t('columns.time') }}</th>
+              <th>{{ t('columns.meter') }}</th>
+              <th>{{ splitHeader }}</th>
+              <th class="col-small"><abbr :title="t('columns.rateLong')">{{ t('columns.rate') }}</abbr></th>
+              <th v-if="extraColumn" class="col-small">{{ t(`columns.${extraColumn}`) }}</th>
+              <th class="col-tight">{{ t('columns.rest') }}</th>
+              <th class="col-tight"></th>
+            </tr>
+          </thead>
+          <tbody @keydown="handleCellKeydown($event, '.cell')">
+            <tr class="row-caption">
+              <th :colspan="extraColumn ? 7 : 6" scope="rowgroup">{{ t('review.total') }}</th>
+            </tr>
+            <tr class="summary">
+              <td><TimeCell v-model="workout.summary.durationDs" :label="label(t('columns.time'), workout.summary)" /></td>
+              <td><NumberCell v-model="workout.summary.distanceM" :label="label(t('columns.meter'), workout.summary)" /></td>
+              <td><TimeCell v-model="workout.summary.splitDs" :label="label(splitHeader, workout.summary)" /></td>
+              <td><NumberCell v-model="workout.summary.rate" :label="label(t('columns.rateLong'), workout.summary)" /></td>
+              <td v-if="extraColumn">
+                <NumberCell v-model="workout.summary[extraColumn]" :label="label(t(`columns.${extraColumn}`), workout.summary)" />
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr v-if="workout.rows.length" class="row-caption">
+              <th :colspan="extraColumn ? 7 : 6" scope="rowgroup">{{ t('review.splits') }}</th>
+            </tr>
+            <tr v-for="(row, index) in workout.rows" :key="index" :class="{ rest: row.isRest }">
+              <td><TimeCell v-model="row.durationDs" :label="label(t('columns.time'), row)" /></td>
+              <td><NumberCell v-model="row.distanceM" :label="label(t('columns.meter'), row)" /></td>
+              <td><TimeCell v-model="row.splitDs" :label="label(splitHeader, row)" /></td>
+              <td><NumberCell v-model="row.rate" :label="label(t('columns.rateLong'), row)" /></td>
+              <td v-if="extraColumn">
+                <NumberCell v-model="row[extraColumn]" :label="label(t(`columns.${extraColumn}`), row)" />
+              </td>
+              <td class="center">
+                <label class="check-hit">
+                  <input v-model="row.isRest" type="checkbox" class="check" :aria-label="label(t('columns.rest'), row)" />
+                  <MdIcon name="check" class="check-mark" />
+                </label>
+              </td>
+              <td class="center">
+                <button
+                  type="button"
+                  class="icon"
+                  :aria-label="t('review.removeRow', { number: index + 1 })"
+                  :title="t('review.removeRow', { number: index + 1 })"
+                  @click="removeRow(index)"
+                >
+                  <MdIcon name="do_not_disturb_on" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p v-if="invalidCells.size" :id="CELL_HINT_ID" class="field-error" role="alert">{{ t('review.invalidCells') }}</p>
 
-    <div class="group">
-      <button type="button" class="group-row tappable accent" @click="addRow">
-        <MdIcon name="add" class="row-icon" />
-        <span class="row-label">{{ t('review.addRow') }}</span>
-      </button>
-      <button type="button" class="group-row tappable accent" @click="recalculate">
-        <MdIcon name="calculate" class="row-icon" />
-        <span class="row-label">{{ t('review.recalculate') }}</span>
-      </button>
+      <div class="group">
+        <button type="button" class="group-row tappable accent" @click="addRow">
+          <MdIcon name="add" class="row-icon" />
+          <span class="row-label">{{ t('review.addRow') }}</span>
+        </button>
+        <button type="button" class="group-row tappable accent" @click="recalculate">
+          <MdIcon name="calculate" class="row-icon" />
+          <span class="row-label">{{ t('review.recalculate') }}</span>
+        </button>
+      </div>
     </div>
   </section>
 </template>

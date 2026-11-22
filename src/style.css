@@ -1723,6 +1723,20 @@ textarea:focus {
   font: var(--body-small);
 }
 
+/* The editor answers to its own column, which the history list and source panel both narrow. */
+.review-main {
+  container: review / inline-size;
+}
+
+@container review (min-width: 880px) {
+  .editor {
+    display: grid;
+    grid-template-columns: minmax(400px, 2fr) minmax(0, 3fr);
+    column-gap: 24px;
+    align-items: start;
+  }
+}
+
 .table-wrap {
   overflow-x: auto;
   padding: 8px 6px;
@@ -2189,6 +2203,11 @@ tr.rest .cell {
 }
 
 @media (min-width: 840px) {
+  /* Content starts beside the rail, in line with the app bar title, instead of floating in the middle. */
+  .screen {
+    margin-left: 0;
+  }
+
   .screen-guide,
   .screen-history,
   .screen-settings {
@@ -2284,12 +2303,30 @@ tr.rest .cell {
 }
 
 @media (min-width: 1200px) {
-  .screen-history {
-    max-width: 1280px;
+  .screen-history,
+  .screen.screen-split,
+  .screen-review {
+    max-width: 1600px;
   }
 
   .screen-review:has(.review-split) {
     max-width: 1120px;
+  }
+
+  .screen-capture {
+    max-width: 1120px;
+  }
+
+  .capture:has(.hero) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .capture > .banner {
+    grid-column: 1 / -1;
+    grid-row: 1;
   }
 
   .review-split {
@@ -2434,7 +2471,7 @@ tr.rest .cell {
   .disclosure,
   .banner,
   .review-hint,
-  .editor > .group:last-child,
+  .editor-splits > .group:last-child,
   td:has(> .icon),
   thead th:last-child {
     display: none;
