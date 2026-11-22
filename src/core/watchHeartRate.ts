@@ -68,14 +68,14 @@ export function hasHeartRate(recording: WatchRecording): boolean {
   return recording.heartRate.some((v) => v !== null);
 }
 
-interface Span {
+export interface Span {
   row: WorkoutRow;
   from: number;
   to: number;
 }
 
 /** The rows of the workout laid out in seconds from its start. */
-function spans(workout: Workout): Span[] {
+export function spans(workout: Workout): Span[] {
   const rows = workout.rows.length > 0 ? workout.rows : [workout.summary];
   let at = 0;
   return rows.map((row) => {

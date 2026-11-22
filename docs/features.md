@@ -54,6 +54,8 @@
   your phone, tablet and computer with a QR code and keep the same history on
   all of them. History is end-to-end encrypted before it leaves the device,
   and a recovery key restores it if you lose every linked device.
+- A local [MCP server](mcp.md) lets an AI agent such as Claude Code read your
+  synced workouts. It decrypts them on your computer.
 
 ## App
 
