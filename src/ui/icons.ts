@@ -1,3 +1,4 @@
+import { icon, type IconName } from 'm3-vue/icons';
 import type { Feeling } from '../core/feeling';
 import add from '@material-symbols/svg-400/rounded/add.svg?raw';
 import arrowBack from '@material-symbols/svg-400/rounded/arrow_back.svg?raw';
@@ -55,61 +56,67 @@ import undo from '@material-symbols/svg-400/rounded/undo.svg?raw';
 import viewDay from '@material-symbols/svg-400/rounded/view_day.svg?raw';
 import warning from '@material-symbols/svg-400/rounded/warning.svg?raw';
 
-const inner = (svg: string) => svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
-
-const pair = (outlined: string, filled = outlined) => [inner(outlined), inner(filled)] as const;
-
+/**
+ * Every icon the app shows, outlined and filled. main.ts gives them to MdIcon (m3-vue's), and
+ * the declaration below makes their names its `IconName`.
+ */
 export const ICONS = {
-  add: pair(add),
-  arrow_back: pair(arrowBack),
-  arrow_drop_down: pair(arrowDropDown),
-  cake: pair(cake),
-  calculate: pair(calculate),
-  cameraswitch: pair(cameraswitch),
-  check: pair(check),
-  cloud_done: pair(cloudDone),
-  cloud_off: pair(cloudOff),
-  cloud_sync: pair(cloudSync),
-  contrast: pair(contrast),
-  delete: pair(deleteIcon),
-  delete_forever: pair(deleteForever),
-  devices: pair(devices),
-  do_not_disturb_on: pair(doNotDisturbOn),
-  document_scanner: pair(documentScanner, documentScannerFill),
-  download: pair(download),
-  edit: pair(edit),
-  history: pair(history, historyFill),
-  key: pair(key),
-  keyboard_arrow_down: pair(keyboardArrowDown),
-  left_panel_close: pair(leftPanelClose),
-  left_panel_open: pair(leftPanelOpen),
-  link: pair(linkIcon),
-  link_off: pair(linkOff),
-  menu_book: pair(menuBook),
-  monitor_heart: pair(monitorHeart),
-  more_vert: pair(moreVert),
-  palette: pair(palette),
-  photo_camera: pair(photoCamera),
-  photo_library: pair(photoLibrary),
-  print: pair(print),
-  qr_code_scanner: pair(qrCodeScanner),
-  redo: pair(redo),
-  rowing: pair(rowing),
-  sentiment_dissatisfied: pair(sentimentDissatisfied, sentimentDissatisfiedFill),
-  sentiment_neutral: pair(sentimentNeutral, sentimentNeutralFill),
-  sentiment_satisfied: pair(sentimentSatisfied, sentimentSatisfiedFill),
-  sentiment_very_dissatisfied: pair(sentimentVeryDissatisfied, sentimentVeryDissatisfiedFill),
-  sentiment_very_satisfied: pair(sentimentVerySatisfied, sentimentVerySatisfiedFill),
-  settings: pair(settings, settingsFill),
-  share: pair(share),
-  sync: pair(sync),
-  sync_problem: pair(syncProblem),
-  undo: pair(undo),
-  view_day: pair(viewDay),
-  warning: pair(warning),
+  add: icon(add),
+  arrow_back: icon(arrowBack),
+  arrow_drop_down: icon(arrowDropDown),
+  cake: icon(cake),
+  calculate: icon(calculate),
+  cameraswitch: icon(cameraswitch),
+  check: icon(check),
+  cloud_done: icon(cloudDone),
+  cloud_off: icon(cloudOff),
+  cloud_sync: icon(cloudSync),
+  contrast: icon(contrast),
+  delete: icon(deleteIcon),
+  delete_forever: icon(deleteForever),
+  devices: icon(devices),
+  do_not_disturb_on: icon(doNotDisturbOn),
+  document_scanner: icon(documentScanner, documentScannerFill),
+  download: icon(download),
+  edit: icon(edit),
+  history: icon(history, historyFill),
+  key: icon(key),
+  keyboard_arrow_down: icon(keyboardArrowDown),
+  left_panel_close: icon(leftPanelClose),
+  left_panel_open: icon(leftPanelOpen),
+  link: icon(linkIcon),
+  link_off: icon(linkOff),
+  menu_book: icon(menuBook),
+  monitor_heart: icon(monitorHeart),
+  more_vert: icon(moreVert),
+  palette: icon(palette),
+  photo_camera: icon(photoCamera),
+  photo_library: icon(photoLibrary),
+  print: icon(print),
+  qr_code_scanner: icon(qrCodeScanner),
+  redo: icon(redo),
+  rowing: icon(rowing),
+  sentiment_dissatisfied: icon(sentimentDissatisfied, sentimentDissatisfiedFill),
+  sentiment_neutral: icon(sentimentNeutral, sentimentNeutralFill),
+  sentiment_satisfied: icon(sentimentSatisfied, sentimentSatisfiedFill),
+  sentiment_very_dissatisfied: icon(sentimentVeryDissatisfied, sentimentVeryDissatisfiedFill),
+  sentiment_very_satisfied: icon(sentimentVerySatisfied, sentimentVerySatisfiedFill),
+  settings: icon(settings, settingsFill),
+  share: icon(share),
+  sync: icon(sync),
+  sync_problem: icon(syncProblem),
+  undo: icon(undo),
+  view_day: icon(viewDay),
+  warning: icon(warning),
 };
 
-export type IconName = keyof typeof ICONS;
+type AppIcons = typeof ICONS;
+
+declare module 'm3-vue/icons' {
+  interface Icons extends AppIcons {}
+}
+
+export type { IconName };
 
 /** Faces for how a workout felt, from weary (1) to beaming (5). */
 export const FEELING_ICONS = {

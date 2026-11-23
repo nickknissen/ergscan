@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { useI18n } from 'vue-i18n';
 import HeartRateZones from '../components/HeartRateZones.vue';
-import MdIcon from '../components/MdIcon.vue';
 import WorkoutEditor from '../components/WorkoutEditor.vue';
 import type { WatchMessage } from '../composables/useWatchHeartRate';
 import type { ExtraColumn, Workout } from '../core/workout';

@@ -26,6 +26,7 @@
     "@material/material-color-utilities": "^0.4.0",
     "hono": "^4.13.19",
     "jsqr": "^1.4.0",
+    "m3-vue": "github:nickknissen/m3-vue#v0.1.0",
     "qrcode": "^1.5.4",
     "tesseract.js": "^7.0.0",
     "vue": "^3.5.45",

@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
+import { contextMenuPoint } from 'm3-vue/ui/menu';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { entryDateLabel } from '../core/dates';
 import type { HistoryEntry } from '../core/history';
 import { formatTime } from '../core/time';
 import { FEELING_ICONS } from '../ui/icons';
-import { contextMenuPoint } from '../ui/menu';
 import { keepExisting, nextSelection, type Selection } from '../ui/selection';
 import { isTextField } from '../ui/shortcuts';
 import MdContextMenu from './MdContextMenu.vue';
-import MdIcon from './MdIcon.vue';
 
 const props = defineProps<{ entries: readonly HistoryEntry[]; current: string | null }>();
 const emit = defineEmits<{ open: [entry: HistoryEntry]; remove: [entries: HistoryEntry[]] }>();

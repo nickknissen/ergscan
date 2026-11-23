@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { captureRect, guideRectInView, type Size } from '../ocr/guide';
@@ -17,7 +18,6 @@ import {
 } from './cameraLenses';
 import { cameraDebug, cameraReport, reportAllCameras } from './cameraReport';
 import { activeStop, clampZoom, createZoomApplier, pinchZoom, zoomRange, zoomStops, type ZoomRange } from './cameraZoom';
-import MdIcon from './MdIcon.vue';
 
 const emit = defineEmits<{
   capture: [image: Blob];

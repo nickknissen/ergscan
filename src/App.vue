@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import MdDialog from 'm3-vue/components/MdDialog.vue';
+import MdIcon from 'm3-vue/components/MdIcon.vue';
+import { createConfirm } from 'm3-vue/ui/confirm';
+import { useMediaQuery } from 'm3-vue/ui/mediaQuery';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppBar from './components/AppBar.vue';
 import CameraCapture from './components/CameraCapture.vue';
 import HistoryPane from './components/HistoryPane.vue';
-import MdDialog from './components/MdDialog.vue';
-import MdIcon from './components/MdIcon.vue';
 import PmGuide from './components/PmGuide.vue';
 import TabBar from './components/TabBar.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
@@ -22,10 +24,8 @@ import { clearDraft } from './core/draft';
 import type { HistoryEntry } from './core/history';
 import { clearAppData } from './core/settings';
 import { newWorkout } from './core/workout';
-import { createConfirm } from './ui/confirm';
 import { historyPane, listDetail } from './ui/layout';
 import { appShortcut, IMAGE_STAGES, isTextField } from './ui/shortcuts';
-import { useMediaQuery } from './ui/mediaQuery';
 import { holdScreenWakeLock } from './ui/screenWakeLock';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
 import CaptureView from './views/CaptureView.vue';
@@ -257,7 +257,7 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
   <input ref="photoInput" type="file" accept="image/*" capture="environment" hidden @change="onImage" @cancel="stopAddingRows" />
   <input ref="imageInput" type="file" accept="image/*" hidden @change="onImage" />
   <input ref="watchInput" type="file" accept=".fit,.zip,application/zip" hidden @change="onWatchFile" />
-  <MdDialog :pending="dialog.pending.value" @settle="dialog.settle" />
+  <MdDialog :pending="dialog.pending.value" :cancel-label="t('dialog.cancel')" @settle="dialog.settle" />
 
   <CameraCapture
     v-if="stage === 'camera'"

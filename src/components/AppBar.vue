@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
+import MdMenu from 'm3-vue/components/MdMenu.vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { IconName } from '../ui/icons';
-import MdIcon from './MdIcon.vue';
-import MdMenu from './MdMenu.vue';
 
 /**
  * The top app bar: a back arrow on the review screen and the guide, the screen title, and on the

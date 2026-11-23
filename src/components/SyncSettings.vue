@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
@@ -7,7 +8,6 @@ import {
 } from '../sync/client';
 import type { Device, HistoryStore } from '../sync/store';
 import type { IconName } from '../ui/icons';
-import MdIcon from './MdIcon.vue';
 
 const props = defineProps<{
   store: HistoryStore;

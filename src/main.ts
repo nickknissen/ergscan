@@ -1,11 +1,16 @@
+import { registerIcons } from 'm3-vue/icons';
+import { installRipple } from 'm3-vue/ui/ripple';
 import { createApp } from 'vue';
 import App from './App.vue';
 import { applyTheme, loadAccent, loadTheme } from './core/settings';
 import { i18n } from './i18n';
 import { prefetchOcrAssets } from './ocr/assets';
-import { installRipple } from './ui/ripple';
+import { ICONS } from './ui/icons';
 import '@fontsource-variable/roboto-flex';
+import 'm3-vue/style.css';
 import './style.css';
+
+registerIcons(ICONS);
 
 document.documentElement.lang = i18n.global.locale.value;
 try {
