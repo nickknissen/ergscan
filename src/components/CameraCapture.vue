@@ -5,7 +5,7 @@ import { captureRect, guideRectInView, type Size } from '../ocr/guide';
 import { CAMERA_KEY, lostChosenCamera, nextCamera, videoConstraints, videoInputs } from './cameraChoice';
 import { buzz } from '../ui/haptics';
 import { cameraFailure } from './cameraFailure';
-import { cameraDebug, cameraReport } from './cameraReport';
+import { cameraDebug, cameraReport, reportAllCameras } from './cameraReport';
 import MdIcon from './MdIcon.vue';
 
 const emit = defineEmits<{
@@ -29,6 +29,17 @@ let observer: ResizeObserver | null = null;
 let timeout: ReturnType<typeof setTimeout> | undefined;
 let attempt = 0;
 const report = ref('');
+let reportedAll = false;
+
+/** Stops the preview, opens every camera in turn for the report, then starts the preview again. */
+async function reportAll() {
+  attempt++;
+  stop();
+  reportedAll = true;
+  report.value = 'Reading every camera…';
+  report.value = await reportAllCameras().catch((error: unknown) => String(error));
+  void start();
+}
 
 async function shareReport() {
   try {
@@ -84,7 +95,7 @@ async function start() {
     clearTimeout(timeout);
     state.value = 'ready';
     const track = media.getVideoTracks()[0];
-    if (cameraDebug && track) report.value = await cameraReport(track).catch((error: unknown) => String(error));
+    if (cameraDebug && track && !reportedAll) report.value = cameraReport(track);
   } catch (error) {
     if (current !== attempt) return;
     stop();
@@ -180,6 +191,7 @@ function capture() {
         <p v-if="ready" class="guide-hint">{{ t('camera.hint') }}</p>
       </div>
       <div v-if="report" class="camera-report">
+        <button type="button" class="tonal" @click="reportAll">All cameras</button>
         <button type="button" class="tonal" @click="shareReport">Share report</button>
         <pre>{{ report }}</pre>
       </div>
