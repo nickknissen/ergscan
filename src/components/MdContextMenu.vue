@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
+import type { Point } from 'm3-vue/ui/menu';
+import { usePopoverMenu } from 'm3-vue/ui/popoverMenu';
 import { shallowRef, useTemplateRef } from 'vue';
 import type { IconName } from '../ui/icons';
-import type { Point } from '../ui/menu';
-import { usePopoverMenu } from '../ui/popoverMenu';
-import MdIcon from './MdIcon.vue';
 
 defineProps<{ label: string; items: readonly { id: string; label: string; icon: IconName }[] }>();
 const emit = defineEmits<{ select: [id: string] }>();

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
+import MdSelect from 'm3-vue/components/MdSelect.vue';
+import { handleCellKeydown } from 'm3-vue/ui/keyboardNav';
 import { computed, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';
@@ -6,10 +9,7 @@ import { FEELINGS, type Feeling } from '../core/feeling';
 import { emptyRow, moveExtraColumn, sumRows, type ExtraColumn, type Workout, type WorkoutRow } from '../core/workout';
 import { suggestName } from '../core/workoutName';
 import { FEELING_ICONS } from '../ui/icons';
-import { handleCellKeydown } from '../ui/keyboardNav';
 import { CELL_HINT_ID, provideInvalidCells } from './cellValidity';
-import MdIcon from './MdIcon.vue';
-import MdSelect from './MdSelect.vue';
 import NumberCell from './NumberCell.vue';
 import TimeCell from './TimeCell.vue';
 

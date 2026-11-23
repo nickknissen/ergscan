@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { useI18n } from 'vue-i18n';
-import MdIcon from '../components/MdIcon.vue';
 
 defineProps<{ showIntro: boolean; cameraError: string; cameraSupported: boolean }>();
 const emit = defineEmits<{ guide: []; photo: []; choose: []; manual: [] }>();

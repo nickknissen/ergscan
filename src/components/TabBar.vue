@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TabStage } from '../core/route';
-import MdIcon from './MdIcon.vue';
 
 /** `historyTab`: History is the current tab, also while a workout is open beside the history list. */
 const props = defineProps<{ stage: string; historyTab: boolean }>();

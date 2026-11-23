@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
+import { handleRadioKeydown } from 'm3-vue/ui/keyboardNav';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import MdIcon from '../components/MdIcon.vue';
 import SyncSettings from '../components/SyncSettings.vue';
 import { ACCENTS, accentSwatch, type Accent } from '../core/palette';
 import { estimatedMaxHeartRate, parseWholeNumber, THEMES, type HeartRateSettings, type Theme } from '../core/settings';
 import type { Device, HistoryStore } from '../sync/store';
-import { handleRadioKeydown } from '../ui/keyboardNav';
 
 const theme = defineModel<Theme>('theme', { required: true });
 const accent = defineModel<Accent>('accent', { required: true });

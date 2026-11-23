@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MONITORS as monitors, type Monitor } from '../core/route';
-import MdIcon from './MdIcon.vue';
 
 const props = defineProps<{ monitor: Monitor | null }>();
 const emit = defineEmits<{ done: []; pick: [monitor: Monitor]; change: [] }>();

@@ -61,8 +61,10 @@ Useful flags, passed after `--`:
 | `src/App.vue` | App shell: navigation bar, tabs, history pane, routing between screens and the review session |
 | `src/views/` | One component per screen: capture, scanning, review, history and settings |
 | `src/composables/` | App state shared across screens: settings, and saved history with sync |
-| `src/components/` | Vue components: camera, review table, PM guide, sync settings, Material 3 dialogs and menus |
-| `src/ui/` | Framework-free UI behavior: icons, menus, ripples, transitions, confirm dialogs |
+| `src/components/` | Vue components: camera, review table, PM guide, sync settings, the history list's context menu |
+| `src/ui/` | Framework-free UI behavior: the app's icons, selection, shortcuts, transitions, layout |
+| `src/style.css` | ErgScan's own styles, on top of m3-vue's |
+| [`m3-vue`](https://github.com/nickknissen/m3-vue) | Shared with garmin-dashboard: the Material 3 styles, `MdIcon`, `MdDialog`, `MdMenu`, `MdSelect`, ripples, menus, confirm dialogs and keyboard navigation. A new icon goes in `src/ui/icons.ts` |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
 | `server/` | Sync API server, its Dockerfile and the nginx rule for sync deployments |
 | `mcp/` | Local MCP server: links as a device, decrypts the history and answers agents' tool calls (see [MCP](mcp.md)) |

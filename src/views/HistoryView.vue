@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { useI18n } from 'vue-i18n';
 import HistoryList from '../components/HistoryList.vue';
-import MdIcon from '../components/MdIcon.vue';
 import type { HistoryEntry } from '../core/history';
 
 /** `paneShown`: the list sits in the side pane, so this screen only prompts to pick an entry. */

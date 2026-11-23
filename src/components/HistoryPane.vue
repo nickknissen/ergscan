@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { HistoryEntry } from '../core/history';
 import { clampListWidth, LIST_WIDTH, listPaneKey, type ListPane } from '../core/settings';
 import HistoryList from './HistoryList.vue';
-import MdIcon from './MdIcon.vue';
 
 /**
  * The history list beside the open screen on wide windows, with a divider to resize or collapse it.
