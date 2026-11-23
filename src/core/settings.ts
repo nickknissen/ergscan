@@ -51,48 +51,8 @@ export function saveIntroHidden(storage: Pick<Storage, 'setItem' | 'removeItem'>
   }
 }
 
+/** The history list's width beside the open screen, stored by m3-vue's `ui/listPane`. */
 export const LIST_PANE_KEY = 'ergscan.listPane';
-export const LIST_WIDTH = { min: 240, max: 480, initial: 340 } as const;
-
-export interface ListPane {
-  width: number;
-  collapsed: boolean;
-}
-
-export function clampListWidth(width: number): number {
-  return Math.round(Math.min(LIST_WIDTH.max, Math.max(LIST_WIDTH.min, width)));
-}
-
-export function loadListPane(storage: Pick<Storage, 'getItem'> | null): ListPane {
-  const match = /^(\d+)(c?)$/.exec(storage?.getItem(LIST_PANE_KEY) ?? '');
-  return match ? { width: clampListWidth(Number(match[1])), collapsed: match[2] === 'c' } : { width: LIST_WIDTH.initial, collapsed: false };
-}
-
-export function saveListPane(storage: Pick<Storage, 'setItem' | 'removeItem'>, pane: ListPane): void {
-  try {
-    if (pane.width === LIST_WIDTH.initial && !pane.collapsed) storage.removeItem(LIST_PANE_KEY);
-    else storage.setItem(LIST_PANE_KEY, `${pane.width}${pane.collapsed ? 'c' : ''}`);
-  } catch {
-    // Storage full or blocked: the layout still applies for this session.
-  }
-}
-
-export function listPaneKey(pane: ListPane, key: string): ListPane | null {
-  switch (key) {
-    case 'ArrowLeft':
-      return { width: clampListWidth(pane.width - 16), collapsed: false };
-    case 'ArrowRight':
-      return { width: clampListWidth(pane.width + 16), collapsed: false };
-    case 'Home':
-      return { width: LIST_WIDTH.min, collapsed: false };
-    case 'End':
-      return { width: LIST_WIDTH.max, collapsed: false };
-    case 'Enter':
-      return { ...pane, collapsed: !pane.collapsed };
-    default:
-      return null;
-  }
-}
 
 export const MAX_HR_KEY = 'ergscan.maxHr';
 export const AGE_KEY = 'ergscan.age';
