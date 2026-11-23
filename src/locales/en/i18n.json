@@ -305,7 +305,6 @@
   },
   "update": {
     "available": "A new version of ErgScan is available.",
-    "later": "Later",
     "reload": "Reload"
   },
   "drop": {

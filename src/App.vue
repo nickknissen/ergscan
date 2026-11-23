@@ -2,6 +2,7 @@
 import MdDialog from 'm3-vue/components/MdDialog.vue';
 import MdIcon from 'm3-vue/components/MdIcon.vue';
 import MdListDetail from 'm3-vue/components/MdListDetail.vue';
+import MdSnackbar from 'm3-vue/components/MdSnackbar.vue';
 import { createConfirm } from 'm3-vue/ui/confirm';
 import { useMediaQuery } from 'm3-vue/ui/mediaQuery';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
@@ -11,7 +12,6 @@ import CameraCapture from './components/CameraCapture.vue';
 import HistoryList from './components/HistoryList.vue';
 import PmGuide from './components/PmGuide.vue';
 import TabBar from './components/TabBar.vue';
-import UpdatePrompt from './components/UpdatePrompt.vue';
 import { useAppSettings } from './composables/useAppSettings';
 import { useFitExport } from './composables/useFitExport';
 import { useHistorySync } from './composables/useHistorySync';
@@ -19,6 +19,7 @@ import { useImageInput } from './composables/useImageInput';
 import { useNavigation } from './composables/useNavigation';
 import { useReviewSession } from './composables/useReviewSession';
 import { useScan } from './composables/useScan';
+import { useUpdatePrompt } from './composables/useUpdatePrompt';
 import { useWatchHeartRate } from './composables/useWatchHeartRate';
 import { entryDateLabel } from './core/dates';
 import { clearDraft } from './core/draft';
@@ -55,6 +56,7 @@ const session = webStorage(() => sessionStorage);
 const historySync = useHistorySync(storage, syncEnabled);
 const { repository, history, linkedDevice, pendingSync, syncStatus, storageError, readyHistory, refreshHistory, syncNow } = historySync;
 const { theme, accent, showIntro, heartRate, maxHr, listPane, reset: resetSettings } = useAppSettings(storage);
+useUpdatePrompt();
 
 const dialog = createConfirm();
 
@@ -388,7 +390,7 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
       </Transition>
     </main>
 
-    <UpdatePrompt />
+    <MdSnackbar />
 
     <div v-if="dragging" class="drop-overlay" aria-hidden="true">
       <MdIcon name="photo_library" />
