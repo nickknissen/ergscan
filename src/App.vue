@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import MdDialog from 'm3-vue/components/MdDialog.vue';
 import MdIcon from 'm3-vue/components/MdIcon.vue';
+import MdListDetail from 'm3-vue/components/MdListDetail.vue';
 import { createConfirm } from 'm3-vue/ui/confirm';
 import { useMediaQuery } from 'm3-vue/ui/mediaQuery';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppBar from './components/AppBar.vue';
 import CameraCapture from './components/CameraCapture.vue';
-import HistoryPane from './components/HistoryPane.vue';
+import HistoryList from './components/HistoryList.vue';
 import PmGuide from './components/PmGuide.vue';
 import TabBar from './components/TabBar.vue';
 import UpdatePrompt from './components/UpdatePrompt.vue';
@@ -22,7 +23,7 @@ import { useWatchHeartRate } from './composables/useWatchHeartRate';
 import { entryDateLabel } from './core/dates';
 import { clearDraft } from './core/draft';
 import type { HistoryEntry } from './core/history';
-import { clearAppData } from './core/settings';
+import { clearAppData, LIST_WIDTH } from './core/settings';
 import { newWorkout } from './core/workout';
 import { historyPane, listDetail } from './ui/layout';
 import { appShortcut, IMAGE_STAGES, isTextField } from './ui/shortcuts';
@@ -281,85 +282,89 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
       @menu="onReviewMenu"
     />
 
-    <main
-      class="screen"
-      :class="[`screen-${stage}`, { 'screen-split': showHistoryPane, 'list-collapsed': showHistoryPane && listPane.collapsed }]"
-      :style="showHistoryPane ? { '--list-width': `${listPane.width}px` } : undefined"
-    >
-      <HistoryPane
-        v-if="showHistoryPane"
-        v-model:list-pane="listPane"
-        :entries="history"
-        :current="stage === 'review' ? historyId : null"
-        @open="selectEntry"
-        @remove="removeEntries"
-      />
+    <main class="screen" :class="[`screen-${stage}`, { 'screen-split': showHistoryPane }]">
+      <!-- On wide windows, the history list beside the open screen, with a divider to resize or hide it. -->
+      <MdListDetail
+        v-model:pane="listPane"
+        :split="showHistoryPane"
+        :width="LIST_WIDTH"
+        :list-label="t('history.title')"
+        :resize-label="t('history.resize')"
+        :collapse-label="t('history.collapse')"
+        :expand-label="t('history.expand')"
+      >
+        <template #list>
+          <div class="history-pane">
+            <HistoryList :entries="history" :current="stage === 'review' ? historyId : null" @open="selectEntry" @remove="removeEntries" />
+          </div>
+        </template>
 
-      <p v-if="storageError" class="banner banner-error" role="alert">{{ t('sync.storageFailed') }}</p>
+        <p v-if="storageError" class="banner banner-error" role="alert">{{ t('sync.storageFailed') }}</p>
 
-      <Transition :name="transition" mode="out-in" @after-enter="onScreenEnter">
-        <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />
+        <Transition :name="transition" mode="out-in" @after-enter="onScreenEnter">
+          <PmGuide v-if="stage === 'guide'" :monitor="guideMonitor" @done="closeGuide" @pick="pickMonitor" @change="changeMonitor" />
 
-        <CaptureView
-          v-else-if="stage === 'capture'"
-          :show-intro="showIntro"
-          :camera-error="cameraError"
-          :camera-supported="cameraSupported"
-          @guide="openGuide"
-          @photo="photoInput?.click()"
-          @choose="chooseImage"
-          @manual="enterManually"
-        />
+          <CaptureView
+            v-else-if="stage === 'capture'"
+            :show-intro="showIntro"
+            :camera-error="cameraError"
+            :camera-supported="cameraSupported"
+            @guide="openGuide"
+            @photo="photoInput?.click()"
+            @choose="chooseImage"
+            @manual="enterManually"
+          />
 
-        <HistoryView
-          v-else-if="stage === 'history'"
-          :entries="history"
-          :pane-shown="showHistoryPane"
-          @open="selectEntry"
-          @remove="removeEntries"
-          @scan="goTo('capture')"
-        />
+          <HistoryView
+            v-else-if="stage === 'history'"
+            :entries="history"
+            :pane-shown="showHistoryPane"
+            @open="selectEntry"
+            @remove="removeEntries"
+            @scan="goTo('capture')"
+          />
 
-        <SettingsView
-          v-else-if="stage === 'settings'"
-          v-model:theme="theme"
-          v-model:accent="accent"
-          v-model:show-intro="showIntro"
-          v-model:heart-rate="heartRate"
-          :entry-count="history.length"
-          :linked="Boolean(linkedDevice)"
-          :sync="syncEnabled ? {
-            store: repository, device: linkedDevice, pending: pendingSync, status: syncStatus,
-            incoming: incomingPair, confirm: confirmDialog,
-          } : null"
-          @sync-now="syncNow"
-          @dismiss-pair="incomingPair = ''"
-          @clear="clearData"
-        />
+          <SettingsView
+            v-else-if="stage === 'settings'"
+            v-model:theme="theme"
+            v-model:accent="accent"
+            v-model:show-intro="showIntro"
+            v-model:heart-rate="heartRate"
+            :entry-count="history.length"
+            :linked="Boolean(linkedDevice)"
+            :sync="syncEnabled ? {
+              store: repository, device: linkedDevice, pending: pendingSync, status: syncStatus,
+              incoming: incomingPair, confirm: confirmDialog,
+            } : null"
+            @sync-now="syncNow"
+            @dismiss-pair="incomingPair = ''"
+            @clear="clearData"
+          />
 
-        <ScanningView v-else-if="stage === 'scanning'" :photo-url="photoUrl" :progress="progress" :progress-text="progressText" />
+          <ScanningView v-else-if="stage === 'scanning'" :photo-url="photoUrl" :progress="progress" :progress-text="progressText" />
 
-        <ReviewView
-          v-else-if="workout"
-          v-model:workout="workout"
-          v-model:extra-column="extraColumn"
-          v-model:invalid-cells="invalidCells"
-          :notice="notice"
-          :computed-summary="computedSummary"
-          :extra-images="extraImages"
-          :more-rows="moreRows"
-          :saved="saved"
-          :saved-as="savedAs"
-          :can-save="canSave"
-          :max-hr="maxHr"
-          :photo-urls="photoUrls"
-          :raw-text="rawText"
-          :source-panel="reviewPanel"
-          :watch-message="watchMessage"
-          :reading-watch="readingWatch"
-          @scan-more-rows="scanMoreRows"
-        />
-      </Transition>
+          <ReviewView
+            v-else-if="workout"
+            v-model:workout="workout"
+            v-model:extra-column="extraColumn"
+            v-model:invalid-cells="invalidCells"
+            :notice="notice"
+            :computed-summary="computedSummary"
+            :extra-images="extraImages"
+            :more-rows="moreRows"
+            :saved="saved"
+            :saved-as="savedAs"
+            :can-save="canSave"
+            :max-hr="maxHr"
+            :photo-urls="photoUrls"
+            :raw-text="rawText"
+            :source-panel="reviewPanel"
+            :watch-message="watchMessage"
+            :reading-watch="readingWatch"
+            @scan-more-rows="scanMoreRows"
+          />
+        </Transition>
+      </MdListDetail>
 
       <Transition name="fab">
         <button v-if="stage === 'capture' && cameraSupported" key="camera" type="button" class="fab" :class="{ 'fab-collapsed': fabCollapse }" @click="openCamera">
