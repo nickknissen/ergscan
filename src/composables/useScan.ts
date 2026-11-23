@@ -5,6 +5,7 @@ import { mergeScans, rowsMissing, withAddedRows } from '../core/scanMerge';
 import { newWorkout } from '../core/workout';
 import type { ScanOutcome } from '../ocr/firstParsed';
 import { scanFailure } from '../ocr/scanFailure';
+import { buzz } from '../ui/haptics';
 import { pickImage } from '../ui/imageInput';
 import type { Navigation } from './useNavigation';
 import type { ReviewSession } from './useReviewSession';
@@ -100,6 +101,7 @@ export function useScan(options: {
       const { key, message } = scanFailure(error, navigator.onLine);
       notice.value = t(key, { message });
     }
+    buzz(notice.value ? 'unread' : 'read');
     nav.show('review');
   }
 
@@ -132,6 +134,7 @@ export function useScan(options: {
       const { key, message } = scanFailure(error, navigator.onLine);
       notice.value = t(key, { message });
     }
+    buzz(notice.value ? 'unread' : 'read');
     nav.showReview(null);
   }
 

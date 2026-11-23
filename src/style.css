@@ -103,13 +103,34 @@
 
 * {
   box-sizing: border-box;
+  /* Pan only, like a native app: no pinch or double-tap zoom. Not inherited, so it's set on everything. */
+  touch-action: pan-x pan-y;
 }
 
+/* The page never scrolls sideways; the wide review table scrolls inside its own container. `clip` keeps sticky. */
 html,
 body {
   margin: 0;
   background: var(--surface);
   overscroll-behavior-y: none;
+  overflow-x: clip;
+}
+
+/* A long press selects nothing and opens no link or image preview, like a native app. Inherited, so set once here. */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* iOS won't let you type into a field that inherits `user-select: none`. The OCR text stays copyable. */
+input,
+textarea,
+[contenteditable],
+pre {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 body {
@@ -139,8 +160,6 @@ svg {
   padding: env(safe-area-inset-top) max(4px, env(safe-area-inset-right)) 0 max(4px, env(safe-area-inset-left));
   background: var(--surface);
   transition: background-color var(--duration-medium) var(--ease-standard);
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 .navbar-scrolled {
@@ -274,9 +293,6 @@ button,
   font: var(--label-large);
   letter-spacing: 0.00625rem;
   cursor: pointer;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 button,
@@ -440,8 +456,6 @@ button svg {
 
 .group-row.tappable {
   cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 .row-icon {
@@ -2056,8 +2070,6 @@ tr.rest .cell {
   justify-content: center;
   padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   background: var(--surface-container);
-  user-select: none;
-  -webkit-user-select: none;
 }
 
 .tab {

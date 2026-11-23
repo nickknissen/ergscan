@@ -26,6 +26,7 @@ import { createConfirm } from './ui/confirm';
 import { historyPane, listDetail } from './ui/layout';
 import { appShortcut, IMAGE_STAGES, isTextField } from './ui/shortcuts';
 import { useMediaQuery } from './ui/mediaQuery';
+import { holdScreenWakeLock } from './ui/screenWakeLock';
 import { fabCollapsed, screenTransition, type ScreenTransition } from './ui/transitions';
 import CaptureView from './views/CaptureView.vue';
 import HistoryView from './views/HistoryView.vue';
@@ -166,6 +167,13 @@ function onScreenEnter() {
 
 const transition = ref<ScreenTransition>('fade-through');
 watch(stage, (to, from) => (transition.value = screenTransition(from, to)), { flush: 'sync' });
+
+/** The screen stays on while aiming at the monitor and while the photo is read, so it doesn't sleep mid-scan. */
+watch(
+  () => stage.value === 'camera' || stage.value === 'scanning',
+  (awake, _, onCleanup) => awake && onCleanup(holdScreenWakeLock()),
+  { immediate: true },
+);
 
 const scrolled = ref(false);
 const fabCollapse = ref(false);

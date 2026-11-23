@@ -63,3 +63,7 @@
   card and clearing all app data.
 - Installable Material 3 PWA in English and Danish, with a bottom bar on phones
   and a navigation rail on wide screens.
+- Feels like a native app on a phone: no pinch zoom or sideways page scroll,
+  no text selection or link preview on a long press, a buzz when a photo is
+  taken, read or saved, and the screen stays on while the camera is open and
+  the photo is read.
