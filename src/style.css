@@ -1313,6 +1313,42 @@ button svg {
   flex: 1;
   overflow: hidden;
   background: #000;
+  /* Two fingers zoom the camera here, not the page. */
+  touch-action: none;
+}
+
+.zoom-stops {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.zoom-stops .zoom-stop {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: #fff;
+  font: var(--label-medium);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color var(--duration-short) var(--ease-standard),
+    color var(--duration-short) var(--ease-standard);
+}
+
+.zoom-stops .zoom-stop.active {
+  min-width: 48px;
+  background: rgb(255 255 255 / 0.2);
+  color: #ffd54f;
+  font: var(--label-large);
 }
 
 .camera video {
@@ -1394,6 +1430,7 @@ button svg {
   border-radius: 12px;
   background: rgb(0 0 0 / 0.75);
   color: #fff;
+  touch-action: pan-y;
 }
 
 .camera-report pre {

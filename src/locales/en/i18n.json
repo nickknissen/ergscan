@@ -67,7 +67,8 @@
     "starting": "Starting camera…",
     "stalled": "The camera isn't responding. If your browser is asking for permission, allow it, then try again.",
     "retry": "Try again",
-    "switch": "Switch camera"
+    "switch": "Switch camera",
+    "zoom": "Zoom {level}"
   },
   "scan": {
     "loading": "Loading the OCR engine…",

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { captureRect, guideRectInView, type Size } from '../ocr/guide';
 import { CAMERA_KEY, lostChosenCamera, nextCamera, videoConstraints, videoInputs } from './cameraChoice';
 import { buzz } from '../ui/haptics';
 import { cameraFailure } from './cameraFailure';
 import { cameraDebug, cameraReport } from './cameraReport';
+import { activeStop, clampZoom, createZoomApplier, pinchZoom, zoomRange, zoomStops, type ZoomRange } from './cameraZoom';
 import MdIcon from './MdIcon.vue';
 
 const emit = defineEmits<{
@@ -17,7 +18,7 @@ const emit = defineEmits<{
 
 const START_TIMEOUT_MS = 10_000;
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const container = ref<HTMLDivElement | null>(null);
 const video = ref<HTMLVideoElement | null>(null);
@@ -53,6 +54,72 @@ function stop() {
   clearTimeout(timeout);
   stream?.getTracks().forEach((track) => track.stop());
   stream = null;
+  videoTrack = null;
+  range.value = null;
+  pointers.clear();
+}
+
+// ---------- Zoom: the camera's own zoom, by pinching the preview or tapping a chip ----------
+
+let videoTrack: MediaStreamTrack | null = null;
+const range = shallowRef<ZoomRange | null>(null);
+const zoom = ref(1);
+const stops = computed(() => (range.value ? zoomStops(range.value) : []));
+const currentStop = computed(() => activeStop(zoom.value, stops.value));
+const applyZoom = createZoomApplier(async (value) => {
+  await videoTrack?.applyConstraints({ advanced: [{ zoom: value } as MediaTrackConstraintSet] });
+});
+
+function zoomLabel(value: number): string {
+  return `${new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 }).format(value)}×`;
+}
+
+/** Reads what the new camera can zoom to, keeping the zoom it starts at. */
+function readZoom(track: MediaStreamTrack) {
+  videoTrack = track;
+  range.value = zoomRange(typeof track.getCapabilities === 'function' ? track.getCapabilities() : null);
+  const current = (track.getSettings() as { zoom?: number }).zoom;
+  zoom.value = range.value ? clampZoom(current ?? range.value.min, range.value) : 1;
+}
+
+function setZoom(value: number) {
+  if (!range.value) return;
+  const next = clampZoom(value, range.value);
+  if (next === zoom.value) return;
+  zoom.value = next;
+  applyZoom(next);
+}
+
+/** Fingers on the preview, by pointer id, and the spread and zoom when the second one went down. */
+const pointers = new Map<number, { x: number; y: number }>();
+let pinchStart: { distance: number; zoom: number } | null = null;
+
+function spread(): number {
+  const [a, b] = [...pointers.values()];
+  return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+}
+
+function onPointerDown(event: PointerEvent) {
+  // A finger on a chip taps it; capturing it here would keep the click from the chip.
+  if (!range.value || (event.target as Element).closest('button, .camera-report')) return;
+  // Captured, so a finger that slides off the preview still reports lifting and isn't left in `pointers`.
+  (event.currentTarget as Element).setPointerCapture(event.pointerId);
+  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (pointers.size === 2) pinchStart = { distance: spread(), zoom: zoom.value };
+}
+
+function onPointerMove(event: PointerEvent) {
+  if (!pointers.has(event.pointerId)) return;
+  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (pointers.size !== 2 || !pinchStart || !range.value) return;
+  const before = currentStop.value;
+  setZoom(pinchZoom(pinchStart.zoom, pinchStart.distance, spread(), range.value));
+  if (currentStop.value !== before) buzz('zoomStop');
+}
+
+function onPointerUp(event: PointerEvent) {
+  pointers.delete(event.pointerId);
+  if (pointers.size < 2) pinchStart = null;
 }
 
 async function start() {
@@ -84,6 +151,7 @@ async function start() {
     clearTimeout(timeout);
     state.value = 'ready';
     const track = media.getVideoTracks()[0];
+    if (track) readZoom(track);
     if (cameraDebug && track) report.value = await cameraReport(track).catch((error: unknown) => String(error));
   } catch (error) {
     if (current !== attempt) return;
@@ -170,7 +238,14 @@ function capture() {
 
 <template>
   <section class="camera-step">
-    <div ref="container" class="camera">
+    <div
+      ref="container"
+      class="camera"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
+    >
       <video ref="video" muted playsinline autoplay></video>
       <div class="guide" :style="guideStyle">
         <span class="corner tl"></span>
@@ -178,6 +253,20 @@ function capture() {
         <span class="corner bl"></span>
         <span class="corner br"></span>
         <p v-if="ready" class="guide-hint">{{ t('camera.hint') }}</p>
+      </div>
+      <div v-if="ready && stops.length" class="zoom-stops">
+        <button
+          v-for="stop in stops"
+          :key="stop"
+          type="button"
+          class="zoom-stop"
+          :class="{ active: stop === currentStop }"
+          :aria-label="t('camera.zoom', { level: zoomLabel(stop) })"
+          :aria-pressed="stop === currentStop"
+          @click="setZoom(stop)"
+        >
+          {{ stop === currentStop ? zoomLabel(zoom) : zoomLabel(stop) }}
+        </button>
       </div>
       <div v-if="report" class="camera-report">
         <button type="button" class="tonal" @click="shareReport">Share report</button>

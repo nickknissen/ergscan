@@ -67,7 +67,8 @@
     "starting": "Starter kameraet…",
     "stalled": "Kameraet svarer ikke. Hvis browseren beder om tilladelse, så tillad det og prøv igen.",
     "retry": "Prøv igen",
-    "switch": "Skift kamera"
+    "switch": "Skift kamera",
+    "zoom": "Zoom {level}"
   },
   "scan": {
     "loading": "Indlæser OCR…",

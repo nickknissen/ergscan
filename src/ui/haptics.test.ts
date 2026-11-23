@@ -17,6 +17,15 @@ describe('a buzz on a phone that can vibrate', () => {
     expect(vibrate).toHaveBeenCalledWith(15);
   });
 
+  it('gives the lightest tick when a pinch crosses a zoom chip', () => {
+    const vibrate = vi.fn();
+    vi.stubGlobal('navigator', { vibrate });
+
+    buzz('zoomStop');
+
+    expect(vibrate).toHaveBeenCalledWith(8);
+  });
+
   it.each([
     { moment: 'read', when: 'a photo is read' },
     { moment: 'saved', when: 'a workout is saved' },
