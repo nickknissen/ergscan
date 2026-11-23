@@ -5,6 +5,8 @@ const confirmation = [20, 40, 20];
 const patterns = {
   /** The in-app camera took its photo. */
   shutter: 15,
+  /** A pinch on the camera crossed one of the zoom chips, like a native camera's detent. */
+  zoomStop: 8,
   /** A photo was read into splits, after the wait on the scanning screen. */
   read: confirmation,
   /** A photo could not be read, so the review screen opens with a notice. */
