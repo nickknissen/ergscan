@@ -5,6 +5,16 @@ import { captureRect, guideRectInView, type Size } from '../ocr/guide';
 import { CAMERA_KEY, lostChosenCamera, nextCamera, videoConstraints, videoInputs } from './cameraChoice';
 import { buzz } from '../ui/haptics';
 import { cameraFailure } from './cameraFailure';
+import {
+  backCameras,
+  coversAllLenses,
+  findLenses,
+  lensSignature,
+  loadLenses,
+  preferredCamera,
+  saveLenses,
+  type CameraLens,
+} from './cameraLenses';
 import { cameraDebug, cameraReport, reportAllCameras } from './cameraReport';
 import { activeStop, clampZoom, createZoomApplier, pinchZoom, zoomRange, zoomStops, type ZoomRange } from './cameraZoom';
 import MdIcon from './MdIcon.vue';
@@ -140,7 +150,7 @@ async function start() {
   timeout = setTimeout(() => {
     if (current === attempt && state.value === 'starting') state.value = 'stalled';
   }, START_TIMEOUT_MS);
-  const chosen = chosenCamera();
+  const chosen = chosenCamera() ?? preferredId();
   try {
     const media = await navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints(chosen) });
     if (current !== attempt) {
@@ -164,11 +174,13 @@ async function start() {
     const track = media.getVideoTracks()[0];
     if (track) readZoom(track);
     if (cameraDebug && track && !reportedAll) report.value = cameraReport(track);
+    void lookForLenses();
   } catch (error) {
     if (current !== attempt) return;
     stop();
     if (lostChosenCamera(error, chosen)) {
       chooseCamera(null);
+      skipPreferred = true;
       void start();
       return;
     }
@@ -200,8 +212,62 @@ async function refreshCameras() {
   cameras.value = videoInputs(await navigator.mediaDevices.enumerateDevices());
 }
 
+// ---------- Lenses: open the best back camera, switch only between back cameras ----------
+
+/** What each camera turned out to be, once looked at. Empty until then. */
+const lenses = shallowRef<CameraLens[]>([]);
+let lookedForLenses = false;
+/** Set when the preferred camera failed to open, so the browser's own pick is used for the rest of this visit. */
+let skipPreferred = false;
+const switchable = computed(() => backCameras(cameras.value, lenses.value));
+/** No switch button on a camera that covers every lens: its zoom chips switch lenses, as in the native Camera app. */
+const showSwitch = computed(() => switchable.value.length > 1 && !coversAllLenses(range.value?.min));
+
+function localStore(): Storage | null {
+  try {
+    return localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function preferredId(): string | null {
+  return skipPreferred ? null : (preferredCamera(cameras.value, lenses.value)?.deviceId ?? null);
+}
+
+/**
+ * Once per visit, after the first camera opened (the browser only names cameras then): finds out what the cameras
+ * are, from what was saved or by opening each one, and reopens on the preferred camera if it isn't the open one.
+ */
+async function lookForLenses() {
+  if (lookedForLenses) return;
+  lookedForLenses = true;
+  const devices = videoInputs(await navigator.mediaDevices.enumerateDevices());
+  cameras.value = devices;
+  if (devices.length < 2) return;
+  const signature = lensSignature(devices);
+  const saved = loadLenses(localStore(), signature);
+  if (saved) {
+    lenses.value = saved;
+  } else {
+    const current = ++attempt;
+    stop();
+    state.value = 'starting';
+    const found = await findLenses(navigator.mediaDevices, devices, () => current !== attempt);
+    // Closed or hidden meanwhile: coming back starts the camera again, and the next visit looks again.
+    if (!found) return;
+    const storage = localStore();
+    if (storage) saveLenses(storage, signature, found);
+    lenses.value = found;
+    void start();
+    return;
+  }
+  const preferred = preferredId();
+  if (!chosenCamera() && preferred && preferred !== cameraId.value) void start();
+}
+
 function switchCamera() {
-  const next = nextCamera(cameras.value, cameraId.value);
+  const next = nextCamera(switchable.value, cameraId.value);
   if (!next) return;
   chooseCamera(next);
   void start();
@@ -223,8 +289,22 @@ onMounted(() => {
   if (container.value) observer.observe(container.value);
   document.addEventListener('visibilitychange', onVisibilityChange);
   navigator.mediaDevices.addEventListener('devicechange', refreshCameras);
-  void start();
+  void openFirstCamera();
 });
+
+/**
+ * Chrome names the cameras before any is opened, so what was saved about them picks the camera straight away.
+ * Safari names them only once one is open, so there the preferred camera opens a moment after the browser's pick.
+ */
+async function openFirstCamera() {
+  try {
+    await refreshCameras();
+    lenses.value = loadLenses(localStore(), lensSignature(cameras.value)) ?? [];
+  } catch {
+    // No camera list yet: the browser picks, and the cameras are looked at once one is open.
+  }
+  void start();
+}
 
 onBeforeUnmount(() => {
   attempt++;
@@ -302,7 +382,7 @@ function capture() {
       <button type="button" class="camera-cancel" @click="emit('cancel')">{{ t('camera.cancel') }}</button>
       <button type="button" class="shutter" :disabled="!ready" :aria-label="t('camera.capture')" :title="t('camera.capture')" @click="capture"></button>
       <button
-        v-if="cameras.length > 1"
+        v-if="showSwitch"
         type="button"
         class="icon camera-switch"
         :aria-label="t('camera.switch')"
