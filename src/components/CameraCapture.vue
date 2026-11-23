@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { captureRect, guideRectInView, type Size } from '../ocr/guide';
 import { CAMERA_KEY, lostChosenCamera, nextCamera, videoConstraints, videoInputs } from './cameraChoice';
+import { buzz } from '../ui/haptics';
 import { cameraFailure } from './cameraFailure';
 import MdIcon from './MdIcon.vue';
 
@@ -144,6 +145,7 @@ onBeforeUnmount(() => {
 function capture() {
   const v = video.value;
   if (!v || !ready.value) return;
+  buzz('shutter');
   const rect = captureRect(view.value, { width: v.videoWidth, height: v.videoHeight });
   const canvas = document.createElement('canvas');
   canvas.width = rect.width;

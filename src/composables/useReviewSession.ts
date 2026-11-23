@@ -3,6 +3,7 @@ import { clearDraft, loadDraft, saveDraft, type Draft } from '../core/draft';
 import { draftKey, hasUnsavedChanges, parseEntry, type HistoryEntry } from '../core/history';
 import { createUndoStack } from '../core/undo';
 import { isExportable, type ExtraColumn, type Workout } from '../core/workout';
+import { buzz } from '../ui/haptics';
 import type { useHistorySync } from './useHistorySync';
 
 type HistorySync = Pick<ReturnType<typeof useHistorySync>, 'repository' | 'history' | 'readyHistory' | 'storageError' | 'syncNow'>;
@@ -116,6 +117,7 @@ export function useReviewSession(options: {
         shownId = result.id;
       }
       storageError.value = false;
+      if (result) buzz('saved');
       void syncNow();
       return shownId;
     } catch {
