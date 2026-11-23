@@ -13,6 +13,9 @@ try {
 } catch {
   applyTheme(document, 'system');
 }
+/** iOS Safari ignores `user-scalable=no` and won't let `touch-action` stop a pinch, but a cancelled gesture doesn't zoom. */
+document.addEventListener('gesturestart', (event) => event.preventDefault());
+
 createApp(App).use(i18n).mount('#app');
 installRipple(document);
 
