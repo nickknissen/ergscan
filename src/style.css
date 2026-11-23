@@ -1370,6 +1370,25 @@ button svg {
   white-space: nowrap;
 }
 
+/* TEMPORARY: the `?camera-debug` readout. */
+.camera-report {
+  position: absolute;
+  inset: 8px 8px auto;
+  max-height: 70%;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.75);
+  color: #fff;
+}
+
+.camera-report pre {
+  margin: 8px 0 0;
+  font: 11px/1.35 ui-monospace, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 .camera-status {
   position: absolute;
   inset: 0;
