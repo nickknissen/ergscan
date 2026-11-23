@@ -6,6 +6,9 @@
 
 - Take a photo of the PM4/PM5 results screen, or pick an image you already have.
   A step-by-step guide shows how to reach the results screen on a PM5 or PM4.
+- Zoom the in-app camera by pinching the preview or tapping 1×, 2×, 4× or 8×,
+  using the camera's own zoom so the photo keeps its detail. The controls only
+  appear on cameras that can zoom, such as Chrome on most Android phones.
 - Finds the LCD in the image before reading it, so cropped photos and
   screenshots of social media posts work as well as close-ups. When the splits
   don't add up to the total, it also finds the table by its column headings,
