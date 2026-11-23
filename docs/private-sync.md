@@ -52,6 +52,9 @@ settings stay local. The server handles device credentials and can observe
 request timing and encrypted payload size. Browser storage and the app code
 served by the deployment are trusted by linked devices.
 
+A computer running the [MCP server](mcp.md) is a linked device too. It
+decrypts the history on that computer to answer an AI agent, and only reads.
+
 ## When sync runs
 
 Workouts always save locally first. Sync runs when the device is online and

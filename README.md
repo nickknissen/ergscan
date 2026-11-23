@@ -65,6 +65,7 @@ npm run dev
 - [Features](docs/features.md): everything ErgScan does, in detail
 - [FAQ](docs/faq.md): common questions and known limitations
 - [Private sync](docs/private-sync.md): link devices and recover your history
+- [MCP](docs/mcp.md): let an AI agent read your synced workouts
 - [Self-hosting](docs/self-hosting.md): Docker, the sync server and Coolify
 - [Development](docs/development.md): scripts, OCR evaluation, project layout
   and translations

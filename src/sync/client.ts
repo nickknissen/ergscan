@@ -1,5 +1,5 @@
 import { randomSecret, recoverySecrets, seal, unseal, type Envelope } from './crypto';
-import { emptySnapshot, merge, parseSnapshot } from './merge';
+import { emptySnapshot, merge, parseSnapshot, type Snapshot } from './merge';
 import type { Device, HistoryStore } from './store';
 
 export class SyncError extends Error {
@@ -36,17 +36,21 @@ function validatedKey(value: unknown): string {
   return value;
 }
 
+/**
+ * Requests go to the page's own origin. Code running outside the app, like the local MCP server,
+ * passes the origin of the deployment instead, e.g. "https://ergscan.example".
+ */
 async function request(
   path: string,
-  { token, method = 'GET', body, etag, unchanged }: {
-    token: string; method?: string; body?: unknown; etag?: string; unchanged?: string;
+  { token, method = 'GET', body, etag, unchanged, origin = '' }: {
+    token: string; method?: string; body?: unknown; etag?: string; unchanged?: string; origin?: string;
   },
 ) {
   const headers = new Headers({ Authorization: 'Bearer ' + token });
   if (body !== undefined) headers.set('Content-Type', 'application/json');
   if (etag) headers.set('If-Match', etag);
   if (unchanged) headers.set('If-None-Match', unchanged);
-  return fetch('/api/sync/' + path, {
+  return fetch(origin + '/api/sync/' + path, {
     method, headers, body: body === undefined ? undefined : JSON.stringify(body),
     cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15_000),
   });
@@ -81,30 +85,30 @@ export async function recoverVault(store: HistoryStore, value: string) {
   await store.attach({ id, vault, token, key });
 }
 
-export async function createInvite(): Promise<Invite> {
+export async function createInvite(origin = ''): Promise<Invite> {
   const id = crypto.randomUUID();
   const token = randomSecret();
-  const response = await checked('pair', { token, method: 'POST', body: { id } });
+  const response = await checked('pair', { token, method: 'POST', body: { id }, origin });
   const { expires } = await response.json() as { expires: number };
   return { id, expires, token, secret: randomSecret() };
 }
 
-export async function approveInvite(device: Device, value: string) {
+export async function approveInvite(device: Device, value: string, origin = '') {
   const { id, secret } = parseCode(value, 'link');
   const wrapped = await seal(device.key, secret, prefix + '/link/' + id + '/' + device.vault);
-  await checked('pair/' + id, { method: 'PUT', token: device.token, body: { wrapped } });
+  await checked('pair/' + id, { method: 'PUT', token: device.token, body: { wrapped }, origin });
 }
 
-export async function claimInvite(invite: Invite): Promise<Device | null> {
-  const response = await checked('pair/' + invite.id, { method: 'POST', token: invite.token });
+export async function claimInvite(invite: Invite, origin = ''): Promise<Device | null> {
+  const response = await checked('pair/' + invite.id, { method: 'POST', token: invite.token, origin });
   if (response.status === 202) return null;
   const { vault, wrapped } = await response.json() as { vault: string; wrapped: Envelope };
   const key = validatedKey(await unseal(wrapped, invite.secret, prefix + '/link/' + invite.id + '/' + vault));
   return { id: invite.id, vault, token: invite.token, key };
 }
 
-export async function closeInvite(invite: Invite) {
-  await checked('pair/' + invite.id, { method: 'DELETE', token: invite.token });
+export async function closeInvite(invite: Invite, origin = '') {
+  await checked('pair/' + invite.id, { method: 'DELETE', token: invite.token, origin });
 }
 
 export async function listDevices(device: Device): Promise<{ id: string; linkedAt: number }[]> {
@@ -112,8 +116,26 @@ export async function listDevices(device: Device): Promise<{ id: string; linkedA
   return response.json();
 }
 
-export async function revokeDevice(device: Device, id: string) {
-  await checked('devices/' + id, { method: 'DELETE', token: device.token });
+export async function revokeDevice(device: Device, id: string, origin = '') {
+  await checked('devices/' + id, { method: 'DELETE', token: device.token, origin });
+}
+
+/**
+ * The synced history as a device that only reads: null when it has not changed since `etag`.
+ * Never uploads, so it leaves the device's sequence and other devices' edits alone.
+ */
+export async function downloadHistory(
+  device: Device, { origin = '', etag }: { origin?: string; etag?: string } = {},
+): Promise<{ etag: string; snapshot: Snapshot } | null> {
+  const response = await request('history', { token: device.token, unchanged: etag, origin });
+  if (response.status === 304) return null;
+  if (!response.ok) throw new SyncError(response.status);
+  const revision = response.headers.get('ETag');
+  if (!revision) throw new SyncError(502);
+  const payload = await response.json() as Envelope | null;
+  const snapshot = payload === null ? emptySnapshot() :
+    parseSnapshot(await unseal(payload, device.key, prefix + '/history/' + device.vault));
+  return { etag: revision, snapshot };
 }
 
 export async function deleteVault(device: Device) {

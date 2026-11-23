@@ -65,6 +65,7 @@ Useful flags, passed after `--`:
 | `src/ui/` | Framework-free UI behavior: icons, menus, ripples, transitions, confirm dialogs |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
 | `server/` | Sync API server, its Dockerfile and the nginx rule for sync deployments |
+| `mcp/` | Local MCP server: links as a device, decrypts the history and answers agents' tool calls (see [MCP](mcp.md)) |
 | `testdata/` | Labelled results-screen images for tests and `npm run eval` |
 | `scripts/` | Build helpers, the OCR evaluation script and the README animation |
 | `docs/` | This documentation |
