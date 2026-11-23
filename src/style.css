@@ -421,7 +421,7 @@
   color: var(--on-surface);
 }
 
-.list-detail-list .selection-bar {
+.history-pane .selection-bar {
   top: 0;
 }
 
@@ -1382,25 +1382,17 @@ tr.rest .cell {
     max-width: 1280px;
   }
 
-  /* The history list (m3-vue's MdListDetail) stays clear of the screen's top padding, with a
-     divider half as wide as m3-vue's while the list shows. */
-  .list-detail.split {
+  /* The history list beside the open screen is m3-vue's MdListDetail: the list, the divider and
+     the screen. Here it starts 16px below the app bar, and the list has rounded corners. */
+  .screen-split .list-detail.split {
     --list-detail-top: calc(var(--navbar-height) + env(safe-area-inset-top) + 16px);
-    grid-template-columns: var(--list-width, 340px) 24px minmax(0, 1fr);
   }
 
-  /* The hide-list button is the size and color of ErgScan's other icon buttons. */
-  .list-detail .pane-toggle {
-    width: 40px;
-    min-height: 40px;
-    color: var(--on-surface-variant);
-  }
-
-  .list-detail-list {
+  .screen-split .list-detail-list {
     border-radius: 20px;
   }
 
-  .list-detail-list .group {
+  .history-pane .group {
     margin: 0;
   }
 }
@@ -1488,14 +1480,15 @@ tr.rest .cell {
     padding-left: max(16px, env(safe-area-inset-left));
   }
 
-  .screen-split > .list-detail.split {
+  /* The list fills the left segment, and the divider starts at the fold. */
+  .screen-split .list-detail.split {
     grid-template-columns:
       calc(env(viewport-segment-right 0 0) - env(viewport-segment-left 0 0) - 80px - max(16px, env(safe-area-inset-left)))
-      max(24px, calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0)))
+      max(48px, calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0)))
       minmax(0, 1fr);
   }
 
-  .screen-split > .list-detail.split.list-collapsed {
+  .screen-split .list-detail.split.list-collapsed {
     grid-template-columns: 0 48px minmax(0, 1fr);
   }
 }

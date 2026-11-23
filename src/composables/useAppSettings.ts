@@ -1,19 +1,21 @@
 import { computed, ref, watch } from 'vue';
 import type { Accent } from '../core/palette';
-import { LIST_WIDTH, loadListPane, saveListPane, type ListPane } from 'm3-vue/ui/listPane';
 import {
   applyTheme,
-  LIST_PANE_KEY,
+  LIST_WIDTH,
   loadAccent,
   loadHeartRate,
   loadIntroHidden,
+  loadListPane,
   loadTheme,
   maxHeartRate,
   saveAccent,
   saveHeartRate,
   saveIntroHidden,
+  saveListPane,
   saveTheme,
   type HeartRateSettings,
+  type ListPane,
   type Theme,
 } from '../core/settings';
 
@@ -47,8 +49,8 @@ export function useAppSettings(storage: Storage | null) {
     if (storage) saveHeartRate(storage, value);
   });
 
-  const listPane = ref<ListPane>(loadListPane(storage, LIST_PANE_KEY));
-  watch(listPane, (value) => saveListPane(storage, LIST_PANE_KEY, value));
+  const listPane = ref<ListPane>(loadListPane(storage));
+  watch(listPane, (value) => storage && saveListPane(storage, value));
 
   /** Back to defaults after the app data has been cleared. */
   function reset() {

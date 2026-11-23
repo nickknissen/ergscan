@@ -7,7 +7,11 @@ import {
   clearAppData,
   estimatedMaxHeartRate,
   HIDE_INTRO_KEY,
+  LIST_PANE_KEY,
+  LIST_WIDTH,
   loadAccent,
+  loadListPane,
+  saveListPane,
   loadHeartRate,
   loadIntroHidden,
   loadTheme,
@@ -177,5 +181,26 @@ describe('clearAppData', () => {
     });
     clearAppData(storage);
     expect([...storage.data.keys()]).toEqual(['other.app']);
+  });
+});
+
+describe('list pane', () => {
+  it('defaults to the initial width, expanded', () => {
+    expect(loadListPane(memoryStorage())).toEqual({ width: LIST_WIDTH.initial, collapsed: false });
+    expect(loadListPane(memoryStorage({ [LIST_PANE_KEY]: 'junk' }))).toEqual({ width: LIST_WIDTH.initial, collapsed: false });
+    expect(loadListPane(null)).toEqual({ width: LIST_WIDTH.initial, collapsed: false });
+  });
+
+  it('round-trips width and collapse, clamping stored widths', () => {
+    const storage = memoryStorage();
+    saveListPane(storage, { width: 400, collapsed: true });
+    expect(loadListPane(storage)).toEqual({ width: 400, collapsed: true });
+    expect(loadListPane(memoryStorage({ [LIST_PANE_KEY]: '9999' })).width).toBe(LIST_WIDTH.max);
+  });
+
+  it('forgets the key when back to the default layout', () => {
+    const storage = memoryStorage({ [LIST_PANE_KEY]: '400' });
+    saveListPane(storage, { width: LIST_WIDTH.initial, collapsed: false });
+    expect(storage.data.has(LIST_PANE_KEY)).toBe(false);
   });
 });

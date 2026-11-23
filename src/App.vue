@@ -3,7 +3,6 @@ import MdDialog from 'm3-vue/components/MdDialog.vue';
 import MdIcon from 'm3-vue/components/MdIcon.vue';
 import MdListDetail from 'm3-vue/components/MdListDetail.vue';
 import { createConfirm } from 'm3-vue/ui/confirm';
-import { LIST_WIDTH } from 'm3-vue/ui/listPane';
 import { useMediaQuery } from 'm3-vue/ui/mediaQuery';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -24,7 +23,7 @@ import { useWatchHeartRate } from './composables/useWatchHeartRate';
 import { entryDateLabel } from './core/dates';
 import { clearDraft } from './core/draft';
 import type { HistoryEntry } from './core/history';
-import { clearAppData } from './core/settings';
+import { clearAppData, LIST_WIDTH } from './core/settings';
 import { newWorkout } from './core/workout';
 import { historyPane, listDetail } from './ui/layout';
 import { appShortcut, IMAGE_STAGES, isTextField } from './ui/shortcuts';
@@ -283,10 +282,8 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
       @menu="onReviewMenu"
     />
 
-    <main
-      class="screen"
-      :class="[`screen-${stage}`, { 'screen-split': showHistoryPane }]"
-    >
+    <main class="screen" :class="[`screen-${stage}`, { 'screen-split': showHistoryPane }]">
+      <!-- On wide windows, the history list beside the open screen, with a divider to resize or hide it. -->
       <MdListDetail
         v-model:pane="listPane"
         :split="showHistoryPane"
@@ -297,7 +294,9 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
         :expand-label="t('history.expand')"
       >
         <template #list>
-          <HistoryList :entries="history" :current="stage === 'review' ? historyId : null" @open="selectEntry" @remove="removeEntries" />
+          <div class="history-pane">
+            <HistoryList :entries="history" :current="stage === 'review' ? historyId : null" @open="selectEntry" @remove="removeEntries" />
+          </div>
         </template>
 
         <p v-if="storageError" class="banner banner-error" role="alert">{{ t('sync.storageFailed') }}</p>

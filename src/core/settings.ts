@@ -1,4 +1,7 @@
+import { loadListPane as loadPane, saveListPane as savePane, type ListPane, type ListWidth } from 'm3-vue/ui/listPane';
 import { ACCENTS, accentPalette, paletteProperties, TOKEN_PROPERTIES, type Accent } from './palette';
+
+export type { ListPane };
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -51,8 +54,17 @@ export function saveIntroHidden(storage: Pick<Storage, 'setItem' | 'removeItem'>
   }
 }
 
-/** The history list's width beside the open screen, stored by m3-vue's `ui/listPane`. */
+/** The history list beside the open screen on wide windows (m3-vue's MdListDetail): its width and whether it's hidden. */
 export const LIST_PANE_KEY = 'ergscan.listPane';
+export const LIST_WIDTH: ListWidth = { min: 240, max: 480, initial: 340 };
+
+export function loadListPane(storage: Pick<Storage, 'getItem'> | null): ListPane {
+  return loadPane(storage, LIST_PANE_KEY, LIST_WIDTH);
+}
+
+export function saveListPane(storage: Pick<Storage, 'setItem' | 'removeItem'>, pane: ListPane): void {
+  savePane(storage, LIST_PANE_KEY, pane, LIST_WIDTH);
+}
 
 export const MAX_HR_KEY = 'ergscan.maxHr';
 export const AGE_KEY = 'ergscan.age';
