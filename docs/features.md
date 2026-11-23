@@ -8,7 +8,11 @@
   A step-by-step guide shows how to reach the results screen on a PM5 or PM4.
 - Zoom the in-app camera by pinching the preview or tapping 1×, 2×, 4× or 8×,
   using the camera's own zoom so the photo keeps its detail. The controls only
-  appear on cameras that can zoom, such as Chrome on most Android phones.
+  appear on cameras that can zoom, such as Chrome on Android and Safari on
+  iPhone.
+- On an iPhone with several back lenses the camera opens on the combined
+  camera the native Camera app uses, so 0.5× and macro close-ups switch lens by
+  themselves. Elsewhere the switch button only cycles the back cameras.
 - Finds the LCD in the image before reading it, so cropped photos and
   screenshots of social media posts work as well as close-ups. When the splits
   don't add up to the total, it also finds the table by its column headings,
