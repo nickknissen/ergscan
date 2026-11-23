@@ -5,6 +5,7 @@ import { captureRect, guideRectInView, type Size } from '../ocr/guide';
 import { CAMERA_KEY, lostChosenCamera, nextCamera, videoConstraints, videoInputs } from './cameraChoice';
 import { buzz } from '../ui/haptics';
 import { cameraFailure } from './cameraFailure';
+import { cameraDebug, cameraReport } from './cameraReport';
 import MdIcon from './MdIcon.vue';
 
 const emit = defineEmits<{
@@ -27,6 +28,16 @@ let stream: MediaStream | null = null;
 let observer: ResizeObserver | null = null;
 let timeout: ReturnType<typeof setTimeout> | undefined;
 let attempt = 0;
+const report = ref('');
+
+async function shareReport() {
+  try {
+    if (navigator.share) await navigator.share({ title: 'ErgScan camera', text: report.value });
+    else await navigator.clipboard.writeText(report.value);
+  } catch {
+    // Cancelled share sheet: the text is still on screen to select.
+  }
+}
 
 const guideStyle = computed(() => {
   const g = guideRectInView(view.value);
@@ -72,6 +83,8 @@ async function start() {
     await video.value!.play();
     clearTimeout(timeout);
     state.value = 'ready';
+    const track = media.getVideoTracks()[0];
+    if (cameraDebug && track) report.value = await cameraReport(track).catch((error: unknown) => String(error));
   } catch (error) {
     if (current !== attempt) return;
     stop();
@@ -165,6 +178,10 @@ function capture() {
         <span class="corner bl"></span>
         <span class="corner br"></span>
         <p v-if="ready" class="guide-hint">{{ t('camera.hint') }}</p>
+      </div>
+      <div v-if="report" class="camera-report">
+        <button type="button" class="tonal" @click="shareReport">Share report</button>
+        <pre>{{ report }}</pre>
       </div>
       <div v-if="!ready" class="camera-status" role="status">
         <template v-if="state === 'starting'">
