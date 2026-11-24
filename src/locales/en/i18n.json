@@ -1,21 +1,21 @@
 {
   "app": {
     "title": "ErgScan",
-    "tagline": "Scan your Concept2 PM4/PM5 results and export a FIT file"
+    "tagline": "Scan your Concept2 PM3/PM4/PM5 results and export a FIT file"
   },
   "capture": {
     "camera": "Scan with camera",
     "takePhoto": "Take photo",
     "chooseImage": "Choose image",
     "manual": "Enter manually",
-    "hint": "Photograph the PM4/PM5 results screen straight on, with the table filling most of the frame and no glare on the digits."
+    "hint": "Photograph the PM3/PM4/PM5 results screen straight on, with the table filling most of the frame and no glare on the digits."
   },
   "guide": {
     "title": "Get the right screen",
     "open": "How to get the results screen",
     "pick": {
       "question": "Which monitor do you have?",
-      "hint": "The menus differ a little between the two models, so the steps are made for yours.",
+      "hint": "The menus differ a little between the models, so the steps are made for yours.",
       "change": "Change"
     },
     "monitors": {
@@ -31,6 +31,14 @@
         "menu": "Menu {'|'} Back",
         "memoryPath": "More Options › Memory › List by Date › 🔍",
         "memoryNote": "The PM4 only keeps the 10 most recent workouts, so open the results before your next session.",
+        "logCardNote": "If a LogCard is in the monitor, the workout is saved on the card instead: open LogCard Menu › List by Date › 🔍 from the Welcome screen."
+      },
+      "pm3": {
+        "name": "Concept2 PM3",
+        "look": "Dark grey monitor with Change Units, Change Display and Menu {'|'} Back buttons, on rowers from 2003 to 2014",
+        "menu": "Menu {'|'} Back",
+        "memoryPath": "More Options › Memory › List by Date › 🔍",
+        "memoryNote": "The PM3 only keeps the 10 most recent workouts, so open the results before your next session.",
         "logCardNote": "If a LogCard is in the monitor, the workout is saved on the card instead: open LogCard Menu › List by Date › 🔍 from the Welcome screen."
       }
     },

@@ -32,7 +32,7 @@ example when port 8787 is taken. The server's own settings are listed in
 
 ## OCR evaluation
 
-`testdata/` holds photos and screenshots of PM4/PM5 results screens, each with
+`testdata/` holds photos and screenshots of PM3/PM4/PM5 results screens, each with
 a JSON file describing what the screen shows and the workout it should parse
 to. `npm run eval` runs the same preprocessing and OCR as the app on every
 image in Node and prints per-image scores for OCR cells, rows, workout fields
@@ -55,7 +55,7 @@ Useful flags, passed after `--`:
 
 | Path | Purpose |
 | --- | --- |
-| `src/core/` | Framework-free logic: time parsing, PM4/PM5 parser, workout model, FIT export, heart rate zones, history, settings, routing |
+| `src/core/` | Framework-free logic: time parsing, PM3/PM4/PM5 parser, workout model, FIT export, heart rate zones, history, settings, routing |
 | `src/ocr/` | Screen detection, image preprocessing, Tesseract worker and OCR asset caching |
 | `src/sync/` | Sync client: end-to-end encryption, history store, merging edits from linked devices |
 | `src/App.vue` | App shell: navigation bar, tabs, history pane, routing between screens and the review session |

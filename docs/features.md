@@ -4,8 +4,8 @@
 
 ## Scanning
 
-- Take a photo of the PM4/PM5 results screen, or pick an image you already have.
-  A step-by-step guide shows how to reach the results screen on a PM5 or PM4.
+- Take a photo of the PM3/PM4/PM5 results screen, or pick an image you already have.
+  A step-by-step guide shows how to reach the results screen on a PM5, PM4 or PM3.
 - Zoom the in-app camera by pinching the preview or tapping 1×, 2×, 4× or 8×,
   using the camera's own zoom so the photo keeps its detail. The controls only
   appear on cameras that can zoom, such as Chrome on Android and Safari on
@@ -19,7 +19,7 @@
   reads that crop, and keeps whichever read checks out better.
 - Offline OCR with [Tesseract.js](https://github.com/naptha/tesseract.js),
   with image thresholding to cope with glare and uneven light on the LCD.
-- Parses the PM4/PM5 table: time, meters, split (/500m or /1000m), stroke rate,
+- Parses the PM3/PM4/PM5 table: time, meters, split (/500m or /1000m), stroke rate,
   and heart rate, watts or calories. Rest intervals are detected.
 - Long workouts that do not fit on one screen: when the splits fall short of
   the total, scroll the monitor down and scan the next rows. Rows shared by

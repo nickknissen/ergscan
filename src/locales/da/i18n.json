@@ -1,21 +1,21 @@
 {
   "app": {
     "title": "ErgScan",
-    "tagline": "Scan dine Concept2 PM4/PM5-resultater og eksportér en FIT-fil"
+    "tagline": "Scan dine Concept2 PM3/PM4/PM5-resultater og eksportér en FIT-fil"
   },
   "capture": {
     "camera": "Scan med kamera",
     "takePhoto": "Tag billede",
     "chooseImage": "Vælg billede",
     "manual": "Indtast manuelt",
-    "hint": "Fotografér PM4/PM5-resultatskærmen lige forfra, så tabellen fylder det meste af billedet, og uden genskin på tallene."
+    "hint": "Fotografér PM3/PM4/PM5-resultatskærmen lige forfra, så tabellen fylder det meste af billedet, og uden genskin på tallene."
   },
   "guide": {
     "title": "Find resultatet",
     "open": "Sådan får du resultatskærmen frem",
     "pick": {
       "question": "Hvilken monitor har du?",
-      "hint": "Menuerne er lidt forskellige på de to modeller, så trinene passer til din.",
+      "hint": "Menuerne er lidt forskellige fra model til model, så trinene passer til din.",
       "change": "Skift"
     },
     "monitors": {
@@ -31,6 +31,14 @@
         "menu": "Menu {'|'} Back",
         "memoryPath": "More Options › Memory › List by Date › 🔍",
         "memoryNote": "PM4 gemmer kun de 10 seneste træninger, så åbn resultatet før din næste træning.",
+        "logCardNote": "Sidder der et LogCard i monitoren, gemmes træningen på kortet i stedet: åbn LogCard Menu › List by Date › 🔍 fra velkomstskærmen."
+      },
+      "pm3": {
+        "name": "Concept2 PM3",
+        "look": "Mørkegrå monitor med knapperne Change Units, Change Display og Menu {'|'} Back, på romaskiner fra 2003 til 2014",
+        "menu": "Menu {'|'} Back",
+        "memoryPath": "More Options › Memory › List by Date › 🔍",
+        "memoryNote": "PM3 gemmer kun de 10 seneste træninger, så åbn resultatet før din næste træning.",
         "logCardNote": "Sidder der et LogCard i monitoren, gemmes træningen på kortet i stedet: åbn LogCard Menu › List by Date › 🔍 fra velkomstskærmen."
       }
     },
