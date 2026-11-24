@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { handleRadioKeydown } from 'm3-vue/ui/keyboardNav';
-import { computed } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SyncSettings from '../components/SyncSettings.vue';
 import { ACCENTS, accentSwatch, type Accent } from 'm3-vue/ui/palette';
@@ -17,6 +17,7 @@ const heartRate = defineModel<HeartRateSettings>('heartRate', { required: true }
 defineProps<{
   entryCount: number;
   linked: boolean;
+  backupMessage: { error: boolean; text: string } | null;
   sync: {
     store: HistoryStore;
     device: Device | null;
@@ -26,8 +27,18 @@ defineProps<{
     confirm: (key: string) => Promise<boolean>;
   } | null;
 }>();
-const emit = defineEmits<{ syncNow: []; dismissPair: []; clear: [] }>();
+const emit = defineEmits<{ syncNow: []; dismissPair: []; clear: []; exportHistory: []; restoreHistory: [file: File] }>();
 const { t } = useI18n();
+
+const restoreInput = useTemplateRef<HTMLInputElement>('restoreInput');
+
+function pickBackup(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  // Clear it so picking the same file again still restores.
+  input.value = '';
+  if (file) emit('restoreHistory', file);
+}
 
 const swatches = ACCENTS.map((option) => ({ option, colors: accentSwatch(option) }));
 const ageEstimate = computed(() => (heartRate.value.age === null ? null : estimatedMaxHeartRate(heartRate.value.age)));
@@ -152,7 +163,25 @@ function setHeartRate(key: keyof HeartRateSettings, event: Event) {
       />
 
       <h2 class="group-header">{{ t('settings.data') }}</h2>
+      <p v-if="backupMessage" class="banner" :class="{ 'banner-error': backupMessage.error }" :role="backupMessage.error ? 'alert' : 'status'">
+        {{ backupMessage.text }}
+      </p>
       <div class="group">
+        <button type="button" class="group-row tappable" :disabled="entryCount === 0" @click="emit('exportHistory')">
+          <MdIcon name="download" class="row-icon" />
+          <span class="row-label">
+            {{ t('settings.export') }}
+            <span class="row-detail">{{ t('settings.exportDetail', entryCount) }}</span>
+          </span>
+        </button>
+        <button type="button" class="group-row tappable" @click="restoreInput?.click()">
+          <MdIcon name="upload" class="row-icon" />
+          <span class="row-label">
+            {{ t('settings.restore') }}
+            <span class="row-detail">{{ t('settings.restoreDetail') }}</span>
+          </span>
+        </button>
+        <input ref="restoreInput" type="file" accept=".json,application/json" hidden @change="pickBackup" />
         <button type="button" class="group-row tappable settings-danger" @click="emit('clear')">
           <MdIcon name="delete_forever" class="row-icon" />
           <span class="row-label">

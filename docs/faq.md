@@ -47,6 +47,16 @@ Yes, on a deployment with private sync enabled. See
 [Private sync](private-sync.md) for how to link devices and recover your
 history.
 
+## Can I lose my saved workouts?
+
+They live in your browser, so clearing site data deletes them, and Safari on
+iPhone and iPad deletes the data of a site you haven't opened for seven days
+unless it was added to the home screen. To keep them safe, add ErgScan to the
+home screen, turn on [private sync](private-sync.md), or use **Settings →
+Export history** now and then and keep the file somewhere else. **Restore from
+file** brings the workouts back in any browser. The FIT files you upload to
+Strava or Garmin Connect are a copy too.
+
 ## Is it free?
 
 Yes, free and open source under the MIT license, with no ads, accounts or

@@ -2,7 +2,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { HISTORY_KEY, type HistoryEntry } from '../core/history';
 import { emptyRow } from '../core/workout';
-import { emptySnapshot, merge } from './merge';
+import { emptySnapshot, merge, parseSnapshot } from './merge';
 import { historyStore, workouts, type Device } from './store';
 
 beforeEach(() => {
@@ -73,4 +73,32 @@ it('persists changes across reload and preserves changes made during an upload',
   const stale = await reloaded.save(workout('offline'), saved!.revision);
   expect(stale).toBeNull();
   expect(workouts(await reloaded.read()).map((entry) => entry.id)).toEqual(['during-upload']);
+});
+
+it('restores missing workouts once, keeps current versions and leaves deleted workouts deleted', async () => {
+  const store = historyStore(null);
+  await store.initialize();
+  const edited = { ...workout('kept'), workout: { ...workout('kept').workout, name: 'Edited here' } };
+  await store.save(edited, null);
+  await store.save(workout('deleted'), null);
+  await store.remove(['deleted']);
+
+  const added = await store.restore([workout('kept'), workout('deleted'), workout('new'), workout('new')]);
+  expect(added).toBe(1);
+  const restored = workouts(await store.read());
+  expect(restored.map((entry) => entry.id).sort()).toEqual(['kept', 'new']);
+  expect(restored.find((entry) => entry.id === 'kept')?.workout.name).toBe('Edited here');
+  expect(await store.restore([workout('new')])).toBe(0);
+});
+
+it('queues restored workouts for upload on a linked device', async () => {
+  const store = historyStore(null);
+  await store.initialize();
+  await store.attach({ id: 'phone', vault: 'example', token: 'token', key: 'key' });
+  expect(await store.restore([workout('a'), workout('b')])).toBe(2);
+  const { snapshot, pending } = await store.read();
+  expect(pending.map((change) => change.id)).toEqual(['a', 'b']);
+  // What other devices download must pass their validation.
+  const uploaded = JSON.parse(JSON.stringify(merge(snapshot, 'phone', pending)));
+  expect(parseSnapshot(uploaded).records.map((record) => record.id)).toEqual(['a', 'b']);
 });

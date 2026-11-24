@@ -200,6 +200,15 @@
     "ageEstimate": "Estimated max heart rate: {bpm} bpm",
     "ageUnused": "Not used while a measured max heart rate is set",
     "data": "Data",
+    "export": "Export history",
+    "exportDetail": "No saved workouts to export | Saves your workout to a file you can restore later | Saves your {count} workouts to a file you can restore later",
+    "exported": "Saved {name}. Keep it somewhere outside this browser.",
+    "backupFileType": "ErgScan history",
+    "restore": "Restore from file",
+    "restoreDetail": "Adds the workouts from an exported file. Workouts already here are kept as they are",
+    "restored": "No workouts were added. | Added 1 workout. | Added {count} workouts.",
+    "restoreSkipped": "1 was skipped because it's already here or was deleted. | {count} were skipped because they're already here or were deleted.",
+    "restoreInvalid": "That file isn't an ErgScan history export, or it's damaged. Nothing was changed.",
     "clear": "Clear data",
     "clearDetail": "No saved workouts. Resets the theme, intro and heart rate, and shows the guide again | Deletes 1 saved workout, resets the theme, intro and heart rate, and shows the guide again | Deletes {count} saved workouts, resets the theme, intro and heart rate, and shows the guide again"
   },
@@ -309,7 +318,7 @@
     },
     "clear": {
       "title": "Clear all data?",
-      "body": "All saved workouts will be deleted and settings reset. This can't be undone.",
+      "body": "All saved workouts will be deleted and settings reset. This can't be undone, so export your history first to keep a copy.",
       "confirm": "Clear"
     }
   },

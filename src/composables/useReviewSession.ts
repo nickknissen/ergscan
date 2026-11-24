@@ -4,6 +4,7 @@ import { draftKey, hasUnsavedChanges, parseEntry, type HistoryEntry } from '../c
 import { createUndoStack } from '../core/undo';
 import { isExportable, type ExtraColumn, type Workout } from '../core/workout';
 import { buzz } from '../ui/haptics';
+import { persistStorage } from '../ui/persistentStorage';
 import type { useHistorySync } from './useHistorySync';
 
 type HistorySync = Pick<ReturnType<typeof useHistorySync>, 'repository' | 'history' | 'readyHistory' | 'storageError' | 'syncNow'>;
@@ -117,7 +118,10 @@ export function useReviewSession(options: {
         shownId = result.id;
       }
       storageError.value = false;
-      if (result) buzz('saved');
+      if (result) {
+        buzz('saved');
+        void persistStorage();
+      }
       void syncNow();
       return shownId;
     } catch {

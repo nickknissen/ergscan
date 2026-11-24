@@ -2,6 +2,7 @@ import { computed, ref, shallowRef, watch, type Ref } from 'vue';
 import { fitFileName } from '../core/dates';
 import { isExportable, type Workout } from '../core/workout';
 import { downloadUrlData } from '../ui/imageInput';
+import { saveFile } from '../ui/saveFile';
 
 type FitModule = typeof import('../core/fitExport');
 
@@ -28,29 +29,8 @@ export function useFitExport(options: { workout: Ref<Workout | null>; invalidCel
   }
 
   async function download() {
-    const file = fitFile();
-    if (window.showSaveFilePicker) {
-      try {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: file.name,
-          types: [{ description: 'FIT', accept: { [file.type]: ['.fit'] } }],
-        });
-        const writable = await handle.createWritable();
-        await writable.write(file);
-        await writable.close();
-        savedAs.value = handle.name;
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-      }
-    }
-    const url = URL.createObjectURL(file);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = file.name;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    savedAs.value = file.name;
+    const name = await saveFile(fitFile(), { description: 'FIT', extension: '.fit' });
+    if (name !== null) savedAs.value = name;
   }
 
   function dragFit(event: DragEvent) {

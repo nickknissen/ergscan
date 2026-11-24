@@ -200,6 +200,15 @@
     "ageEstimate": "Estimeret maks. puls: {bpm} slag/min",
     "ageUnused": "Bruges ikke, mens en målt maksimal puls er angivet",
     "data": "Data",
+    "export": "Eksportér historik",
+    "exportDetail": "Ingen gemte træninger at eksportere | Gemmer din træning i en fil, du senere kan gendanne | Gemmer dine {count} træninger i en fil, du senere kan gendanne",
+    "exported": "{name} er gemt. Opbevar den et sted uden for denne browser.",
+    "backupFileType": "ErgScan-historik",
+    "restore": "Gendan fra fil",
+    "restoreDetail": "Tilføjer træningerne fra en eksporteret fil. Træninger, der allerede er her, beholdes som de er",
+    "restored": "Ingen træninger blev tilføjet. | 1 træning blev tilføjet. | {count} træninger blev tilføjet.",
+    "restoreSkipped": "1 blev sprunget over, fordi den allerede er her eller er slettet. | {count} blev sprunget over, fordi de allerede er her eller er slettet.",
+    "restoreInvalid": "Filen er ikke en eksport af ErgScan-historik, eller den er beskadiget. Intet blev ændret.",
     "clear": "Ryd data",
     "clearDetail": "Ingen gemte træninger. Nulstiller tema, introduktion og puls og viser vejledningen igen | Sletter 1 gemt træning, nulstiller tema, introduktion og puls og viser vejledningen igen | Sletter {count} gemte træninger, nulstiller tema, introduktion og puls og viser vejledningen igen"
   },
@@ -309,7 +318,7 @@
     },
     "clear": {
       "title": "Vil du rydde alle data?",
-      "body": "Alle gemte træninger bliver slettet, og indstillingerne nulstilles. Det kan ikke fortrydes.",
+      "body": "Alle gemte træninger bliver slettet, og indstillingerne nulstilles. Det kan ikke fortrydes, så eksportér din historik først, hvis du vil beholde en kopi.",
       "confirm": "Ryd"
     }
   },
