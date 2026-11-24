@@ -18,15 +18,22 @@ import {
 } from './cameraLenses';
 import { cameraDebug, cameraReport, reportAllCameras } from './cameraReport';
 import { activeStop, clampZoom, createZoomApplier, pinchZoom, zoomRange, zoomStops, type ZoomRange } from './cameraZoom';
+import { decodeQr } from './qrScan';
+
+/** `monitor` frames a PM screen and takes a photo; `qr` reads a QR code from the preview by itself, with no shutter. */
+const props = withDefaults(defineProps<{ mode?: 'monitor' | 'qr' }>(), { mode: 'monitor' });
 
 const emit = defineEmits<{
   capture: [image: Blob];
+  qr: [text: string];
   cancel: [];
   choose: [];
   failed: [message: string];
 }>();
 
 const START_TIMEOUT_MS = 10_000;
+/** Pause between QR reads of the preview: often enough to feel instant, rare enough to leave the phone cool. */
+const QR_INTERVAL_MS = 150;
 
 const { t, locale } = useI18n();
 
@@ -73,6 +80,7 @@ function failureMessage(error: unknown): string {
 
 function stop() {
   clearTimeout(timeout);
+  clearTimeout(qrTimer);
   stream?.getTracks().forEach((track) => track.stop());
   stream = null;
   videoTrack = null;
@@ -174,6 +182,7 @@ async function start() {
     const track = media.getVideoTracks()[0];
     if (track) readZoom(track);
     if (cameraDebug && track && !reportedAll) report.value = cameraReport(track);
+    if (props.mode === 'qr') scanQr(current);
     void lookForLenses();
   } catch (error) {
     if (current !== attempt) return;
@@ -314,6 +323,29 @@ onBeforeUnmount(() => {
   stop();
 });
 
+// ---------- QR: read the code inside the frame from the preview, until one is found ----------
+
+let qrTimer: ReturnType<typeof setTimeout> | undefined;
+let qrFound = false;
+
+/** Reads the frame from the preview, and again after a pause, until a code reads or this camera attempt ends. */
+function scanQr(current: number) {
+  qrTimer = setTimeout(async () => {
+    const v = video.value;
+    if (current !== attempt || qrFound || !v || !ready.value) return;
+    const rect = captureRect(view.value, { width: v.videoWidth, height: v.videoHeight });
+    const text = await decodeQr(v, rect).catch(() => null);
+    if (current !== attempt || qrFound) return;
+    if (!text) {
+      scanQr(current);
+      return;
+    }
+    qrFound = true;
+    buzz('shutter');
+    emit('qr', text);
+  }, QR_INTERVAL_MS);
+}
+
 function capture() {
   const v = video.value;
   if (!v || !ready.value) return;
@@ -343,7 +375,7 @@ function capture() {
         <span class="corner tr"></span>
         <span class="corner bl"></span>
         <span class="corner br"></span>
-        <p v-if="ready" class="guide-hint">{{ t('camera.hint') }}</p>
+        <p v-if="ready" class="guide-hint">{{ t(mode === 'qr' ? 'camera.qrHint' : 'camera.hint') }}</p>
       </div>
       <div v-if="ready && stops.length" class="zoom-stops">
         <button
@@ -380,7 +412,8 @@ function capture() {
     </div>
     <div class="camera-actions">
       <button type="button" class="camera-cancel" @click="emit('cancel')">{{ t('camera.cancel') }}</button>
-      <button type="button" class="shutter" :disabled="!ready" :aria-label="t('camera.capture')" :title="t('camera.capture')" @click="capture"></button>
+      <span v-if="mode === 'qr'" class="spacer"></span>
+      <button v-else type="button" class="shutter" :disabled="!ready" :aria-label="t('camera.capture')" :title="t('camera.capture')" @click="capture"></button>
       <button
         v-if="showSwitch"
         type="button"

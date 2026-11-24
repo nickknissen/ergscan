@@ -58,6 +58,7 @@
   },
   "camera": {
     "hint": "Placér PM-skærmen inden for rammen",
+    "qrHint": "Ret kameraet mod QR-koden til forbindelse",
     "capture": "Tag billede",
     "cancel": "Annullér",
     "failed": "Kameraet kunne ikke startes ({message}). Tag eller vælg et billede i stedet.",
@@ -215,6 +216,7 @@
     "keepRecovery": "Gem gendannelsesnøglen nu. Du skal bruge den, hvis du mister adgangen til alle forbundne enheder. Alle med nøglen kan åbne din synkroniserede historik.",
     "downloadRecovery": "Hent gendannelsesnøglen",
     "readQr": "Fotografér eller vælg en QR-kode",
+    "scanQr": "Scan QR-kode",
     "approve": "Godkend ny enhed",
     "now": "Synkronisér nu",
     "devices": "Vis forbundne enheder",
