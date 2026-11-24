@@ -56,6 +56,20 @@ volume.
 | `ERGSCAN_SYNC_HOST` | `127.0.0.1` | Bind address; the Compose files use `0.0.0.0` |
 | `ERGSCAN_SYNC_DB` | `ergscan-sync.sqlite` | SQLite file path; the Compose files use `/data/history.sqlite` |
 
+## Security headers
+
+The image sends a Content-Security-Policy, `X-Content-Type-Options: nosniff`
+and `Referrer-Policy: no-referrer` on every response, from
+`nginx-headers.conf`. The policy allows only the app's own origin, plus WASM
+compilation for text recognition, `blob:` images for photo previews and
+`data:` images for the pairing QR code. No inline scripts or styles, no
+`eval`, and the app can't be shown in a frame.
+
+If you serve `dist/` with your own web server, send the same headers. With
+nginx, include the file in the `server` block and in every `location` that has
+its own `add_header`, since such a location drops the headers it would
+otherwise inherit. `server/nginx.test.ts` checks this for the shipped config.
+
 ## Caching and CDNs
 
 nginx marks `/sw.js`, `/manifest.webmanifest` and `/index.html` as `no-cache`
