@@ -16,6 +16,46 @@ notes are kept outside the repository. "Static analysis" below refers to them.
 To avoid confusion, this document calls the store app **"ErgScan (store app)"**
 and ours **ErgScan**.
 
+## Comparison at a glance
+
+✅ yes · ❌ no · 🟡 partial · ❔ not verified · ➖ not applicable.
+"ErgScan (store)" is the unrelated store app `com.ergscan`. Sources are the
+profiles in section 2. For ErgScan: [features](../features.md) and
+[FAQ](../faq.md).
+
+| Feature | **ErgScan** | ErgScan (store) | ErgManiac | Watta | ErgTracker | ErgPal | Ergbase | Erg Analyzer | ErgBot (dormant) | Power Ten Metrics | ErgData + Logbook | ErgZone | RowIQ |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Photo or OCR input | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 🟡 (not in EU/UK/CH) | ✅ | ❔ | ❌ | ❌ | ❌ |
+| OCR on the device, offline | ✅ | ❌ (cloud LLM) | ❌ (cloud) | ❌ (cloud) | ❌ (cloud) | ❔ | ❌ (cloud) | ❌ (Gemini) | ❌ (cloud) | ❔ | ➖ | ➖ | ➖ |
+| Unlimited free scans | ✅ | ❌ (limit) | ❌ (1 scan) | ✅ | 🟡 (10, then an ad per scan) | ❌ (subscription) | ❔ | 🟡 (outside Europe) | ✅ | ❔ | ➖ | ➖ | ➖ |
+| Several screens merged into one workout | ✅ | ❔ | ✅ | ✅ | ❌ (bulk is Pro) | ✅ | ❔ | ❔ | ❌ (max 8 splits) | ❔ | ➖ | ➖ | ➖ |
+| Live Bluetooth from the PM5 | ❌ | ❌ | ✅ | 🟡 (sends workouts) | ❌ | ❌ | ❌ | ❌ | ❌ | ❔ | ✅ | ✅ | ✅ |
+| Manual entry | ✅ | ❔ | ✅ | ✅ | ❌ | 🟡 (edit only) | ❔ | ✅ | ❌ | ❔ | ✅ (web) | ❔ | ❔ |
+| PM3 | ❌ | ❔ | ✅ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❔ | ❌ |
+| PM4 | ✅ | ❔ | ✅ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ❌ | ❌ (USB) | ❌ |
+| SkiErg and BikeErg | ❌ | ❌ | ❔ | ✅ | ❌ | ❔ | ❔ | ❔ | ❔ | ❔ | ✅ | ✅ | 🟡 (BikeErg) |
+| FIT export | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❔ | 🟡 (Logbook download) | ✅ (to intervals.icu) | ❌ |
+| CSV or spreadsheet export | ❌ | ✅ | 🟡 (Pro "export") | ❌ | 🟡 (per workout) | ✅ | ❌ | ✅ (+ JSON) | ✅ (Google Sheet) | ❔ | 🟡 (Utility CSV) | ❌ (asked for) | ❌ |
+| Strava | 🟡 (file) | ✅ | ✅ | ✅ | 🟡 (totals only) | ❌ | ❌ | ❌ | ❌ | ❔ | ✅ (through Logbook) | ✅ (through Logbook) | ✅ |
+| Garmin Connect | 🟡 (file) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❔ | ✅ (through Logbook) | 🟡 (through Logbook) | ❌ |
+| Concept2 Logbook upload | ❌ | ✅ (Premium) | ❔ (Pro "auto-sync", may be import only) | ❌ (import only) | ❌ | ❌ | ❌ | ❌ (import only) | ❌ | ❔ | ✅ | ✅ | ✅ |
+| intervals.icu | 🟡 (file) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❔ | ✅ (pulls from Logbook) | ✅ (beta, paid) | ❌ |
+| TrainingPeaks | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❔ | ✅ (through Logbook) | 🟡 | ❌ |
+| Heart-rate zones | ✅ | ✅ | ✅ (Pro) | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❔ | ✅ | ✅ | ✅ |
+| Merge heart rate from a watch FIT | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ (TCX only) | ❌ | ❔ | 🟡 (Apple Watch live) | ❌ | ❌ |
+| Drag factor | ✅ | ❔ | ✅ | ✅ | ❌ | ❌ | ❌ | ❔ | ❌ | ❔ | ✅ | ✅ | ❔ |
+| History | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Personal bests and trends | ❌ | ✅ | ✅ | ✅ | 🟡 (calendar) | 🟡 ("insights") | 🟡 | ✅ (deep) | ❌ | ✅ | 🟡 | ✅ | ✅ |
+| Training plans or coach | ❌ | ❌ | ✅ (AI, Pro) | ✅ (coach) | ❌ | ❌ | ❌ | 🟡 (AI prompt export) | ❌ | 🟡 (coach-set workouts) | 🟡 (WOD) | ✅ | ✅ (AI, paid) |
+| Social, clubs, leaderboards | ❌ | 🟡 | ✅ | ✅ | ❌ | ❌ | ❌ | 🟡 (team comparison) | 🟡 (Team Mode, paid) | ✅ (teams) | ✅ (rankings) | ✅ | ✅ |
+| Shareable summary image | ❌ | ✅ | ✅ (link) | ❌ | ✅ | ❌ | ❌ | ✅ (PNG) | ❌ | ❔ | ✅ (Strava image) | ❔ | ❔ |
+| Works without an account | ✅ | ❔ | ❌ | ❌ | 🟡 (hidden anonymous account) | ❔ | ❌ | ✅ | ❌ (Google) | ❌ | ❌ | 🟡 (guest) | ❌ |
+| No ads or tracking | ✅ | ❌ (label) | 🟡 (PostHog) | 🟡 (PostHog, Sentry) | ❌ (ads) | 🟡 | ❌ (label) | 🟡 (Vercel analytics) | ❌ (label) | 🟡 (label) | 🟡 | 🟡 | ❌ (label) |
+| Works offline | ✅ | ❌ | ❌ | 🟡 (queues saves, scans need network) | ❔ | ❔ | ❌ | ❌ | ❌ | ❔ | 🟡 | ❌ ("need wifi") | ❔ |
+| Open source | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Web or desktop | ✅ (PWA) | ❌ | ✅ | ❌ | ❌ | 🟡 (Mac) | ❌ | ✅ (web only) | 🟡 (team web) | ✅ (dashboard) | ✅ (Logbook web) | ✅ (dashboard) | 🟡 (Mac) |
+| Price | Free | Free + $4.99/mo… | €2.99/mo | Free | Free + ads | $8.99/mo | Free | Free | Free (Team Mode paid) | $0.99/mo | Free | $4.99/mo | $9.99/mo |
+
 ## 1. Summary
 
 **The market.** There are three ways to get a Concept2 workout into Strava,
@@ -162,8 +202,7 @@ Garmin or intervals.icu:
   can also send a workout to the PM5 over Bluetooth. It covers RowErg, SkiErg
   and BikeErg on the PM5, PM4 and PM3
   ([App Store](https://apps.apple.com/us/app/watta/id6758580968);
-  [getwatta.com](https://getwatta.com/)). Whether the photo is read on the
-  device or in the cloud is **unverified**; the site does not say.
+  [getwatta.com](https://getwatta.com/)).
 - **Exports:** Pushes to Strava. Imports from the Concept2 Logbook read-only
   and never writes back. No Garmin, FIT or CSV
   ([getwatta.com](https://getwatta.com/)).
@@ -172,6 +211,21 @@ Garmin or intervals.icu:
   ([Play](https://play.google.com/store/apps/details?id=com.utx.app)).
 - **Account:** Required (Apple, Google or email)
   ([download](https://getwatta.com/download)).
+- **Verified in the Android app (v2.0.1, static analysis):**
+  - OCR runs in the cloud: photos are compressed and POSTed to `/workouts/ocr`
+    on their Railway backend. There is no on-device text recognition.
+  - No scan limit or paywall around scanning was found.
+  - Workouts keep machine type (row, ski, bike), distance, time, split, rate,
+    watts, heart rate, calories, drag factor and notes. They are private by
+    default unless the user changes the default.
+  - Strava and Concept2 Logbook connections both run through their server.
+    The Logbook link imports only. The app handles a `STRAVA_AT_CAPACITY`
+    error, which suggests their Strava app hit its athlete limit.
+  - No CSV, FIT or TCX export.
+  - PostHog analytics tracks scan events, including each OCR field the user
+    corrects, and Sentry reports crashes.
+  - The technique check ("Film 30 seconds of rowing") has no endpoint in the
+    app's API map, so how it works is unverified.
 - **Notable:** Watta runs aggressive SEO comparison pages ("Best Rowing App
   2026"). They say photo apps like ErgScan and ErgTracker "stop at the log"
   ([getwatta.com/vs/best-rowing-app](https://getwatta.com/vs/best-rowing-app)).
@@ -508,43 +562,7 @@ These listings were only skimmed, so their details are **unverified**.
 
 ## 3. Feature comparison matrix
 
-✓ yes, ✗ no, ◐ partial, ? not verified. "ErgScan (store)" is `com.ergscan`.
-
-| Feature | **ErgScan** | ErgScan (store) | ErgManiac | Watta | ErgTracker | ErgPal | Ergbase | Erg Analyzer | ErgBot (dormant) | Power Ten Metrics | ErgData + Logbook | ErgZone | RowIQ |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Photo or OCR input | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ◐ (not in EU/UK/CH) | ✓ | ? | ✗ | ✗ | ✗ |
-| OCR on the device, offline | ✓ | ✗ (cloud LLM) | ✗ (cloud) | ? | ✗ (cloud) | ? | ✗ (cloud) | ✗ (Gemini) | ✗ (cloud) | ? | n/a | n/a | n/a |
-| Unlimited free scans | ✓ | ✗ (limit) | ✗ (1 scan) | ✓ | ◐ (10, then an ad per scan) | ✗ (subscription) | ? | ◐ (outside Europe) | ✓ | ? | n/a | n/a | n/a |
-| Several screens merged into one workout | ✓ | ? | ✓ | ✓ | ✗ (bulk is Pro) | ✓ | ? | ? | ✗ (max 8 splits) | ? | n/a | n/a | n/a |
-| Live Bluetooth from the PM5 | ✗ | ✗ | ✓ | ◐ (sends workouts) | ✗ | ✗ | ✗ | ✗ | ✗ | ? | ✓ | ✓ | ✓ |
-| Manual entry | ✓ | ? | ✓ | ✓ | ✗ | ◐ (edit only) | ? | ✓ | ✗ | ? | ✓ (web) | ? | ? |
-| PM3 | ✗ | ? | ✓ | ✓ | ✗ | ? | ? | ? | ? | ? | ✗ | ? | ✗ |
-| PM4 | ✓ | ? | ✓ | ✓ | ✗ | ? | ? | ? | ? | ? | ✗ | ✗ (USB) | ✗ |
-| SkiErg and BikeErg | ✗ | ✗ | ? | ✓ | ✗ | ? | ? | ? | ? | ? | ✓ | ✓ | ◐ (BikeErg) |
-| FIT export | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ? | ◐ (Logbook download) | ✓ (to intervals.icu) | ✗ |
-| CSV or spreadsheet export | ✗ | ✓ | ◐ (Pro "export") | ✗ | ◐ (per workout) | ✓ | ✗ | ✓ (+ JSON) | ✓ (Google Sheet) | ? | ◐ (Utility CSV) | ✗ (asked for) | ✗ |
-| Strava | ◐ (file) | ✓ | ✓ | ✓ | ◐ (totals only) | ✗ | ✗ | ✗ | ✗ | ? | ✓ (through Logbook) | ✓ (through Logbook) | ✓ |
-| Garmin Connect | ◐ (file) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ? | ✓ (through Logbook) | ◐ (through Logbook) | ✗ |
-| Concept2 Logbook upload | ✗ | ✓ (Premium) | ? (Pro "auto-sync", may be import only) | ✗ (import only) | ✗ | ✗ | ✗ | ✗ (import only) | ✗ | ? | ✓ | ✓ | ✓ |
-| intervals.icu | ◐ (file) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ? | ✓ (pulls from Logbook) | ✓ (beta, paid) | ✗ |
-| TrainingPeaks | ✗ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ? | ✓ (through Logbook) | ◐ | ✗ |
-| Heart-rate zones | ✓ | ✓ | ✓ (Pro) | ✓ | ✗ | ✗ | ✗ | ✓ | ✗ | ? | ✓ | ✓ | ✓ |
-| Merge heart rate from a watch FIT | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ (TCX only) | ✗ | ? | ◐ (Apple Watch live) | ✗ | ✗ |
-| Drag factor | ✓ | ? | ✓ | ✓ | ✗ | ✗ | ✗ | ? | ✗ | ? | ✓ | ✓ | ? |
-| History | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Personal bests and trends | ✗ | ✓ | ✓ | ✓ | ◐ (calendar) | ◐ ("insights") | ◐ | ✓ (deep) | ✗ | ✓ | ◐ | ✓ | ✓ |
-| Training plans or coach | ✗ | ✗ | ✓ (AI, Pro) | ✓ (coach) | ✗ | ✗ | ✗ | ◐ (AI prompt export) | ✗ | ◐ (coach-set workouts) | ◐ (WOD) | ✓ | ✓ (AI, paid) |
-| Social, clubs, leaderboards | ✗ | ◐ | ✓ | ✓ | ✗ | ✗ | ✗ | ◐ (team comparison) | ◐ (Team Mode, paid) | ✓ (teams) | ✓ (rankings) | ✓ | ✓ |
-| Shareable summary image | ✗ | ✓ | ✓ (link) | ✗ | ✓ | ✗ | ✗ | ✓ (PNG) | ✗ | ? | ✓ (Strava image) | ? | ? |
-| Works without an account | ✓ | ? | ✗ | ✗ | ◐ (hidden anonymous account) | ? | ✗ | ✓ | ✗ (Google) | ✗ | ✗ | ◐ (guest) | ✗ |
-| No ads or tracking | ✓ | ✗ (label) | ◐ (PostHog) | ◐ | ✗ (ads) | ◐ | ✗ (label) | ◐ (Vercel analytics) | ✗ (label) | ◐ (label) | ◐ | ◐ | ✗ (label) |
-| Works offline | ✓ | ✗ | ✗ | ? | ? | ? | ✗ | ✗ | ✗ | ? | ◐ | ✗ ("need wifi") | ? |
-| Open source | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
-| Web or desktop | ✓ (PWA) | ✗ | ✓ | ✗ | ✗ | ◐ (Mac) | ✗ | ✓ (web only) | ◐ (team web) | ✓ (dashboard) | ✓ (Logbook web) | ✓ (dashboard) | ◐ (Mac) |
-| Price | Free | Free + $4.99/mo… | €2.99/mo | Free | Free + ads | $8.99/mo | Free | Free | Free (Team Mode paid) | $0.99/mo | Free | $4.99/mo | $9.99/mo |
-
-Sources are the profiles in section 2. For ErgScan: [features](../features.md)
-and [FAQ](../faq.md).
+Moved to the top: see [Comparison at a glance](#comparison-at-a-glance).
 
 ## 4. Recurring user pain points
 
