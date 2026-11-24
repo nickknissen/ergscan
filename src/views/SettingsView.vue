@@ -4,7 +4,7 @@ import { handleRadioKeydown } from 'm3-vue/ui/keyboardNav';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SyncSettings from '../components/SyncSettings.vue';
-import { ACCENTS, accentSwatch, type Accent } from '../core/palette';
+import { ACCENTS, accentSwatch, type Accent } from 'm3-vue/ui/palette';
 import { estimatedMaxHeartRate, parseWholeNumber, THEMES, type HeartRateSettings, type Theme } from '../core/settings';
 import type { Device, HistoryStore } from '../sync/store';
 
