@@ -8,6 +8,8 @@ import {
 } from '../sync/client';
 import type { Device, HistoryStore } from '../sync/store';
 import type { IconName } from '../ui/icons';
+import CameraCapture from './CameraCapture.vue';
+import { decodeQr } from './qrScan';
 
 const props = defineProps<{
   store: HistoryStore;
@@ -154,20 +156,43 @@ async function readQr(event: Event) {
   input.value = '';
   if (!file) return;
   await run(async () => {
-    const { default: jsQR } = await import('jsqr');
     const image = await createImageBitmap(file);
-    const canvas = document.createElement('canvas');
-    const scale = Math.min(1, 1200 / Math.max(image.width, image.height));
-    canvas.width = Math.max(1, Math.round(image.width * scale));
-    canvas.height = Math.max(1, Math.round(image.height * scale));
-    const context = canvas.getContext('2d');
-    context?.drawImage(image, 0, 0, canvas.width, canvas.height);
-    image.close();
-    const pixels = context?.getImageData(0, 0, canvas.width, canvas.height);
-    const result = pixels && jsQR(pixels.data, pixels.width, pixels.height);
-    if (result?.data) code.value = result.data;
-    else error.value = 'qrFailed';
+    try {
+      const text = await decodeQr(image, { x: 0, y: 0, width: image.width, height: image.height });
+      if (text) code.value = text;
+      else error.value = 'qrFailed';
+    } finally {
+      image.close();
+    }
   });
+}
+
+/** The live camera reads the pairing QR code, as on the scan screen; the photo picker stays as the fallback. */
+const cameraSupported = typeof navigator.mediaDevices?.getUserMedia === 'function';
+const scanning = ref(false);
+const cameraError = ref('');
+const qrFile = ref<HTMLInputElement | null>(null);
+
+function openScanner() {
+  error.value = '';
+  message.value = '';
+  cameraError.value = '';
+  scanning.value = true;
+}
+
+function onScanned(text: string) {
+  scanning.value = false;
+  code.value = text;
+}
+
+function onScannerFailed(reason: string) {
+  scanning.value = false;
+  cameraError.value = reason;
+}
+
+function chooseQrImage() {
+  scanning.value = false;
+  qrFile.value?.click();
 }
 
 function loadDevices() {
@@ -304,11 +329,16 @@ onBeforeUnmount(() => {
             </span>
             <input v-model="code" autocomplete="off" spellcheck="false" />
           </label>
+          <p v-if="cameraError" class="banner banner-error" role="alert">{{ cameraError }}</p>
           <div class="sync-buttons">
-            <label class="button tonal tappable sync-file" :class="{ disabled: busy }">
+            <button v-if="cameraSupported && !cameraError" type="button" class="tonal" :disabled="busy" @click="openScanner">
+              <MdIcon name="qr_code_scanner" />
+              {{ t('sync.scanQr') }}
+            </button>
+            <label class="button tonal tappable sync-file" :class="{ disabled: busy, 'sync-file-hidden': cameraSupported && !cameraError }">
               <MdIcon name="qr_code_scanner" />
               {{ t('sync.readQr') }}
-              <input type="file" accept="image/*" capture="environment" :disabled="busy" @change="readQr" />
+              <input ref="qrFile" type="file" accept="image/*" capture="environment" :disabled="busy" @change="readQr" />
             </label>
             <button class="primary" :disabled="busy || !code.trim()">{{ t('sync.approve') }}</button>
           </div>
@@ -339,6 +369,17 @@ onBeforeUnmount(() => {
         </button>
       </template>
     </div>
+
+    <Teleport to="body">
+      <CameraCapture
+        v-if="scanning"
+        mode="qr"
+        @qr="onScanned"
+        @cancel="scanning = false"
+        @choose="chooseQrImage"
+        @failed="onScannerFailed"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -385,7 +426,8 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.sync-buttons .button svg {
+.sync-buttons .button svg,
+.sync-buttons button svg {
   width: 18px;
   height: 18px;
   flex: none;
@@ -409,6 +451,11 @@ onBeforeUnmount(() => {
 .sync-file:focus-within {
   outline: 3px solid var(--secondary);
   outline-offset: 2px;
+}
+
+/* Kept in the page so the camera's "choose a photo" fallback can open its picker. */
+.sync-file-hidden {
+  display: none;
 }
 
 .sync-file.disabled {

@@ -58,6 +58,7 @@
   },
   "camera": {
     "hint": "Fit the PM screen inside the frame",
+    "qrHint": "Point the camera at the pairing QR code",
     "capture": "Capture",
     "cancel": "Cancel",
     "failed": "The camera could not be started ({message}). Take or choose a photo instead.",
@@ -215,6 +216,7 @@
     "keepRecovery": "Save this recovery key now. You’ll need it if you lose access to all your linked devices. Anyone with the key can access your synced history.",
     "downloadRecovery": "Download recovery key",
     "readQr": "Photograph or choose a pairing QR code",
+    "scanQr": "Scan pairing QR code",
     "approve": "Approve new device",
     "now": "Sync now",
     "devices": "Show linked devices",
