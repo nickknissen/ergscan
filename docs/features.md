@@ -56,7 +56,11 @@
 
 ## History and sync
 
-- Saved workouts are kept in the browser and work offline.
+- Saved workouts are kept in the browser and work offline. ErgScan asks the
+  browser to keep them when storage runs low.
+- Export the whole history to a file from Settings, and restore it in any
+  browser. Restoring adds the missing workouts and keeps the ones already
+  there.
 - Optional [private sync](private-sync.md) on self-hosted deployments: link
   your phone, tablet and computer with a QR code and keep the same history on
   all of them. History is end-to-end encrypted before it leaves the device,
@@ -67,7 +71,7 @@
 ## App
 
 - Settings for light or dark theme, accent color, heart rate, hiding the intro
-  card and clearing all app data.
+  card, exporting and restoring history, and clearing all app data.
 - Installable Material 3 PWA in English and Danish, with a bottom bar on phones
   and a navigation rail on wide screens.
 - Feels like a native app on a phone: no pinch zoom or sideways page scroll,

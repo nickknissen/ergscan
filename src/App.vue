@@ -14,6 +14,7 @@ import PmGuide from './components/PmGuide.vue';
 import TabBar from './components/TabBar.vue';
 import { useAppSettings } from './composables/useAppSettings';
 import { useFitExport } from './composables/useFitExport';
+import { useHistoryBackup } from './composables/useHistoryBackup';
 import { useHistorySync } from './composables/useHistorySync';
 import { useImageInput } from './composables/useImageInput';
 import { useNavigation } from './composables/useNavigation';
@@ -55,6 +56,7 @@ const session = webStorage(() => sessionStorage);
 
 const historySync = useHistorySync(storage, syncEnabled);
 const { repository, history, linkedDevice, pendingSync, syncStatus, storageError, readyHistory, refreshHistory, syncNow } = historySync;
+const { message: backupMessage, exportHistory, restoreHistory } = useHistoryBackup({ historySync, t });
 const { theme, accent, showIntro, heartRate, maxHr, listPane, reset: resetSettings } = useAppSettings(storage);
 useUpdatePrompt();
 
@@ -334,6 +336,7 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
             v-model:heart-rate="heartRate"
             :entry-count="history.length"
             :linked="Boolean(linkedDevice)"
+            :backup-message="backupMessage"
             :sync="syncEnabled ? {
               store: repository, device: linkedDevice, pending: pendingSync, status: syncStatus,
               incoming: incomingPair, confirm: confirmDialog,
@@ -341,6 +344,8 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
             @sync-now="syncNow"
             @dismiss-pair="incomingPair = ''"
             @clear="clearData"
+            @export-history="exportHistory"
+            @restore-history="restoreHistory"
           />
 
           <ScanningView v-else-if="stage === 'scanning'" :photo-url="photoUrl" :progress="progress" :progress-text="progressText" />

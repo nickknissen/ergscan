@@ -53,6 +53,7 @@ import share from '@material-symbols/svg-400/rounded/share.svg?raw';
 import sync from '@material-symbols/svg-400/rounded/sync.svg?raw';
 import syncProblem from '@material-symbols/svg-400/rounded/sync_problem.svg?raw';
 import undo from '@material-symbols/svg-400/rounded/undo.svg?raw';
+import upload from '@material-symbols/svg-400/rounded/upload.svg?raw';
 import viewDay from '@material-symbols/svg-400/rounded/view_day.svg?raw';
 import warning from '@material-symbols/svg-400/rounded/warning.svg?raw';
 
@@ -106,6 +107,7 @@ export const ICONS = {
   sync: icon(sync),
   sync_problem: icon(syncProblem),
   undo: icon(undo),
+  upload: icon(upload),
   view_day: icon(viewDay),
   warning: icon(warning),
 };

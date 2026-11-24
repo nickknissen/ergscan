@@ -141,6 +141,18 @@ export function historyStore(storage: Storage | null) {
     remove: (ids: readonly string[]) => update((state) => {
       for (const id of ids) change(state, id, null, null);
     }),
+    /**
+     * Adds restored workouts in one change and resolves to how many were added. A workout already
+     * in the history keeps its current version, and one deleted here stays deleted.
+     */
+    restore: (entries: readonly HistoryEntry[]) => update((state) => {
+      const known = new Set(workouts(state).map((entry) => entry.id));
+      let added = 0;
+      for (const entry of new Map(entries.map((item) => [item.id, item])).values()) {
+        if (!known.has(entry.id) && change(state, entry.id, entry, null) !== undefined) added++;
+      }
+      return added;
+    }),
     attach: (device: Device) => update((state) => {
       if (!state.migrated) throw new Error('History is not initialized');
       if (state.device) throw new Error('This browser is already linked');
