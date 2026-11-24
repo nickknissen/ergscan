@@ -66,9 +66,10 @@ compilation for text recognition, `blob:` images for photo previews and
 `eval`, and the app can't be shown in a frame.
 
 If you serve `dist/` with your own web server, send the same headers. With
-nginx, include the file in the `server` block and in every `location` that has
-its own `add_header`, since such a location drops the headers it would
-otherwise inherit. `server/nginx.test.ts` checks this for the shipped config.
+nginx, include the file in the `server` block and don't use `add_header` in a
+`location`: such a location drops every header it would otherwise inherit. The
+shipped config sets `Cache-Control` per path through a `map` for this reason,
+and `server/nginx.test.ts` checks it.
 
 ## Caching and CDNs
 
