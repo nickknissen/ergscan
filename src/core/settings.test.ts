@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { accentPalette } from './palette';
 import {
   ACCENT_KEY,
   AGE_KEY,
-  applyTheme,
   clearAppData,
   estimatedMaxHeartRate,
   HIDE_INTRO_KEY,
@@ -74,48 +72,6 @@ describe('accent', () => {
     expect(loadAccent(storage)).toBe('teal');
     saveAccent(storage, 'default');
     expect(storage.data.has(ACCENT_KEY)).toBe(false);
-  });
-});
-
-function fakeDocument() {
-  const properties = new Map<string, string>();
-  const metas = [
-    { media: '(prefers-color-scheme: dark)', content: '' },
-    { media: '(prefers-color-scheme: light)', content: '' },
-  ];
-  const style = {
-    setProperty: (name: string, value: string) => void properties.set(name, value),
-    removeProperty: (name: string) => void properties.delete(name),
-  };
-  const dataset: Record<string, string> = {};
-  const doc = { documentElement: { style, dataset }, querySelectorAll: () => metas } as unknown as Document;
-  return { doc, properties, metas, dataset };
-}
-
-describe('applyTheme', () => {
-  it('overrides the color tokens and theme-color for a generated accent', () => {
-    const { doc, properties, metas } = fakeDocument();
-    applyTheme(doc, 'system', 'teal');
-    const palette = accentPalette('teal')!;
-    expect(properties.get('--primary')).toBe(`light-dark(${palette.light.primary}, ${palette.dark.primary})`);
-    expect(metas.map((m) => m.content)).toEqual([palette.dark.surface, palette.light.surface]);
-  });
-
-  it('drops the overrides when going back to default', () => {
-    const { doc, properties, metas, dataset } = fakeDocument();
-    applyTheme(doc, 'dark', 'red');
-    applyTheme(doc, 'dark');
-    expect(properties.size).toBe(0);
-    expect(dataset.theme).toBe('dark');
-    expect(metas.map((m) => m.content)).toEqual(['#111318', '#111318']);
-  });
-
-  it('picks the scheme with a data attribute so the lowered light-dark() in the build follows it', () => {
-    const { doc, dataset } = fakeDocument();
-    applyTheme(doc, 'light');
-    expect(dataset.theme).toBe('light');
-    applyTheme(doc, 'system');
-    expect('theme' in dataset).toBe(false);
   });
 });
 

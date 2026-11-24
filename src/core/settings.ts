@@ -1,42 +1,29 @@
 import { loadListPane as loadPane, saveListPane as savePane, type ListPane, type ListWidth } from 'm3-vue/ui/listPane';
-import { ACCENTS, accentPalette, paletteProperties, TOKEN_PROPERTIES, type Accent } from './palette';
+import * as theme from 'm3-vue/ui/theme';
+import type { Accent, Theme } from 'm3-vue/ui/theme';
 
-export type { ListPane };
+export type { Accent, ListPane, Theme };
+export { applyTheme, THEMES } from 'm3-vue/ui/theme';
 
-export type Theme = 'system' | 'light' | 'dark';
-
-export const THEMES: readonly Theme[] = ['system', 'light', 'dark'];
 export const THEME_KEY = 'ergscan.theme';
 export const ACCENT_KEY = 'ergscan.accent';
 const APP_PREFIX = 'ergscan.';
-const THEME_COLORS = { light: '#f9f9ff', dark: '#111318' } as const;
 
+/** The light/dark choice and accent colour, kept under ErgScan's keys by m3-vue/ui/theme. */
 export function loadAccent(storage: Pick<Storage, 'getItem'> | null): Accent {
-  const value = storage?.getItem(ACCENT_KEY);
-  return ACCENTS.includes(value as Accent) ? (value as Accent) : 'default';
+  return theme.loadAccent(storage, ACCENT_KEY);
 }
 
 export function saveAccent(storage: Pick<Storage, 'setItem' | 'removeItem'>, accent: Accent): void {
-  try {
-    if (accent === 'default') storage.removeItem(ACCENT_KEY);
-    else storage.setItem(ACCENT_KEY, accent);
-  } catch {
-    // Storage full or blocked: the color still applies for this session.
-  }
+  theme.saveAccent(storage, ACCENT_KEY, accent);
 }
 
 export function loadTheme(storage: Pick<Storage, 'getItem'> | null): Theme {
-  const value = storage?.getItem(THEME_KEY);
-  return THEMES.includes(value as Theme) ? (value as Theme) : 'system';
+  return theme.loadTheme(storage, THEME_KEY);
 }
 
-export function saveTheme(storage: Pick<Storage, 'setItem' | 'removeItem'>, theme: Theme): void {
-  try {
-    if (theme === 'system') storage.removeItem(THEME_KEY);
-    else storage.setItem(THEME_KEY, theme);
-  } catch {
-    // Storage full or blocked: the theme still applies for this session.
-  }
+export function saveTheme(storage: Pick<Storage, 'setItem' | 'removeItem'>, value: Theme): void {
+  theme.saveTheme(storage, THEME_KEY, value);
 }
 
 export const HIDE_INTRO_KEY = 'ergscan.hideIntro';
@@ -108,20 +95,6 @@ export function maxHeartRate(settings: HeartRateSettings): number | null {
 
 export function estimatedMaxHeartRate(age: number): number | null {
   return age >= 220 ? null : 220 - age;
-}
-
-export function applyTheme(doc: Document, theme: Theme, accent: Accent = 'default'): void {
-  const root = doc.documentElement;
-  const style = root.style;
-  const palette = accentPalette(accent);
-  if (theme === 'system') delete root.dataset.theme;
-  else root.dataset.theme = theme;
-  for (const property of TOKEN_PROPERTIES) style.removeProperty(property);
-  if (palette) for (const [property, value] of paletteProperties(palette)) style.setProperty(property, value);
-  for (const meta of doc.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
-    const scheme = theme === 'system' ? (meta.media.includes('dark') ? 'dark' : 'light') : theme;
-    meta.content = palette ? palette[scheme].surface : THEME_COLORS[scheme];
-  }
 }
 
 export function clearAppData(storage: Pick<Storage, 'length' | 'key' | 'removeItem'>): void {
