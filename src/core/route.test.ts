@@ -10,10 +10,11 @@ describe('parseRoute', () => {
   it('reads the guide with and without a monitor', () => {
     expect(parseRoute('#/guide/pm5')).toEqual({ page: 'guide', monitor: 'pm5' });
     expect(parseRoute('#/guide/pm4')).toEqual({ page: 'guide', monitor: 'pm4' });
+    expect(parseRoute('#/guide/pm3')).toEqual({ page: 'guide', monitor: 'pm3' });
   });
 
   it('falls back to the monitor picker for an unknown monitor', () => {
-    expect(parseRoute('#/guide/pm3')).toEqual({ page: 'guide', monitor: null });
+    expect(parseRoute('#/guide/pm2')).toEqual({ page: 'guide', monitor: null });
   });
 
   it('reads the guide and saved workouts', () => {

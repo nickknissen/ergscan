@@ -1,4 +1,4 @@
-export const MONITORS = ['pm5', 'pm4'] as const;
+export const MONITORS = ['pm5', 'pm4', 'pm3'] as const;
 export type Monitor = (typeof MONITORS)[number];
 
 export type Route =

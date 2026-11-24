@@ -4,7 +4,7 @@
 
 **Turn a photo of your Concept2 rowing machine monitor into a FIT file for
 Strava, Garmin Connect or intervals.icu.** ErgScan is a free, open-source web
-app for the Concept2 PM5 and PM4. No Bluetooth pairing, no ErgData and no
+app for the Concept2 PM5, PM4 and PM3. No Bluetooth pairing, no ErgData and no
 account: row first, photograph the screen afterwards.
 
 ## How it works
@@ -19,7 +19,7 @@ account: row first, photograph the screen afterwards.
 
 ## Features
 
-- Reads the PM4/PM5 results table offline, including intervals, rest and long
+- Reads the PM3/PM4/PM5 results table offline, including intervals, rest and long
   workouts photographed across several screens.
 - Editable review table, workout names, notes and how the session felt.
 - Time in heart rate zones and the drag factor for each workout.
