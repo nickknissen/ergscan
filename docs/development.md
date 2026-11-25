@@ -64,7 +64,7 @@ Useful flags, passed after `--`:
 | `src/components/` | Vue components: camera, review table, PM guide, sync settings, the history list's context menu |
 | `src/ui/` | Framework-free UI behavior: the app's icons, selection, shortcuts, transitions, layout |
 | `src/style.css` | ErgScan's own styles, on top of m3-vue's |
-| [`m3-vue`](https://github.com/nickknissen/m3-vue) | Shared with garmin-dashboard: the Material 3 styles, `MdIcon`, `MdDialog`, `MdMenu`, `MdSelect`, `MdListDetail` (the resizable history list beside the open screen), ripples, menus, confirm dialogs and keyboard navigation. A new icon goes in `src/ui/icons.ts` |
+| [`m3-vue`](https://github.com/nickknissen/m3-vue) | Shared with garmin-dashboard: the Material 3 styles, `MdIcon`, `MdDialog`, `MdMenu`, `MdSelect`, `MdListDetail` (the resizable history list beside the open screen), ripples, menus, confirm dialogs and keyboard navigation. A new icon goes in `src/ui/icons.ts`. A tagged release reaches ErgScan as a Renovate PR (`renovate.json`, m3-vue only) |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
 | `server/` | Sync API server, its storage check (`npm run sync:check`), its Dockerfile, the nginx rule and rate limits for sync deployments, and the test of the web image's nginx config (`nginx.conf`, `nginx-headers.conf` at the root) |
 | `mcp/` | Local MCP server: links as a device, decrypts the history and answers agents' tool calls (see [MCP](mcp.md)) |
