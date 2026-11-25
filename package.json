@@ -16,7 +16,7 @@
     "check": "vue-tsc --noEmit && vitest run",
     "eval": "tsx scripts/eval.ts",
     "sync:serve": "node server/sync.ts",
-    "sync:check": "node server/check.ts",
+    "sync:check": "node --disable-warning=ExperimentalWarning server/check.ts",
     "mcp:build": "node scripts/build-mcp.mjs"
   },
   "dependencies": {

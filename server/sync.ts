@@ -8,21 +8,30 @@ import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
 
 const MAX_SNAPSHOT = 8 * 1024 * 1024;
-const DEFAULT_MAX_BYTES = 1024 * 1024 * 1024;
+const DEFAULT_MAX_TOTAL_BYTES = 1024 * 1024 * 1024;
+const INVITE_TTL = 5 * 60_000;
 // The storage check looks back 24 hours; a week leaves room for a check that missed some runs.
 const REFUSAL_TTL = 7 * 24 * 60 * 60_000;
-
-/** The total snapshot cap from `ERGSCAN_SYNC_MAX_BYTES`, or 1 GiB. */
-export function maxBytesFromEnv(): number {
-  const raw = process.env.ERGSCAN_SYNC_MAX_BYTES;
-  if (raw === undefined || raw === '') return DEFAULT_MAX_BYTES;
-  const value = Number(raw);
-  if (!Number.isSafeInteger(value) || value <= 0) throw new Error('ERGSCAN_SYNC_MAX_BYTES must be a positive whole number of bytes');
-  return value;
-}
-const INVITE_TTL = 5 * 60_000;
 const secretPattern = /^[\w-]{43}$/;
 const idPattern = /^[a-f\d-]{36}$/;
+
+/** A whole number of at least `min` from the environment variable `name`, or `fallback` when it is unset. */
+export function wholeNumberFromEnv(name: string, fallback: number, min: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw === '') return fallback;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < min) throw new Error(`${name} must be a whole number of at least ${min}`);
+  return value;
+}
+
+/** The total snapshot cap, `ERGSCAN_SYNC_MAX_BYTES`. */
+export const maxTotalBytesFromEnv = () => wholeNumberFromEnv('ERGSCAN_SYNC_MAX_BYTES', DEFAULT_MAX_TOTAL_BYTES, 1);
+export const databaseFromEnv = () => process.env.ERGSCAN_SYNC_DB ?? 'ergscan-sync.sqlite';
+
+/** Whether the module at `url` is the script node was started with. */
+export function isEntryPoint(url: string): boolean {
+  return Boolean(process.argv[1]) && url === pathToFileURL(resolve(process.argv[1]!)).href;
+}
 
 function secret(value: unknown): string {
   if (typeof value !== 'string' || !secretPattern.test(value)) throw new HTTPException(400);
@@ -104,10 +113,11 @@ export function openSyncDatabase(filename: string): DatabaseSync {
     }
     if (!columns.has('created_at')) {
       db.exec('ALTER TABLE vaults ADD COLUMN created_at INTEGER');
-      // Older vaults never recorded it; their first device is the closest record.
-      db.prepare(`
-        UPDATE vaults SET created_at = coalesce((SELECT min(linked_at) FROM devices WHERE vault = vaults.id), ?)
-      `).run(Date.now());
+      // Older vaults never recorded it; their first device is the closest record. A vault with no devices
+      // left counts as created long ago, so upgrading can't look like a burst of new vaults.
+      db.exec(`
+        UPDATE vaults SET created_at = coalesce((SELECT min(linked_at) FROM devices WHERE vault = vaults.id), 0)
+      `);
     }
   });
   // Covering indexes: summing sizes or counting new vaults must not page through 8 MiB snapshots.
@@ -118,7 +128,7 @@ export function openSyncDatabase(filename: string): DatabaseSync {
   return db;
 }
 
-export function createSyncApp(filename: string, { maxBytes = DEFAULT_MAX_BYTES }: { maxBytes?: number } = {}) {
+export function createSyncApp(filename: string, { maxBytes = DEFAULT_MAX_TOTAL_BYTES }: { maxBytes?: number } = {}) {
   const db = openSyncDatabase(filename);
   const transaction = <T>(action: () => T) => inTransaction(db, action);
 
@@ -235,6 +245,12 @@ export function createSyncApp(filename: string, { maxBytes = DEFAULT_MAX_BYTES }
     const revision = Number(match[1]);
     if (!Number.isSafeInteger(revision) || revision >= Number.MAX_SAFE_INTEGER) throw new HTTPException(400);
     const status = transaction(() => {
+      // A stale upload is a conflict to merge, not a refusal, even on a full server.
+      const current = db.prepare(`
+        SELECT 1 FROM vaults WHERE id = ? AND revision = ?
+          AND EXISTS (SELECT 1 FROM devices WHERE id = ? AND vault = vaults.id)
+      `).get(vault, revision, deviceId);
+      if (!current) return 412;
       // The snapshot is ASCII JSON, so its length is its size in bytes; the one it replaces stops counting.
       const { others } = db.prepare(
         'SELECT coalesce(sum(snapshot_bytes), 0) AS others FROM vaults WHERE id != ?',
@@ -299,10 +315,10 @@ export function createSyncApp(filename: string, { maxBytes = DEFAULT_MAX_BYTES }
   };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (isEntryPoint(import.meta.url)) {
   const port = Number(process.env.ERGSCAN_SYNC_PORT ?? 8787);
   const host = process.env.ERGSCAN_SYNC_HOST ?? '127.0.0.1';
-  const app = createSyncApp(process.env.ERGSCAN_SYNC_DB ?? 'ergscan-sync.sqlite', { maxBytes: maxBytesFromEnv() });
+  const app = createSyncApp(databaseFromEnv(), { maxBytes: maxTotalBytesFromEnv() });
   const server = serve({ fetch: app.fetch, port, hostname: host }, () => {
     console.log(`ErgScan sync listening on ${host}:${port}`);
   });

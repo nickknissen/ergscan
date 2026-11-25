@@ -66,7 +66,7 @@ Useful flags, passed after `--`:
 | `src/style.css` | ErgScan's own styles, on top of m3-vue's |
 | [`m3-vue`](https://github.com/nickknissen/m3-vue) | Shared with garmin-dashboard: the Material 3 styles, `MdIcon`, `MdDialog`, `MdMenu`, `MdSelect`, `MdListDetail` (the resizable history list beside the open screen), ripples, menus, confirm dialogs and keyboard navigation. A new icon goes in `src/ui/icons.ts` |
 | `src/locales/<lang>/i18n.json` | Translations; every locale must have the same keys |
-| `server/` | Sync API server, its Dockerfile, the nginx rule for sync deployments, and the test of the web image's nginx config (`nginx.conf`, `nginx-headers.conf` at the root) |
+| `server/` | Sync API server, its storage check (`npm run sync:check`), its Dockerfile, the nginx rule and rate limits for sync deployments, and the test of the web image's nginx config (`nginx.conf`, `nginx-headers.conf` at the root) |
 | `mcp/` | Local MCP server: links as a device, decrypts the history and answers agents' tool calls (see [MCP](mcp.md)) |
 | `testdata/` | Labelled results-screen images for tests and `npm run eval` |
 | `scripts/` | Build helpers, the OCR evaluation script and the README animation |
