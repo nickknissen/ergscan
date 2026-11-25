@@ -68,3 +68,49 @@ it.skipIf(!createSyncApp)('links private history, handles races, recovers, and i
     app.close();
   }
 });
+
+it.skipIf(!createSyncApp)('refuses snapshots once the server holds its total byte cap, until space is freed', async () => {
+  // Each stored envelope below is 244 bytes ({"nonce":…,"ciphertext":…} around 200 characters), so one fits and two don't.
+  const app = createSyncApp!(':memory:', { maxBytes: 300 });
+  try {
+    const envelope = (fill: string) => ({ nonce: 'n'.repeat(16), ciphertext: fill.repeat(200) });
+    const call = (path: string, method: string, token: string, body?: unknown, etag?: string) => app.fetch(
+      new Request('http://localhost/api/sync/' + path, {
+        method,
+        headers: {
+          Authorization: 'Bearer ' + token,
+          ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+          ...(etag === undefined ? {} : { 'If-Match': etag }),
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }),
+    );
+    const vault = async () => {
+      const token = randomSecret();
+      const created = await call('vault', 'POST', token, {
+        vault: randomUUID(), recovery: randomSecret(), wrapped: envelope('w'),
+      });
+      expect(created.status).toBe(201);
+      return token;
+    };
+    const first = await vault();
+    const second = await vault();
+
+    expect((await call('history', 'PUT', first, envelope('a'), '"0"')).status).toBe(204);
+    expect((await call('history', 'PUT', second, envelope('b'), '"0"')).status).toBe(507);
+    const unchanged = await call('history', 'GET', second);
+    expect(unchanged.headers.get('ETag')).toBe('"0"');
+    expect(await unchanged.json()).toBeNull();
+
+    // Replacing a snapshot only counts its new size.
+    expect((await call('history', 'PUT', first, envelope('c'), '"1"')).status).toBe(204);
+    // The per-snapshot body limit still answers first.
+    const oversized = { nonce: 'n'.repeat(16), ciphertext: 'x'.repeat(8 * 1024 * 1024 + 200) };
+    expect((await call('history', 'PUT', second, oversized, '"0"')).status).toBe(413);
+
+    expect((await call('vault', 'DELETE', first)).status).toBe(204);
+    expect((await call('history', 'PUT', second, envelope('b'), '"0"')).status).toBe(204);
+  } finally {
+    app.close();
+  }
+});

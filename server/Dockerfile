@@ -5,7 +5,7 @@ WORKDIR /app
 RUN mkdir server /data && chown node:node /data
 COPY --chmod=644 package.json package-lock.json ./
 RUN npm ci --omit=dev
-COPY --chmod=644 server/sync.ts ./server/sync.ts
+COPY --chmod=644 server/sync.ts server/check.ts ./server/
 USER node
 EXPOSE 8787
 CMD ["npm", "run", "sync:serve"]
