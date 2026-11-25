@@ -8,9 +8,30 @@ import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
 
 const MAX_SNAPSHOT = 8 * 1024 * 1024;
+const DEFAULT_MAX_TOTAL_BYTES = 1024 * 1024 * 1024;
 const INVITE_TTL = 5 * 60_000;
+// The storage check looks back 24 hours; a week leaves room for a check that missed some runs.
+const REFUSAL_TTL = 7 * 24 * 60 * 60_000;
 const secretPattern = /^[\w-]{43}$/;
 const idPattern = /^[a-f\d-]{36}$/;
+
+/** A whole number of at least `min` from the environment variable `name`, or `fallback` when it is unset. */
+export function wholeNumberFromEnv(name: string, fallback: number, min: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw === '') return fallback;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < min) throw new Error(`${name} must be a whole number of at least ${min}`);
+  return value;
+}
+
+/** The total snapshot cap, `ERGSCAN_SYNC_MAX_BYTES`. */
+export const maxTotalBytesFromEnv = () => wholeNumberFromEnv('ERGSCAN_SYNC_MAX_BYTES', DEFAULT_MAX_TOTAL_BYTES, 1);
+export const databaseFromEnv = () => process.env.ERGSCAN_SYNC_DB ?? 'ergscan-sync.sqlite';
+
+/** Whether the module at `url` is the script node was started with. */
+export function isEntryPoint(url: string): boolean {
+  return Boolean(process.argv[1]) && url === pathToFileURL(resolve(process.argv[1]!)).href;
+}
 
 function secret(value: unknown): string {
   if (typeof value !== 'string' || !secretPattern.test(value)) throw new HTTPException(400);
@@ -49,7 +70,20 @@ async function json(context: Context): Promise<Record<string, unknown>> {
   return value as Record<string, unknown>;
 }
 
-export function createSyncApp(filename: string) {
+function inTransaction<T>(db: DatabaseSync, action: () => T): T {
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    const value = action();
+    db.exec('COMMIT');
+    return value;
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
+/** Opens the sync database, creating its tables and bringing an older one up to date. */
+export function openSyncDatabase(filename: string): DatabaseSync {
   const db = new DatabaseSync(filename);
   db.exec(`
     PRAGMA foreign_keys = ON;
@@ -67,19 +101,36 @@ export function createSyncApp(filename: string) {
       id TEXT PRIMARY KEY, token_hash TEXT UNIQUE NOT NULL, expires INTEGER NOT NULL,
       vault TEXT REFERENCES vaults(id) ON DELETE CASCADE, wrapped_key TEXT
     );
+    -- One row per snapshot refused because the server was full, for the storage check.
+    CREATE TABLE IF NOT EXISTS refusals (at INTEGER NOT NULL);
   `);
-
-  function transaction<T>(action: () => T): T {
-    db.exec('BEGIN IMMEDIATE');
-    try {
-      const value = action();
-      db.exec('COMMIT');
-      return value;
-    } catch (error) {
-      db.exec('ROLLBACK');
-      throw error;
+  const columns = new Set(db.prepare('SELECT name FROM pragma_table_info(?)').all('vaults').map((row) => row.name));
+  inTransaction(db, () => {
+    if (!columns.has('snapshot_bytes')) {
+      // Kept per vault so the total can be summed without reading every snapshot.
+      db.exec('ALTER TABLE vaults ADD COLUMN snapshot_bytes INTEGER NOT NULL DEFAULT 0');
+      db.exec('UPDATE vaults SET snapshot_bytes = coalesce(length(snapshot), 0)');
     }
-  }
+    if (!columns.has('created_at')) {
+      db.exec('ALTER TABLE vaults ADD COLUMN created_at INTEGER');
+      // Older vaults never recorded it; their first device is the closest record. A vault with no devices
+      // left counts as created long ago, so upgrading can't look like a burst of new vaults.
+      db.exec(`
+        UPDATE vaults SET created_at = coalesce((SELECT min(linked_at) FROM devices WHERE vault = vaults.id), 0)
+      `);
+    }
+  });
+  // Covering indexes: summing sizes or counting new vaults must not page through 8 MiB snapshots.
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS vaults_snapshot_bytes ON vaults (snapshot_bytes);
+    CREATE INDEX IF NOT EXISTS vaults_created_at ON vaults (created_at);
+  `);
+  return db;
+}
+
+export function createSyncApp(filename: string, { maxBytes = DEFAULT_MAX_TOTAL_BYTES }: { maxBytes?: number } = {}) {
+  const db = openSyncDatabase(filename);
+  const transaction = <T>(action: () => T) => inTransaction(db, action);
 
   function device(context: Context) {
     const row = db.prepare('SELECT id, vault FROM devices WHERE token_hash = ?').get(bearer(context));
@@ -114,7 +165,8 @@ export function createSyncApp(filename: string) {
       const existing = db.prepare('SELECT id FROM devices WHERE token_hash = ? AND vault = ?').get(token, vault);
       if (existing) return existing.id;
       if (db.prepare('SELECT id FROM vaults WHERE id = ?').get(vault)) throw new HTTPException(409);
-      db.prepare('INSERT INTO vaults (id, recovery_hash, recovery_key) VALUES (?, ?, ?)').run(vault, recovery, wrapped);
+      db.prepare('INSERT INTO vaults (id, recovery_hash, recovery_key, created_at) VALUES (?, ?, ?, ?)')
+        .run(vault, recovery, wrapped, Date.now());
       const newId = randomUUID();
       enroll(newId, vault, token);
       return newId;
@@ -192,11 +244,28 @@ export function createSyncApp(filename: string) {
     if (!match) throw new HTTPException(428);
     const revision = Number(match[1]);
     if (!Number.isSafeInteger(revision) || revision >= Number.MAX_SAFE_INTEGER) throw new HTTPException(400);
-    const changed = db.prepare(`
-      UPDATE vaults SET snapshot = ?, revision = revision + 1 WHERE id = ? AND revision = ?
-        AND EXISTS (SELECT 1 FROM devices WHERE id = ? AND vault = vaults.id)
-    `).run(value, vault, revision, deviceId).changes;
-    if (!changed) return context.body(null, 412);
+    const status = transaction(() => {
+      // A stale upload is a conflict to merge, not a refusal, even on a full server.
+      const current = db.prepare(`
+        SELECT 1 FROM vaults WHERE id = ? AND revision = ?
+          AND EXISTS (SELECT 1 FROM devices WHERE id = ? AND vault = vaults.id)
+      `).get(vault, revision, deviceId);
+      if (!current) return 412;
+      // The snapshot is ASCII JSON, so its length is its size in bytes; the one it replaces stops counting.
+      const { others } = db.prepare(
+        'SELECT coalesce(sum(snapshot_bytes), 0) AS others FROM vaults WHERE id != ?',
+      ).get(vault) as { others: number };
+      if (others + value.length > maxBytes) {
+        db.prepare('INSERT INTO refusals VALUES (?)').run(Date.now());
+        return 507;
+      }
+      const changed = db.prepare(`
+        UPDATE vaults SET snapshot = ?, snapshot_bytes = ?, revision = revision + 1 WHERE id = ? AND revision = ?
+          AND EXISTS (SELECT 1 FROM devices WHERE id = ? AND vault = vaults.id)
+      `).run(value, value.length, vault, revision, deviceId).changes;
+      return changed ? 204 : 412;
+    });
+    if (status !== 204) return context.body(null, status);
     context.header('ETag', '"' + (revision + 1) + '"');
     return context.body(null, 204);
   });
@@ -232,7 +301,10 @@ export function createSyncApp(filename: string) {
     db.prepare('DELETE FROM vaults WHERE id = ?').run(device(context).vault);
     return context.body(null, 204);
   });
-  const cleanup = setInterval(() => db.prepare('DELETE FROM invites WHERE expires <= ?').run(Date.now()), INVITE_TTL);
+  const cleanup = setInterval(() => {
+    db.prepare('DELETE FROM invites WHERE expires <= ?').run(Date.now());
+    db.prepare('DELETE FROM refusals WHERE at <= ?').run(Date.now() - REFUSAL_TTL);
+  }, INVITE_TTL);
   cleanup.unref();
   return {
     fetch: app.fetch,
@@ -243,10 +315,10 @@ export function createSyncApp(filename: string) {
   };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+if (isEntryPoint(import.meta.url)) {
   const port = Number(process.env.ERGSCAN_SYNC_PORT ?? 8787);
   const host = process.env.ERGSCAN_SYNC_HOST ?? '127.0.0.1';
-  const app = createSyncApp(process.env.ERGSCAN_SYNC_DB ?? 'ergscan-sync.sqlite');
+  const app = createSyncApp(databaseFromEnv(), { maxBytes: maxTotalBytesFromEnv() });
   const server = serve({ fetch: app.fetch, port, hostname: host }, () => {
     console.log(`ErgScan sync listening on ${host}:${port}`);
   });

@@ -26,6 +26,8 @@ services:
     environment:
       ERGSCAN_SYNC_HOST: "0.0.0.0"
       ERGSCAN_SYNC_DB: /data/history.sqlite
+      # Total snapshot bytes the server stores before refusing uploads; shown as a setting in Coolify.
+      ERGSCAN_SYNC_MAX_BYTES: ${ERGSCAN_SYNC_MAX_BYTES:-1073741824}
     volumes:
       - ergscan-sync-data:/data
     healthcheck:

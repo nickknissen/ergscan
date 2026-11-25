@@ -6,6 +6,16 @@ export class SyncError extends Error {
   constructor(readonly status: number) { super('Sync request failed (' + status + ')'); }
 }
 
+/** The sync status to show after a failed sync. */
+export function syncFailureStatus(error: unknown): 'unlinked' | 'tooLarge' | 'serverBusy' | 'failed' {
+  if (!(error instanceof SyncError)) return 'failed';
+  if (error.status === 401) return 'unlinked';
+  if (error.status === 413) return 'tooLarge';
+  // Rate limited, or the server has no room for more history: neither is this device's fault.
+  if (error.status === 429 || error.status === 507) return 'serverBusy';
+  return 'failed';
+}
+
 export interface Invite {
   id: string;
   secret: string;

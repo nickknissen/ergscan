@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { expect, it } from 'vitest';
 import { randomSecret, recoverySecrets, seal, unseal } from '../src/sync/crypto';
+import { ENVELOPE_BYTES, syncClient } from './testClient';
 
 const createSyncApp = process.getBuiltinModule?.('node:sqlite') ? (await import('./sync')).createSyncApp : null;
 
@@ -64,6 +65,35 @@ it.skipIf(!createSyncApp)('links private history, handles races, recovers, and i
     expect((await request('vault', 'DELETE', recoveryToken)).status).toBe(204);
     expect((await request('history', 'PUT', token, snapshot, '"1"')).status).toBe(401);
     expect((await request('recover', 'POST', randomSecret(), { vault, recovery: recovery.access })).status).toBe(401);
+  } finally {
+    app.close();
+  }
+});
+
+it.skipIf(!createSyncApp)('refuses snapshots once the server holds its total byte cap, until space is freed', async () => {
+  // One stored envelope fits, two don't.
+  const app = createSyncApp!(':memory:', { maxBytes: ENVELOPE_BYTES + 50 });
+  try {
+    const { call, vault, upload } = syncClient(app);
+    const first = await vault();
+    const second = await vault();
+
+    expect((await upload(first, 'a')).status).toBe(204);
+    expect((await upload(second, 'b')).status).toBe(507);
+    const unchanged = await call('history', 'GET', second);
+    expect(unchanged.headers.get('ETag')).toBe('"0"');
+    expect(await unchanged.json()).toBeNull();
+    // A stale upload is still a conflict to merge, not a refusal.
+    expect((await upload(second, 'b', '"7"')).status).toBe(412);
+
+    // Replacing a snapshot only counts its new size.
+    expect((await upload(first, 'c', '"1"')).status).toBe(204);
+    // The per-snapshot body limit still answers first.
+    const oversized = { nonce: 'n'.repeat(16), ciphertext: 'x'.repeat(8 * 1024 * 1024 + 200) };
+    expect((await call('history', 'PUT', second, oversized, '"0"')).status).toBe(413);
+
+    expect((await call('vault', 'DELETE', first)).status).toBe(204);
+    expect((await upload(second, 'b')).status).toBe(204);
   } finally {
     app.close();
   }

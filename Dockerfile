@@ -17,5 +17,7 @@ EXPOSE 80
 # Web image for sync deployments: proxies /api/sync/ to the `sync` service.
 FROM web-base AS web-sync
 COPY server/nginx-sync.conf /etc/nginx/ergscan-sync/sync.conf
+# Rate-limit zones and the client address behind a proxy: http context, so conf.d.
+COPY server/nginx-sync-limits.conf /etc/nginx/conf.d/ergscan-sync-limits.conf
 
 FROM web-base AS web

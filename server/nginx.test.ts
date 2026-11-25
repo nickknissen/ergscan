@@ -57,6 +57,40 @@ describe('web nginx config', () => {
     expect(missing).toEqual([]);
   });
 
+  it('rate-limits only the sync routes that create something, by client address', () => {
+    const limits = read('./nginx-sync-limits.conf');
+    const sync = blocks(read('./nginx-sync.conf'));
+    const zones = new Map([...limits.matchAll(/^limit_req_zone (\S+) zone=(\w+):\w+ rate=(\w+\/\w);/gm)]
+      .map(([, key, name, rate]) => [name!, { key, rate }]));
+    const limited = new Map(sync.flatMap((block) => {
+      const zone = / limit_req zone=(\w+) burst=(\d+) nodelay;/.exec(' ' + block.body);
+      return zone ? [[block.name, { zone: zone[1]!, burst: Number(zone[2]) }]] : [];
+    }));
+
+    expect(limited).toEqual(new Map([
+      ['location = /api/sync/vault', { zone: 'ergscan_sync_vault', burst: 2 }],
+      ['location = /api/sync/pair', { zone: 'ergscan_sync_access', burst: 10 }],
+      ['location = /api/sync/recover', { zone: 'ergscan_sync_access', burst: 10 }],
+    ]));
+    // nginx has no per-hour rate: one a minute is the slowest it can go.
+    expect(zones.get('ergscan_sync_vault')?.rate).toBe('1r/m');
+    expect(zones.get('ergscan_sync_access')?.rate).toBe('30r/m');
+    // Keyed on a map that is empty for anything but POST, so deleting a vault or reading history never counts.
+    const key = /map \$request_method (\$\w+) \{([^}]*)\}/.exec(limits);
+    expect(key?.[2]?.replace(/\s+/g, ' ').trim()).toBe('default ""; POST $binary_remote_addr;');
+    for (const zone of zones.values()) expect(zone.key).toBe(key?.[1]);
+    // Each limited location still reaches the sync server, and refused requests are 429s the client understands.
+    for (const name of limited.keys()) expect(sync.find((block) => block.name === name)?.body).toContain('proxy_pass http://sync:8787;');
+    expect(sync.find((block) => block.name === 'location ^~ /api/sync/')?.body).toContain('limit_req_status 429;');
+  });
+
+  it('trusts X-Forwarded-For only from private proxy networks', () => {
+    const limits = read('./nginx-sync-limits.conf');
+    expect([...limits.matchAll(/^set_real_ip_from (\S+);/gm)].map((match) => match[1])).toEqual(['10.0.0.0/8', '172.16.0.0/12']);
+    expect(limits).toMatch(/^real_ip_header X-Forwarded-For;/m);
+    expect(limits).toMatch(/^real_ip_recursive on;/m);
+  });
+
   it('allows no inline scripts, inline styles or eval, only the WASM compile OCR needs', () => {
     const policy = /add_header Content-Security-Policy "([^"]+)" always;/.exec(read('../nginx-headers.conf'))?.[1];
     expect(policy, 'no Content-Security-Policy in nginx-headers.conf').toBeDefined();

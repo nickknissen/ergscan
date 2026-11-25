@@ -247,6 +247,7 @@
     "erased": "Synced history deleted. This device still has its local copy.",
     "requestRejected": "The code or device access was rejected. Check the code and try again.",
     "requestFailed": "The sync request failed. Check your connection and try again.",
+    "requestLimited": "Too many sync requests from your network. Try again in a while.",
     "inviteExpired": "The pairing code expired. Create a new one to link.",
     "qrFailed": "No pairing QR code was found in the image. Try again or paste the pairing code.",
     "needLinked": "Open the code on a device that already has sync enabled.",
@@ -261,7 +262,8 @@
       "synced": "History is synced.",
       "unlinked": "This device’s access ended. Your local workouts are available here.",
       "failed": "Sync failed. Changes are kept on this device.",
-      "tooLarge": "History exceeds the sync size limit. Changes are kept on this device."
+      "tooLarge": "History exceeds the sync size limit. Changes are kept on this device.",
+      "serverBusy": "The sync server is busy. Changes are kept on this device and will sync later."
     }
   },
   "dialog": {
