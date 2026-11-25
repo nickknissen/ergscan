@@ -2,6 +2,8 @@
 /// <reference types="vite-plugin-pwa/client" />
 
 declare const __OCR_VERSION__: string;
+/** PROTOTYPE (branch prototype/pp-ocrv6): onnxruntime-web's version, which names its self-hosted .wasm. */
+declare const __ORT_VERSION__: string;
 
 interface LaunchParams {
   readonly files: readonly FileSystemFileHandle[];

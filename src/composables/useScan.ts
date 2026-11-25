@@ -71,7 +71,9 @@ export function useScan(options: {
     nav.show('scanning');
     progressText.value = t('scan.loading');
     progress.value = null;
-    const { scanImage } = await import('../ocr/scan');
+    // PROTOTYPE (branch prototype/pp-ocrv6): `?ocr=ppocr` reads with PP-OCRv6 tiny instead of Tesseract.
+    const scanImage =
+      new URLSearchParams(location.search).get('ocr') === 'ppocr' ? (await import('../ocr/ppocr-prototype/scan')).scanImagePpocr : (await import('../ocr/scan')).scanImage;
     return scanImage(
       image,
       (status, value) => {
