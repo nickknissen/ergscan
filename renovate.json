@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Only m3-vue: a PR to move to each new tag. Every other dependency is left alone.",
+  "enabledManagers": ["npm"],
+  "dependencyDashboard": false,
+  "packageRules": [
+    {
+      "matchPackageNames": ["*"],
+      "enabled": false
+    },
+    {
+      "matchDepNames": ["m3-vue"],
+      "enabled": true,
+      "commitMessageTopic": "m3-vue"
+    }
+  ]
+}
