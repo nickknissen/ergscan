@@ -1,0 +1,32 @@
+{
+  "image": "pm5-distance-splits-2000m-2025.webp",
+  "monitor": "PM5",
+  "capture": "tall phone photo of the PM5 at an angle, model name and right-hand buttons cut off, pale grey-green LCD with purple-blue text",
+  "screenRect": { "x": 0.023, "y": 0.266, "width": 0.862, "height": 0.482 },
+  "screen": {
+    "title": "2000m",
+    "date": "Jan 21 2025",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["6:57.9", "2000", "1:44.4", "29"],
+      ["1:42.9", "500", "1:42.9", "32"],
+      ["1:44.1", "1000", "1:44.1", "30"],
+      ["1:45.4", "1500", "1:45.4", "29"],
+      ["1:45.5", "2000", "1:45.5", "27"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2025-01-21",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "6:57.9", "meters": 2000, "split": "1:44.4", "rate": 29 },
+    "laps": [
+      { "time": "1:42.9", "meters": 500, "rate": 32 },
+      { "time": "1:44.1", "meters": 500, "rate": 30 },
+      { "time": "1:45.4", "meters": 500, "rate": 29 },
+      { "time": "1:45.5", "meters": 500, "rate": 27 }
+    ]
+  },
+  "notes": "Meter column is cumulative. The four splits sum to 6:57.9. No heart rate shown. Monitor model is cut off; identified as PM5 from the rounded buttons and black casing."
+}

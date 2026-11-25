@@ -1,0 +1,40 @@
+{
+  "image": "pm5-distance-splits-10000m-1250m-hr.jpg",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole PM5 in warm dim light, slightly tilted and perspective-skewed, bright LCD, sharp",
+  "screenRect": { "x": 0.163, "y": 0.25, "width": 0.585, "height": 0.438 },
+  "screen": {
+    "title": "10,000m",
+    "date": "Nov 12 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["41:47.8", "10000", "2:05.3", "22", "130"],
+      ["5:13.5", "1250", "2:05.4", "22", "120"],
+      ["5:13.6", "2500", "2:05.4", "22", "123"],
+      ["5:13.3", "3750", "2:05.3", "22", "128"],
+      ["5:13.5", "5000", "2:05.4", "22", "130"],
+      ["5:13.5", "6250", "2:05.4", "22", "133"],
+      ["5:13.4", "7500", "2:05.3", "22", "136"],
+      ["5:13.5", "8750", "2:05.4", "22", "137"],
+      ["5:13.5", "10000", "2:05.4", "22", "138"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-11-12",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "41:47.8", "meters": 10000, "split": "2:05.3", "rate": 22, "heartRate": 130 },
+    "laps": [
+      { "time": "5:13.5", "meters": 1250, "rate": 22, "heartRate": 120 },
+      { "time": "5:13.6", "meters": 1250, "rate": 22, "heartRate": 123 },
+      { "time": "5:13.3", "meters": 1250, "rate": 22, "heartRate": 128 },
+      { "time": "5:13.5", "meters": 1250, "rate": 22, "heartRate": 130 },
+      { "time": "5:13.5", "meters": 1250, "rate": 22, "heartRate": 133 },
+      { "time": "5:13.4", "meters": 1250, "rate": 22, "heartRate": 136 },
+      { "time": "5:13.5", "meters": 1250, "rate": 22, "heartRate": 137 },
+      { "time": "5:13.5", "meters": 1250, "rate": 22, "heartRate": 138 }
+    ]
+  },
+  "notes": "Title bar reads View Detail. Meter column is cumulative; eight 1250 m splits sum to 41:47.8. Heart rate on every row including summary. A share/upload icon is visible in the scroll arrow column. Different session from pm5-distance-splits-10000m (Nov 09)."
+}

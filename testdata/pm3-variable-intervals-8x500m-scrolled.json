@@ -1,0 +1,40 @@
+{
+  "image": "pm3-variable-intervals-8x500m-scrolled.jpg",
+  "monitor": "PM3",
+  "capture": "close-up phone photo of a PM3 in a gym, grey-green non-backlit LCD, right edge of the monitor cropped, top and left edge of the LCD text slightly washed out",
+  "screenRect": { "x": 0.228, "y": 0.222, "width": 0.635, "height": 0.466 },
+  "screen": {
+    "title": "v500m/2:00r...8",
+    "date": "Nov 11 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["14:49.3", "4000", "1:51.1", "27"],
+      ["1:48.7", "500", "1:48.7", "28"],
+      ["r2:00.0", "19"],
+      ["1:49.4", "500", "1:49.4", "29"],
+      ["r2:00.0", "15"],
+      ["1:52.7", "500", "1:52.7", "28"],
+      ["r2:00.0", "12"],
+      ["1:49.6", "500", "1:49.6", "31"],
+      ["r2:00.0", "19"]
+    ]
+  },
+  "workout": {
+    "type": "VariableInterval",
+    "date": "2026-11-11",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "14:49.3", "meters": 4000, "split": "1:51.1", "rate": 27 },
+    "laps": [
+      { "time": "1:48.7", "meters": 500, "rate": 28 },
+      { "time": "2:00.0", "meters": 19, "rest": true },
+      { "time": "1:49.4", "meters": 500, "rate": 29 },
+      { "time": "2:00.0", "meters": 15, "rest": true },
+      { "time": "1:52.7", "meters": 500, "rate": 28 },
+      { "time": "2:00.0", "meters": 12, "rest": true },
+      { "time": "1:49.6", "meters": 500, "rate": 31 },
+      { "time": "2:00.0", "meters": 19, "rest": true }
+    ]
+  },
+  "notes": "PM3 View Detail screen (CHANGE UNITS / CHANGE DISPLAY keys). Variable interval workout with 500 m work intervals and 2:00 rests; the title is truncated on the monitor (v500m/2:00r...8, presumably 8 intervals, 8 x 500 = 4000 m summary). Only the first four intervals and their rests are visible, the screen is scrolled to the top, so the remaining four are not shown and complete is false. Rest rows show an r-prefixed time and rest meters only. No heart rate and no Total Time shown."
+}

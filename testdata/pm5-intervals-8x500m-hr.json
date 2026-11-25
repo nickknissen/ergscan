@@ -1,0 +1,49 @@
+{
+  "image": "pm5-intervals-8x500m-hr.jpg",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole PM5, bright white backlit LCD, warm orange ambient light, sharp",
+  "screenRect": { "x": 0.111, "y": 0.222, "width": 0.647, "height": 0.476 },
+  "screen": {
+    "title": "8x500m/3:30r",
+    "date": "Nov 17 2026",
+    "totalTime": "43:09.1",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["15:09.1", "4000", "1:53.6", "30"],
+      ["1:54.9", "500", "1:54.9", "31", "128"],
+      ["1:54.4", "500", "1:54.4", "29", "132"],
+      ["1:53.4", "500", "1:53.4", "30", "132"],
+      ["1:53.4", "500", "1:53.4", "30", "133"],
+      ["1:54.2", "500", "1:54.2", "29", "134"],
+      ["1:53.6", "500", "1:53.6", "31", "135"],
+      ["1:53.5", "500", "1:53.5", "31", "135"],
+      ["1:51.7", "500", "1:51.7", "32", "137"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceInterval",
+    "date": "2026-11-17",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "15:09.1", "meters": 4000, "split": "1:53.6", "rate": 30 },
+    "laps": [
+      { "time": "1:54.9", "meters": 500, "rate": 31, "heartRate": 128 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:54.4", "meters": 500, "rate": 29, "heartRate": 132 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:53.4", "meters": 500, "rate": 30, "heartRate": 132 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:53.4", "meters": 500, "rate": 30, "heartRate": 133 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:54.2", "meters": 500, "rate": 29, "heartRate": 134 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:53.6", "meters": 500, "rate": 31, "heartRate": 135 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:53.5", "meters": 500, "rate": 31, "heartRate": 135 },
+      { "time": "3:30.0", "rest": true },
+      { "time": "1:51.7", "meters": 500, "rate": 32, "heartRate": 137 },
+      { "time": "3:30.0", "rest": true }
+    ]
+  },
+  "notes": "Rest rows are not shown on screen; the 3:30 rest comes from the title and Total Time (15:09.1 work + 8 x 3:30 rest = 43:09.1). Rest meters are unknown. The summary row has no heart rate. Different session from pm5-intervals-8x500m (that one is Nov 10 2026)."
+}

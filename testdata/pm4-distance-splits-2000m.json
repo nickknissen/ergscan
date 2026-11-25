@@ -1,0 +1,32 @@
+{
+  "image": "pm4-distance-splits-2000m.webp",
+  "monitor": "PM4",
+  "capture": "phone photo of the monitor at an angle in dim light, dark olive-green LCD, model name cut off at the right edge",
+  "screenRect": { "x": 0.143, "y": 0.115, "width": 0.736, "height": 0.545 },
+  "screen": {
+    "title": "2000m",
+    "date": "Feb 28 2023",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["6:29.9", "2000", "1:37.4", "36"],
+      ["1:38.0", "500", "1:38.0", "35"],
+      ["1:38.2", "1000", "1:38.2", "35"],
+      ["1:36.2", "1500", "1:36.2", "37"],
+      ["1:37.6", "2000", "1:37.6", "38"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2023-02-28",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "6:29.9", "meters": 2000, "split": "1:37.4", "rate": 36 },
+    "laps": [
+      { "time": "1:38.0", "meters": 500, "rate": 35 },
+      { "time": "1:38.2", "meters": 500, "rate": 35 },
+      { "time": "1:36.2", "meters": 500, "rate": 37 },
+      { "time": "1:37.6", "meters": 500, "rate": 38 }
+    ]
+  },
+  "notes": "Meter column is cumulative. The four splits sum to 6:30.0 against 6:29.9 in the summary (rounding). Monitor identified as PM4 from the casing and button shape; the model text is cut off. No heart rate shown."
+}

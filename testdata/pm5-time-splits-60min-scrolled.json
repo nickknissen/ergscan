@@ -1,0 +1,40 @@
+{
+  "image": "pm5-time-splits-60min-scrolled.jpg",
+  "monitor": "PM5",
+  "capture": "close-up phone photo of the PM5, bright white LCD with a light glare band at the top, sharp, whole screen visible",
+  "screenRect": { "x": 0.147, "y": 0.147, "width": 0.624, "height": 0.611 },
+  "screen": {
+    "title": "1:00:05",
+    "date": "Nov 16 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["1:00:05.0", "10582", "2:50.3", "22"],
+      ["5:00.0", "718", "3:28.9", "21"],
+      ["10:00.0", "751", "3:19.7", "22"],
+      ["15:00.0", "777", "3:13.0", "23"],
+      ["20:00.0", "790", "3:09.8", "23"],
+      ["25:00.0", "867", "2:53.0", "24"],
+      ["30:00.0", "904", "2:45.9", "24"],
+      ["35:00.0", "889", "2:48.7", "24"],
+      ["40:00.0", "920", "2:43.0", "26"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-11-16",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "1:00:05.0", "meters": 10582, "split": "2:50.3", "rate": 22 },
+    "laps": [
+      { "time": "5:00.0", "meters": 718, "rate": 21 },
+      { "time": "5:00.0", "meters": 751, "rate": 22 },
+      { "time": "5:00.0", "meters": 777, "rate": 23 },
+      { "time": "5:00.0", "meters": 790, "rate": 23 },
+      { "time": "5:00.0", "meters": 867, "rate": 24 },
+      { "time": "5:00.0", "meters": 904, "rate": 24 },
+      { "time": "5:00.0", "meters": 889, "rate": 24 },
+      { "time": "5:00.0", "meters": 920, "rate": 26 }
+    ]
+  },
+  "notes": "60 minute row with 5 minute splits. Time column is cumulative, meter column is per split. Only the first 8 of 12 splits (plus the 5 s remainder) are visible; the screen scrolls, so the lap list is incomplete. No heart rate shown."
+}

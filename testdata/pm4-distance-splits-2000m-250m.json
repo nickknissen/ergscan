@@ -1,0 +1,40 @@
+{
+  "image": "pm4-distance-splits-2000m-250m.jpg",
+  "monitor": "PM4",
+  "capture": "close-up phone photo of the whole PM4 from a slight angle, yellow-green LCD, sharp",
+  "screenRect": { "x": 0.074, "y": 0.142, "width": 0.706, "height": 0.567 },
+  "screen": {
+    "title": "2000m",
+    "date": "Aug 27 2021",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["6:49.1", "2000", "1:42.2", "30"],
+      [":47.5", "250", "1:35.0", "34"],
+      [":50.3", "500", "1:40.6", "30"],
+      [":51.8", "750", "1:43.6", "28"],
+      [":52.0", "1000", "1:44.0", "29"],
+      [":53.0", "1250", "1:46.0", "28"],
+      [":52.7", "1500", "1:45.4", "28"],
+      [":52.8", "1750", "1:45.6", "28"],
+      [":49.0", "2000", "1:38.0", "38"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2021-08-27",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "6:49.1", "meters": 2000, "split": "1:42.2", "rate": 30 },
+    "laps": [
+      { "time": "0:47.5", "meters": 250, "rate": 34 },
+      { "time": "0:50.3", "meters": 250, "rate": 30 },
+      { "time": "0:51.8", "meters": 250, "rate": 28 },
+      { "time": "0:52.0", "meters": 250, "rate": 29 },
+      { "time": "0:53.0", "meters": 250, "rate": 28 },
+      { "time": "0:52.7", "meters": 250, "rate": 28 },
+      { "time": "0:52.8", "meters": 250, "rate": 28 },
+      { "time": "0:49.0", "meters": 250, "rate": 38 }
+    ]
+  },
+  "notes": "Splits are every 250 m although the pace column is per 500 m. Meter column is cumulative. Split times under a minute are shown without the minutes digit (for example :47.5). The eight splits sum to 6:49.1. No heart rate shown."
+}

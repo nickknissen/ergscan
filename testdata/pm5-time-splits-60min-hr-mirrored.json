@@ -1,0 +1,40 @@
+{
+  "image": "pm5-time-splits-60min-hr-mirrored.jpg",
+  "monitor": "PM5",
+  "capture": "stylized phone photo: PM5 tilted about 5 degrees with a painted-brush edit, orange tint, mirrored duplicate image below; cyan LCD is sharp enough to read",
+  "screenRect": { "x": 0.233, "y": 0.247, "width": 0.452, "height": 0.337 },
+  "screen": {
+    "title": "1:00:00",
+    "date": "Nov 18 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["1:00:00.0", "14000", "2:08.5", "21", "125"],
+      ["7:30.0", "1737", "2:09.5", "22", "114"],
+      ["15:00.0", "1752", "2:08.4", "22", "119"],
+      ["22:30.0", "1741", "2:09.2", "21", "122"],
+      ["30:00.0", "1750", "2:08.5", "22", "125"],
+      ["37:30.0", "1750", "2:08.5", "22", "125"],
+      ["45:00.0", "1744", "2:09.0", "21", "131"],
+      ["52:30.0", "1740", "2:09.3", "21", "131"],
+      ["1:00:00.0", "1787", "2:05.9", "23", "139"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-11-18",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "1:00:00.0", "meters": 14000, "split": "2:08.5", "rate": 21, "heartRate": 125 },
+    "laps": [
+      { "time": "7:30.0", "meters": 1737, "rate": 22, "heartRate": 114 },
+      { "time": "7:30.0", "meters": 1752, "rate": 22, "heartRate": 119 },
+      { "time": "7:30.0", "meters": 1741, "rate": 21, "heartRate": 122 },
+      { "time": "7:30.0", "meters": 1750, "rate": 22, "heartRate": 125 },
+      { "time": "7:30.0", "meters": 1750, "rate": 22, "heartRate": 125 },
+      { "time": "7:30.0", "meters": 1744, "rate": 21, "heartRate": 131 },
+      { "time": "7:30.0", "meters": 1740, "rate": 21, "heartRate": 131 },
+      { "time": "7:30.0", "meters": 1787, "rate": 23, "heartRate": 139 }
+    ]
+  },
+  "notes": "60:00 with 7:30 time splits. Time column is cumulative and meter column is per split; the eight splits sum to 14001 m against the 14000 summary (within rounding). The image is a tilted, edited photo so rows slope downward to the right; digits are readable. Heart rate shown on every row including the summary."
+}

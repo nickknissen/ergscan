@@ -1,0 +1,40 @@
+{
+  "image": "pm3-distance-splits-21097m-2k-scrolled.jpg",
+  "monitor": "PM3",
+  "capture": "close-up phone photo of the LCD, grey-green screen, slightly soft; blue pen scribble over the date and the meter header and summary meters",
+  "screenRect": { "x": 0.128, "y": 0.18, "width": 0.84, "height": 0.64 },
+  "screen": {
+    "title": "21097m",
+    "date": "Jan 25 2023",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["1:28:05.1", "21097", "2:05.2", "28"],
+      ["8:24.4", "2000", "2:06.1", "29"],
+      ["8:22.4", "4000", "2:05.6", "29"],
+      ["8:21.9", "6000", "2:05.4", "29"],
+      ["8:24.5", "8000", "2:06.1", "28"],
+      ["8:22.2", "10000", "2:05.5", "28"],
+      ["8:20.7", "12000", "2:05.1", "29"],
+      ["8:20.0", "14000", "2:05.0", "29"],
+      ["8:22.1", "16000", "2:05.5", "29"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2023-01-25",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "1:28:05.1", "meters": 21097, "split": "2:05.2", "rate": 28 },
+    "laps": [
+      { "time": "8:24.4", "meters": 2000, "rate": 29 },
+      { "time": "8:22.4", "meters": 2000, "rate": 29 },
+      { "time": "8:21.9", "meters": 2000, "rate": 29 },
+      { "time": "8:24.5", "meters": 2000, "rate": 28 },
+      { "time": "8:22.2", "meters": 2000, "rate": 28 },
+      { "time": "8:20.7", "meters": 2000, "rate": 29 },
+      { "time": "8:20.0", "meters": 2000, "rate": 29 },
+      { "time": "8:22.1", "meters": 2000, "rate": 29 }
+    ]
+  },
+  "notes": "Half marathon with 2000 m splits; meter column is cumulative. Only the first 8 of 11 splits are visible (the last two full splits and the 1097 m remainder are scrolled off), so the laps are incomplete. Blue pen scribble covers part of the date year, the meter header and the summary meters, but 21097m is also in the title. No heart rate shown. Different session from pm5-distance-splits-21097m-hr (that one is Aug 25 2026)."
+}

@@ -1,0 +1,34 @@
+{
+  "image": "pm5-distance-splits-5000m-1k.webp",
+  "monitor": "PM5",
+  "capture": "low-resolution phone photo of the PM5, white-grey LCD with dark smudge blotches across the screen, slight angle",
+  "screenRect": { "x": 0.143, "y": 0.217, "width": 0.8, "height": 0.553 },
+  "screen": {
+    "title": "5000m",
+    "date": "Nov 20 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["19:22.1", "5000", "1:56.2", "29"],
+      ["3:55.9", "1000", "1:57.9", "28"],
+      ["3:56.9", "2000", "1:58.4", "28"],
+      ["3:52.4", "3000", "1:56.2", "29"],
+      ["3:51.1", "4000", "1:55.5", "30"],
+      ["3:45.8", "5000", "1:52.9", "32"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-11-20",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "19:22.1", "meters": 5000, "split": "1:56.2", "rate": 29 },
+    "laps": [
+      { "time": "3:55.9", "meters": 1000, "rate": 28 },
+      { "time": "3:56.9", "meters": 1000, "rate": 28 },
+      { "time": "3:52.4", "meters": 1000, "rate": 29 },
+      { "time": "3:51.1", "meters": 1000, "rate": 30 },
+      { "time": "3:45.8", "meters": 1000, "rate": 32 }
+    ]
+  },
+  "notes": "Splits are every 1000 m; meter column is cumulative and the pace column is per 500 m. The five splits sum to 19:22.1. Dark blotches on the LCD overlap some digits but all values are legible. No heart rate shown."
+}

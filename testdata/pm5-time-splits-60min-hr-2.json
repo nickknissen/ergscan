@@ -1,0 +1,36 @@
+{
+  "image": "pm5-time-splits-60min-hr-2.jpg",
+  "monitor": "PM5",
+  "capture": "phone photo of the PM5 outdoors in daylight, dusty grey-green LCD with fine dust specks, monitor fills the frame width",
+  "screenRect": { "x": 0.088, "y": 0.247, "width": 0.674, "height": 0.481 },
+  "screen": {
+    "title": "1:00:00",
+    "date": "Nov 16 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["1:00:00.0", "13841", "2:10.0", "20", "123"],
+      ["10:00.0", "2307", "2:10.0", "20", "109"],
+      ["20:00.0", "2309", "2:09.9", "20", "117"],
+      ["30:00.0", "2308", "2:09.9", "20", "122"],
+      ["40:00.0", "2306", "2:10.0", "20", "126"],
+      ["50:00.0", "2308", "2:09.9", "20", "132"],
+      ["1:00:00.0", "2304", "2:10.2", "20", "134"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-11-16",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "1:00:00.0", "meters": 13841, "split": "2:10.0", "rate": 20, "heartRate": 123 },
+    "laps": [
+      { "time": "10:00.0", "meters": 2307, "rate": 20, "heartRate": 109 },
+      { "time": "10:00.0", "meters": 2309, "rate": 20, "heartRate": 117 },
+      { "time": "10:00.0", "meters": 2308, "rate": 20, "heartRate": 122 },
+      { "time": "10:00.0", "meters": 2306, "rate": 20, "heartRate": 126 },
+      { "time": "10:00.0", "meters": 2308, "rate": 20, "heartRate": 132 },
+      { "time": "10:00.0", "meters": 2304, "rate": 20, "heartRate": 134 }
+    ]
+  },
+  "notes": "60 minute row with 10 minute splits. Time column is cumulative, meter column is per split. The split meters sum to 13842 against the 13841 summary (rounding). Heart rate shown on every row, including the summary. The last row time is 1:00:00.0 (hours form)."
+}

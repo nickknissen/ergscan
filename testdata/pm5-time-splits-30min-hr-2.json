@@ -1,0 +1,36 @@
+{
+  "image": "pm5-time-splits-30min-hr-2.jpg",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole PM5 in warm indoor light, bright blue backlit LCD, sharp",
+  "screenRect": { "x": 0.182, "y": 0.205, "width": 0.553, "height": 0.4 },
+  "screen": {
+    "title": "30:00",
+    "date": "Nov 14 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["30:00.0", "7126", "2:06.2", "24", "121"],
+      ["5:00.0", "1147", "2:10.7", "23", "108"],
+      ["10:00.0", "1223", "2:02.6", "26", "124"],
+      ["15:00.0", "1122", "2:13.6", "21", "115"],
+      ["20:00.0", "1251", "1:59.9", "26", "131"],
+      ["25:00.0", "1098", "2:16.6", "21", "115"],
+      ["30:00.0", "1286", "1:56.6", "28", "138"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-11-14",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "30:00.0", "meters": 7126, "split": "2:06.2", "rate": 24, "heartRate": 121 },
+    "laps": [
+      { "time": "5:00.0", "meters": 1147, "rate": 23, "heartRate": 108 },
+      { "time": "5:00.0", "meters": 1223, "rate": 26, "heartRate": 124 },
+      { "time": "5:00.0", "meters": 1122, "rate": 21, "heartRate": 115 },
+      { "time": "5:00.0", "meters": 1251, "rate": 26, "heartRate": 131 },
+      { "time": "5:00.0", "meters": 1098, "rate": 21, "heartRate": 115 },
+      { "time": "5:00.0", "meters": 1286, "rate": 28, "heartRate": 138 }
+    ]
+  },
+  "notes": "Time column is cumulative, meter column is per split. Heart rate is shown on every row including the summary and sits tight against the stroke rate. The six splits sum to 7127 m, 1 m over the summary (rounding)."
+}

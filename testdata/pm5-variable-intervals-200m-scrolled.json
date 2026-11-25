@@ -1,0 +1,41 @@
+{
+  "image": "pm5-variable-intervals-200m-scrolled.jpg",
+  "monitor": "PM5",
+  "capture": "phone photo of the whole PM5 in warm indoor light, bright blue backlit LCD, sharp, slight angle",
+  "screenRect": { "x": 0.14, "y": 0.164, "width": 0.609, "height": 0.466 },
+  "screen": {
+    "title": "v200m/:30r...5",
+    "date": "Nov 13 2026",
+    "totalTime": "9:56.2",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["7:26.2", "2000", "1:51.5", "29"],
+      [":42.9", "200", "1:47.2", "32", "110"],
+      ["r:30", "64"],
+      ["1:05.5", "300", "1:49.1", "32", "128"],
+      ["r:30", "40"],
+      ["3:50.5", "1000", "1:55.2", "28", "137"],
+      ["r:30", "34"],
+      ["1:05.0", "300", "1:48.3", "31", "137"],
+      ["r:30", "42"]
+    ]
+  },
+  "workout": {
+    "type": "VariableInterval",
+    "date": "2026-11-13",
+    "splitDistance": 500,
+    "complete": false,
+    "summary": { "time": "7:26.2", "meters": 2000, "split": "1:51.5", "rate": 29 },
+    "laps": [
+      { "time": "0:42.9", "meters": 200, "rate": 32, "heartRate": 110 },
+      { "time": "0:30.0", "meters": 64, "rest": true },
+      { "time": "1:05.5", "meters": 300, "rate": 32, "heartRate": 128 },
+      { "time": "0:30.0", "meters": 40, "rest": true },
+      { "time": "3:50.5", "meters": 1000, "rate": 28, "heartRate": 137 },
+      { "time": "0:30.0", "meters": 34, "rest": true },
+      { "time": "1:05.0", "meters": 300, "rate": 31, "heartRate": 137 },
+      { "time": "0:30.0", "meters": 42, "rest": true }
+    ]
+  },
+  "notes": "Variable intervals (200m, 300m, 1000m, 300m, then a fifth not visible) with 30 s rests; the title is truncated by the monitor (v200m/:30r...5). Interval times below one minute print without a leading zero (:42.9) and rest rows are r-prefixed (r:30) with rest meters in the meter column. The screen is scrolled: only 4 of 5 intervals are visible, the fifth being 200 m in about 42.3 s (derived from the summary: 7:26.2 minus the visible 6:43.9; Total Time 9:56.2 = 7:26.2 + 5 x 0:30). Summary row has no heart rate."
+}

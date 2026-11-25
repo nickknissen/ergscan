@@ -1,0 +1,46 @@
+{
+  "image": "pm5-distance-splits-21097m-hr-german.jpg",
+  "monitor": "PM5",
+  "capture": "close-up phone photo of the PM5 LCD, top of the logo cropped, a thin white horizontal line near the bottom third where two shots appear stitched, German UI",
+  "screenRect": { "x": 0.081, "y": 0.112, "width": 0.755, "height": 0.847 },
+  "screen": {
+    "title": "21,097m",
+    "date": "Nov 04 2026",
+    "header": ["zeit", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["1:27:16.7", "21097", "2:04.1", "24", "159"],
+      ["8:17.5", "2000", "2:04.3", "24", "149"],
+      ["8:17.6", "4000", "2:04.4", "23", "149"],
+      ["8:14.9", "6000", "2:03.7", "24", "154"],
+      ["8:16.2", "8000", "2:04.0", "24", "154"],
+      ["8:19.1", "10000", "2:04.7", "24", "158"],
+      ["8:18.6", "12000", "2:04.6", "23", "158"],
+      ["8:19.4", "14000", "2:04.8", "24", "160"],
+      ["8:18.7", "16000", "2:04.6", "24", "162"],
+      ["8:20.6", "18000", "2:05.1", "24", "164"],
+      ["8:20.1", "20000", "2:05.0", "24", "166"],
+      ["4:14.0", "21097", "1:55.7", "29", "181"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-11-04",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "1:27:16.7", "meters": 21097, "split": "2:04.1", "rate": 24, "heartRate": 159 },
+    "laps": [
+      { "time": "8:17.5", "meters": 2000, "rate": 24, "heartRate": 149 },
+      { "time": "8:17.6", "meters": 2000, "rate": 23, "heartRate": 149 },
+      { "time": "8:14.9", "meters": 2000, "rate": 24, "heartRate": 154 },
+      { "time": "8:16.2", "meters": 2000, "rate": 24, "heartRate": 154 },
+      { "time": "8:19.1", "meters": 2000, "rate": 24, "heartRate": 158 },
+      { "time": "8:18.6", "meters": 2000, "rate": 23, "heartRate": 158 },
+      { "time": "8:19.4", "meters": 2000, "rate": 24, "heartRate": 160 },
+      { "time": "8:18.7", "meters": 2000, "rate": 24, "heartRate": 162 },
+      { "time": "8:20.6", "meters": 2000, "rate": 24, "heartRate": 164 },
+      { "time": "8:20.1", "meters": 2000, "rate": 24, "heartRate": 166 },
+      { "time": "4:14.0", "meters": 1097, "rate": 29, "heartRate": 181 }
+    ]
+  },
+  "notes": "German labels (Detail Anzeige, zeit, meter). Verification code 9FD6-B65C / DFCF-E184 at top right. Meter column is cumulative, 2000 m splits with a 1097 m remainder; all eleven splits are visible and sum to 1:27:16.7. Heart rate on every row. The lower three rows sit below the white stitch line and the screen frame is offset there, so this is likely two photos joined; the rows are still contiguous. Different session from pm5-distance-splits-21097m-hr (Aug 25)."
+}

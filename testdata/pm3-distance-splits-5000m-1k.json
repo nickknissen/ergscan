@@ -1,0 +1,34 @@
+{
+  "image": "pm3-distance-splits-5000m-1k.jpg",
+  "monitor": "PM3",
+  "capture": "straight-on phone photo of a PM3 indoors, green-tinted non-backlit LCD with a gradient, slightly soft",
+  "screenRect": { "x": 0.16, "y": 0.239, "width": 0.638, "height": 0.476 },
+  "screen": {
+    "title": "5000m",
+    "date": "Nov 10 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["18:57.2", "5000", "1:53.7", "27"],
+      ["3:42.0", "1000", "1:51.0", "28"],
+      ["3:46.9", "2000", "1:53.4", "27"],
+      ["3:48.4", "3000", "1:54.2", "27"],
+      ["3:50.8", "4000", "1:55.4", "28"],
+      ["3:49.1", "5000", "1:54.5", "29"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceSplits",
+    "date": "2026-11-10",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "18:57.2", "meters": 5000, "split": "1:53.7", "rate": 27 },
+    "laps": [
+      { "time": "3:42.0", "meters": 1000, "rate": 28 },
+      { "time": "3:46.9", "meters": 1000, "rate": 27 },
+      { "time": "3:48.4", "meters": 1000, "rate": 27 },
+      { "time": "3:50.8", "meters": 1000, "rate": 28 },
+      { "time": "3:49.1", "meters": 1000, "rate": 29 }
+    ]
+  },
+  "notes": "PM3 View Detail screen (CHANGE UNITS / CHANGE DISPLAY keys). Meter column is cumulative, 1000 m splits; the five splits sum to 18:57.2. No heart rate shown. Several digits (3:49.1, 3:42.0) are slightly smudged but legible."
+}

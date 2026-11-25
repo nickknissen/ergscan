@@ -1,0 +1,40 @@
+{
+  "image": "pm5-time-splits-36min-uniform.jpg",
+  "monitor": "PM5",
+  "capture": "low-resolution crop of just the LCD, blue backlight, a blue scribble/sticker covers the time cell of the second split, right edge cut off at the scroll arrows",
+  "screenRect": { "x": 0.0, "y": 0.01, "width": 1.0, "height": 0.95 },
+  "screen": {
+    "title": "36:00",
+    "date": "Nov 13 2026",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["36:00.0", "8000", "2:15.0", "20"],
+      ["4:30.0", "1000", "2:15.0", "20"],
+      ["9:00.0", "1000", "2:15.0", "20"],
+      ["13:30.0", "1000", "2:15.0", "20"],
+      ["18:00.0", "1000", "2:15.0", "20"],
+      ["22:30.0", "1000", "2:15.0", "20"],
+      ["27:00.0", "1000", "2:15.0", "20"],
+      ["31:30.0", "1000", "2:15.0", "20"],
+      ["36:00.0", "1000", "2:15.0", "20"]
+    ]
+  },
+  "workout": {
+    "type": "FixedTimeSplits",
+    "date": "2026-11-13",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "36:00.0", "meters": 8000, "split": "2:15.0", "rate": 20 },
+    "laps": [
+      { "time": "4:30.0", "meters": 1000, "rate": 20 },
+      { "time": "4:30.0", "meters": 1000, "rate": 20 },
+      { "time": "4:30.0", "meters": 1000, "rate": 20 },
+      { "time": "4:30.0", "meters": 1000, "rate": 20 },
+      { "time": "4:30.0", "meters": 1000, "rate": 20 },
+      { "time": "4:30.0", "meters": 1000, "rate": 20 },
+      { "time": "4:30.0", "meters": 1000, "rate": 20 },
+      { "time": "4:30.0", "meters": 1000, "rate": 20 }
+    ]
+  },
+  "notes": "36 minute row in eight 4:30 splits, every split exactly 1000 m at 2:15.0 and 20 s/m, so likely an edited or simulated screen. Time column is cumulative. The second split time is partly covered by a blue mark and reads 9:0?.0; 9:00.0 is inferred from the 4:30 cadence. Monitor model is not visible in the crop; PM5 inferred from the blue-backlit layout. No heart rate shown."
+}

@@ -1,0 +1,49 @@
+{
+  "image": "pm5-intervals-8x500m-2min.webp",
+  "monitor": "PM5",
+  "capture": "phone photo straight on in a gym, greenish LCD, sharp",
+  "screenRect": { "x": 0.153, "y": 0.333, "width": 0.611, "height": 0.462 },
+  "screen": {
+    "title": "8x500m/2:00r",
+    "date": "Mar 28 2021",
+    "totalTime": "28:54.8",
+    "header": ["time", "meter", "/500m", "s/m", "♡"],
+    "rows": [
+      ["12:54.8", "4000", "1:36.8", "32"],
+      ["1:37.5", "500", "1:37.5", "33"],
+      ["1:37.3", "500", "1:37.3", "31"],
+      ["1:36.6", "500", "1:36.6", "33"],
+      ["1:36.9", "500", "1:36.9", "32"],
+      ["1:36.5", "500", "1:36.5", "32"],
+      ["1:36.9", "500", "1:36.9", "32"],
+      ["1:37.1", "500", "1:37.1", "31"],
+      ["1:35.8", "500", "1:35.8", "33"]
+    ]
+  },
+  "workout": {
+    "type": "FixedDistanceInterval",
+    "date": "2021-03-28",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "12:54.8", "meters": 4000, "split": "1:36.8", "rate": 32 },
+    "laps": [
+      { "time": "1:37.5", "meters": 500, "rate": 33 },
+      { "time": "2:00.0", "rest": true },
+      { "time": "1:37.3", "meters": 500, "rate": 31 },
+      { "time": "2:00.0", "rest": true },
+      { "time": "1:36.6", "meters": 500, "rate": 33 },
+      { "time": "2:00.0", "rest": true },
+      { "time": "1:36.9", "meters": 500, "rate": 32 },
+      { "time": "2:00.0", "rest": true },
+      { "time": "1:36.5", "meters": 500, "rate": 32 },
+      { "time": "2:00.0", "rest": true },
+      { "time": "1:36.9", "meters": 500, "rate": 32 },
+      { "time": "2:00.0", "rest": true },
+      { "time": "1:37.1", "meters": 500, "rate": 31 },
+      { "time": "2:00.0", "rest": true },
+      { "time": "1:35.8", "meters": 500, "rate": 33 },
+      { "time": "2:00.0", "rest": true }
+    ]
+  },
+  "notes": "Rest rows are not shown on screen; the 2:00 rest comes from the title and Total Time (12:54.8 work + 8 x 2:00 rest = 28:54.8). Rest meters are unknown. The eight work splits sum to 12:54.6 against 12:54.8 in the summary (rounding). Heart rate column header is present but no values are shown."
+}

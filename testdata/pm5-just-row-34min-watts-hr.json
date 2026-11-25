@@ -1,0 +1,38 @@
+{
+  "image": "pm5-just-row-34min-watts-hr.jpg",
+  "monitor": "PM5",
+  "capture": "dark phone photo of the PM5, bright white backlit LCD against a black surround, slightly soft, buttons dim",
+  "screenRect": { "x": 0.124, "y": 0.247, "width": 0.664, "height": 0.478 },
+  "screen": {
+    "title": "33:49",
+    "date": "Nov 16 2026",
+    "header": ["time", "meter", "watt", "s/m", "♡"],
+    "rows": [
+      ["33:49.4", "7807", "159", "21", "167"],
+      ["5:00.0", "1173", "167", "21", "153"],
+      ["10:00.0", "1162", "163", "20", "169"],
+      ["15:00.0", "1155", "160", "21", "168"],
+      ["20:00.0", "1170", "166", "23", "165"],
+      ["25:00.0", "1130", "150", "22", "164"],
+      ["30:00.0", "1145", "156", "23", "173"],
+      ["33:49.4", "872", "154", "22", "178"]
+    ]
+  },
+  "workout": {
+    "type": "JustRow",
+    "date": "2026-11-16",
+    "splitDistance": 500,
+    "complete": true,
+    "summary": { "time": "33:49.4", "meters": 7807, "split": "2:10.0", "rate": 21, "heartRate": 167 },
+    "laps": [
+      { "time": "5:00.0", "meters": 1173, "rate": 21, "heartRate": 153 },
+      { "time": "5:00.0", "meters": 1162, "rate": 20, "heartRate": 169 },
+      { "time": "5:00.0", "meters": 1155, "rate": 21, "heartRate": 168 },
+      { "time": "5:00.0", "meters": 1170, "rate": 23, "heartRate": 165 },
+      { "time": "5:00.0", "meters": 1130, "rate": 22, "heartRate": 164 },
+      { "time": "5:00.0", "meters": 1145, "rate": 23, "heartRate": 173 },
+      { "time": "3:49.4", "meters": 872, "rate": 22, "heartRate": 178 }
+    ]
+  },
+  "notes": "Just Row of 33:49.4 with 5 minute splits. Units set to watts, so the pace column shows watt instead of a split; the summary split is derived from time and meters. Time column is cumulative and meter column is per split; the last split is a 3:49.4 remainder. Heart rate shown on every row including the summary."
+}
