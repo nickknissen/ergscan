@@ -53,8 +53,8 @@ async function run(action: () => Promise<void>) {
   try {
     await action();
   } catch (cause) {
-    error.value = cause instanceof SyncError && [400, 401, 404, 409].includes(cause.status) ?
-      'requestRejected' : 'requestFailed';
+    error.value = cause instanceof SyncError && [400, 401, 404, 409].includes(cause.status) ? 'requestRejected' :
+      cause instanceof SyncError && cause.status === 429 ? 'requestLimited' : 'requestFailed';
   } finally {
     busy.value = false;
   }

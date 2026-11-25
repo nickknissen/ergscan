@@ -247,6 +247,7 @@
     "erased": "Den synkroniserede historik er slettet. Denne enhed har stadig sin lokale kopi.",
     "requestRejected": "Koden eller enhedens adgang blev afvist. Kontrollér koden, og prøv igen.",
     "requestFailed": "Synkroniseringen mislykkedes. Kontrollér forbindelsen, og prøv igen.",
+    "requestLimited": "For mange synkroniseringsforespørgsler fra dit netværk. Prøv igen om lidt.",
     "inviteExpired": "Koden er udløbet. Opret en ny kode for at forbinde enheden.",
     "qrFailed": "Billedet indeholder ingen genkendelig QR-kode. Prøv igen, eller indsæt forbindelseskoden.",
     "needLinked": "Åbn koden på en enhed, hvor synkronisering allerede er slået til.",
@@ -261,7 +262,8 @@
       "synced": "Historikken er synkroniseret.",
       "unlinked": "Enhedens adgang er udløbet. Dine lokale træninger er stadig tilgængelige.",
       "failed": "Synkroniseringen mislykkedes. Ændringer beholdes på denne enhed.",
-      "tooLarge": "Historikken overskrider størrelsesgrænsen. Ændringer beholdes på denne enhed."
+      "tooLarge": "Historikken overskrider størrelsesgrænsen. Ændringer beholdes på denne enhed.",
+      "serverBusy": "Synkroniseringsserveren har travlt. Ændringer beholdes på denne enhed og synkroniseres senere."
     }
   },
   "dialog": {

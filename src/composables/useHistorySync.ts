@@ -1,6 +1,6 @@
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { HISTORY_KEY } from '../core/history';
-import { SyncError, syncHistory } from '../sync/client';
+import { syncFailureStatus, syncHistory } from '../sync/client';
 import { historyStore, workouts, type Device, type SavedWorkout } from '../sync/store';
 
 /**
@@ -50,8 +50,7 @@ export function useHistorySync(storage: Storage | null, syncEnabled: boolean) {
         if (current.device?.token === device.token) syncStatus.value = current.pending.length ? 'waiting' : 'synced';
       } catch (error) {
         if ((await repository.read()).device?.token !== device.token) return;
-        syncStatus.value = error instanceof SyncError && error.status === 401 ? 'unlinked' :
-          error instanceof SyncError && error.status === 413 ? 'tooLarge' : 'failed';
+        syncStatus.value = syncFailureStatus(error);
       }
     } catch {
       storageError.value = true;
