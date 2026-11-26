@@ -14,8 +14,11 @@ npm run eval       # score OCR and parsing against the labelled test images
 ```
 
 `npm run dev` and `npm run build` copy the Tesseract worker, wasm core and
-English model from `node_modules` into `public/tesseract/`, so the app never
-loads OCR files from a CDN.
+English model from `node_modules` into `public/tesseract/`, and put PP-OCRv6
+tiny's models in `public/ppocr/`, so the app never loads OCR files from a CDN.
+The models are downloaded from Hugging Face at the revisions pinned in
+`src/ocr/ppocr/models.json`, checked against their sha256 and kept in
+`node_modules/.cache/ppocr/`, so the first build needs network access.
 
 ## Private sync
 
@@ -34,21 +37,26 @@ example when port 8787 is taken. The server's own settings are listed in
 
 `testdata/` holds photos and screenshots of PM3/PM4/PM5 results screens, each with
 a JSON file describing what the screen shows and the workout it should parse
-to. `npm run eval` runs the same preprocessing and OCR as the app on every
-image in Node and prints per-image scores for OCR cells, rows, workout fields
-and lap counts. Workouts photographed across several scrolled screens are
+to. `npm run eval` reads every image in Node as the app does, with PP-OCRv6
+tiny on onnxruntime-web's WebAssembly, and prints per-image scores for OCR
+cells, rows, workout fields and lap counts, and how many workouts came out with
+every field right. Workouts photographed across several scrolled screens are
 described in `testdata/multi/`; their photos are merged in order and scored
-against the whole workout. Results are saved to `eval-results/` (ignored by git).
+against the whole workout. Results, with each image's OCR text, are saved to
+`eval-results/` (ignored by git). Why the app reads with PP-OCRv6, and how it
+was measured: [Improving OCR accuracy in the browser](research/ocr-accuracy.md).
 
 Useful flags, passed after `--`:
 
 | Flag | Effect |
 | --- | --- |
+| `--engine tesseract` | Read with Tesseract and its preprocessing, as browsers without WebAssembly SIMD do |
 | `--only <text>` | Only images whose name contains the text |
-| `--sens <n>`, `--blur <n>`, `--long <n>`, `--crop <n>` | Override a preprocessing option |
-| `--framed` | Skip screen detection and the heading-row retry, and use the labelled screen position |
+| `--framed` | Read the labelled screen position, as if the photo was taken in the app's camera frame (with Tesseract: no screen detection or heading-row retry) |
+| `--rec-width <px>` | PP-OCRv6: pad boxes to at least this width for the recogniser |
+| `--sens <n>`, `--blur <n>`, `--long <n>`, `--crop <n>` | Tesseract: override a preprocessing option |
 | `--show` | Print the OCR text |
-| `--dump` | Write the preprocessed images to `eval-results/images/` |
+| `--dump` | Tesseract: write the preprocessed images to `eval-results/images/` |
 | `--label <name>` | Add a label to the saved result file name |
 
 ## Project layout
@@ -56,7 +64,8 @@ Useful flags, passed after `--`:
 | Path | Purpose |
 | --- | --- |
 | `src/core/` | Framework-free logic: time parsing, PM3/PM4/PM5 parser, workout model, FIT export, heart rate zones, history, settings, routing |
-| `src/ocr/` | Screen detection, image preprocessing, Tesseract worker and OCR asset caching |
+| `src/ocr/` | Choosing the OCR engine and caching its files; Tesseract's screen detection, preprocessing and worker |
+| `src/ocr/ppocr/` | PP-OCRv6 tiny: detector and recogniser pre- and post-processing, row grouping, and its worker |
 | `src/sync/` | Sync client: end-to-end encryption, history store, merging edits from linked devices |
 | `src/App.vue` | App shell: navigation bar, tabs, history pane, routing between screens and the review session |
 | `src/views/` | One component per screen: capture, scanning, review, history and settings |

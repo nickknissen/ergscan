@@ -74,7 +74,12 @@ npm run dev
 
 [MIT](LICENSE). The FIT export uses the
 [Garmin FIT JavaScript SDK](https://github.com/garmin/fit-javascript-sdk),
-which is distributed under the FIT Protocol License.
+which is distributed under the FIT Protocol License. Text recognition uses
+PaddleOCR's [PP-OCRv6 tiny](https://huggingface.co/PaddlePaddle/PP-OCRv6_tiny_rec_onnx)
+models and [Tesseract.js](https://github.com/naptha/tesseract.js), both under
+the Apache License 2.0, and
+[ONNX Runtime Web](https://github.com/microsoft/onnxruntime) under the MIT
+License.
 
 ErgScan is an independent project and is not affiliated with or endorsed by
 Concept2 or by the makers of the ErgScan app on the App Store and Google Play.

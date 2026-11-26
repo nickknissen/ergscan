@@ -13,14 +13,22 @@
 - On an iPhone with several back lenses the camera opens on the combined
   camera the native Camera app uses, so 0.5× and macro close-ups switch lens by
   themselves. Elsewhere the switch button only cycles the back cameras.
-- Finds the LCD in the image before reading it, so cropped photos and
-  screenshots of social media posts work as well as close-ups. When the splits
-  don't add up to the total, it also finds the table by its column headings,
-  reads that crop, and keeps whichever read checks out better.
-- Offline OCR with [Tesseract.js](https://github.com/naptha/tesseract.js),
-  with image thresholding to cope with glare and uneven light on the LCD.
+- Reads the photo on the device with PaddleOCR's
+  [PP-OCRv6 tiny](https://huggingface.co/PaddlePaddle/PP-OCRv6_tiny_rec_onnx)
+  text detector and recogniser on
+  [ONNX Runtime Web](https://onnxruntime.ai/docs/tutorials/web/). It finds the
+  text anywhere in the photo and straightens each line before reading it, so
+  cropped photos, screenshots of social media posts and photos taken at an
+  angle work as well as close-ups.
+- Browsers without WebAssembly SIMD, such as Safari before iOS 16.4, read with
+  [Tesseract.js](https://github.com/naptha/tesseract.js) instead. It finds the
+  LCD first and thresholds the image to cope with glare. When the splits don't
+  add up to the total, it also finds the table by its column headings, reads
+  that crop, and keeps whichever read checks out better.
 - Parses the PM3/PM4/PM5 table: time, meters, split (/500m or /1000m), stroke rate,
-  and heart rate, watts or calories. Rest intervals are detected.
+  and heart rate, watts or calories. Rest intervals are detected. Common
+  misreads are repaired from the column formats and the arithmetic between
+  columns, such as a colon read as 1 or meters run into the pace.
 - Long workouts that do not fit on one screen: when the splits fall short of
   the total, scroll the monitor down and scan the next rows. Rows shared by
   both photos are kept once.

@@ -17,6 +17,8 @@ export default defineConfig({
   define: {
     __OCR_VERSION__: JSON.stringify(`${versionOf('tesseract.js')}-${versionOf('tesseract.js-core')}`),
   },
+  // The PP-OCR worker imports onnxruntime-web, which code-splits.
+  worker: { format: 'es' },
   plugins: [
     vue(),
     VitePWA({
@@ -43,7 +45,7 @@ export default defineConfig({
       workbox: {
         clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,ico}', '**/roboto-flex-latin*.woff2'],
-        globIgnores: ['tesseract/**'],
+        globIgnores: ['tesseract/**', 'ppocr/**'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         runtimeCaching: [
           {
@@ -51,6 +53,16 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'ocr-assets',
+              cacheableResponse: { statuses: [200] },
+              expiration: { maxEntries: 8 },
+            },
+          },
+          {
+            // PP-OCRv6's models, and onnxruntime-web's WebAssembly, too big to precache.
+            urlPattern: ({ url }) => url.pathname.includes('/ppocr/') || /\/assets\/ort-wasm[^/]*\.wasm$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ppocr-assets',
               cacheableResponse: { statuses: [200] },
               expiration: { maxEntries: 8 },
             },
