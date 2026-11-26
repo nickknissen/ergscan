@@ -25,6 +25,57 @@ The tables use four scores:
 | Fields | Workout fields that are right after parsing: the summary's time, meters and rate, the date, and each lap's time, meters, rate and heart rate. The parser repairs some OCR errors, so this is higher than cells |
 | Whole workout | Photos where every field is right, so the user has nothing to fix |
 
+## Outcome
+
+Added 2026-11-26, after R2 to R4. ErgScan now reads with PP-OCRv6 tiny
+wherever the browser has WebAssembly SIMD, and with Tesseract elsewhere
+([#69](https://github.com/nickknissen/ergscan/pull/69)). The prototype for
+R2 and R3 is kept on the branch `prototype/pp-ocrv6`. R4 went into the parser
+([#67](https://github.com/nickknissen/ergscan/pull/67)).
+
+`npm run eval` on the 75 photos, with the parser after R4:
+
+| Read by | Fields | Whole workout | Lap count right |
+| --- | --- | --- | --- |
+| Tesseract, parser before R4 | 82.7% | 12 | 65 |
+| Tesseract, parser after R4 | 85.3% | 15 | 65 |
+| PP-OCRv6 tiny, whole photo at 1000 px | 98.9% | 63 | 74 |
+| PP-OCRv6 tiny, camera frame at 800 px wide, boxes padded to 320 px | 98.3% | 57 | 75 |
+| The same, boxes not padded | 97.3% | 55 | 74 |
+| The same, fitted to 1000 px, boxes not padded | 97.9% | 59 | 74 |
+
+The "camera frame" rows read the labelled screen with the frame's margin
+around it, which stands in for a photo taken in the app's camera frame. The
+app pads boxes to 320 px for those and reads whole photos unpadded, which
+also halves recognition time on them.
+
+In browsers, with the app's CSP:
+
+| Browser | Time per read | First read | Memory |
+| --- | --- | --- | --- |
+| Chrome 158, Android phone with 8 cores | detect 0.5 s, recognise 0.6 s | 5.0 s, 3.7 s of it loading | WebAssembly 92 MB |
+| WebKit 27.2, Apple M1 (GitHub runner) | median 0.7 to 0.9 s; Tesseract 1.0 to 3.2 s | 1.8 to 2.8 s | page process up to 731 MB over five reads, Tesseract 688 MB; 847 MB over 75 reads |
+| Firefox and Chromium, 4-core Celeron | 7 to 12 s | | page process on par with Tesseract |
+
+The text the browsers read parses about as well as Node's: 98.5% of fields
+in WebKit and 97.8% in Firefox, against 98.9% in Node.
+
+Decisions:
+
+- **Replace, keep Tesseract as the fallback.** Two readers with the trust
+  score choosing would add 4 MB for little (4.5). Tesseract stays for
+  browsers without SIMD, and takes over for the session if PP-OCRv6 fails.
+- **One thread, no cross-origin isolation.** Reads are fast enough on one.
+- **The whole photo, no screen detection.** A photo from the app's camera
+  frame is already cropped to the screen, so it goes in at 800 px wide.
+- **Download.** About 9.6 MB on the first visit where PP-OCRv6 runs: the
+  runtime 3.9 MB and the models 5.7 MB, compressed. Tesseract is about 4 MB.
+
+Still open: an iPhone, for Safari's memory limit on a tab and the speed of
+chips older than the A14
+([#65](https://github.com/nickknissen/ergscan/issues/65)). R5 to R7 stand as
+written.
+
 ## Summary
 
 | Read by | Cells | Rows | Fields | Whole workout |
