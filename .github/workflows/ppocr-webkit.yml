@@ -1,0 +1,55 @@
+# PROTOTYPE (branch prototype/pp-ocrv6, throwaway; not for main). Runs the PP-OCRv6 prototype in Playwright's
+# WebKit on an Apple silicon runner, the closest to Safari on an iPhone without one (issue #65). The build is
+# served with the CSP nginx sends; see src/ocr/ppocr-prototype/README.md.
+name: PP-OCRv6 prototype in WebKit
+
+on:
+  push:
+    branches: [prototype/pp-ocrv6]
+
+permissions:
+  contents: read
+
+jobs:
+  webkit:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      SESSION: src/ocr/ppocr-prototype/webkit/session.mjs
+      BASE: http://127.0.0.1:4173
+      FIVE: >-
+        testdata/pm5-distance-splits-10000m.jpeg testdata/pm5-intervals-8x500m.jpeg testdata/pm5-time-splits-29min.jpeg
+        testdata/pm5-time-splits-30min.jpeg testdata/pm5-time-splits-13min.jpg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run ocr-assets
+      - run: npm run build
+      - run: npm install --no-save playwright@1.65.1 && npx playwright install webkit
+      - name: Machine
+        run: |
+          sysctl -n machdep.cpu.brand_string
+          echo "$(sysctl -n hw.ncpu) cores, $(( $(sysctl -n hw.memsize) / 1073741824 )) GB"
+          sw_vers
+      - name: Serve the build with nginx's headers
+        run: |
+          nohup node src/ocr/ppocr-prototype/webkit/serve.mjs dist 4173 > serve.log 2>&1 &
+          until curl -sf "$BASE/" > /dev/null; do sleep 1; done
+          cat serve.log
+      - name: PP-OCRv6, five photos in a row, then offline
+        run: node "$SESSION" webkit "$BASE" ppocr out/five-ppocr $FIVE
+      - name: Tesseract, the same five photos, then offline
+        run: node "$SESSION" webkit "$BASE" tess out/five-tess $FIVE
+      - name: PP-OCRv6, all test photos in one session
+        run: |
+          ALL=$(find testdata -maxdepth 1 -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.webp' -o -name '*.png' \) | sort)
+          OFFLINE=0 SHOTS=0 node "$SESSION" webkit "$BASE" ppocr out/all-ppocr $ALL
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: webkit-ppocr
+          path: out/

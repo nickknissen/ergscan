@@ -33,6 +33,16 @@ detection and recognition times, the number of boxes and the size of the WebAsse
 5. Airplane mode, reload, scan again: it must still read.
 6. The same photo without `?ocr=ppocr`, for Tesseract's time on the same phone.
 
+## WebKit without an iPhone
+
+`.github/workflows/ppocr-webkit.yml` runs on every push to this branch, on an Apple silicon macOS runner:
+Playwright's WebKit reads the built app, served by `webkit/serve.mjs` with the headers from `nginx-headers.conf`.
+`webkit/session.mjs` pastes photos one after another in one page session, discards each review, samples the
+page process's memory, and reads once more offline. The artifact `webkit-ppocr` holds a `report.json` per run:
+five photos with PP-OCRv6, the same five with Tesseract, and every test photo with PP-OCRv6 for accuracy.
+The same script runs locally in the `mcr.microsoft.com/playwright` image, but WebKit there needs a CPU with
+AVX for WebAssembly SIMD, which onnxruntime-web requires.
+
 ## Files
 
 | File | What |
