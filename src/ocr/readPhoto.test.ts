@@ -27,7 +27,9 @@ function recognizer(texts: string[], words: WordBox[] = HEADING_WORDS) {
   } satisfies Recognizer;
 }
 
-describe('readPhoto', () => {
+// Each test preprocesses a real-sized image in plain JavaScript: up to 4 s on a slow machine, more beside the
+// PP-OCRv6 test that runs the models.
+describe('readPhoto', { timeout: 20_000 }, () => {
   it('keeps the screen read without searching for the heading row when it adds up', async () => {
     const ocr = recognizer([ADDS_UP]);
     const outcome = await readPhoto(gray, width, height, ocr);

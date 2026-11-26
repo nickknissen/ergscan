@@ -18,6 +18,9 @@ docker run -p 8080:80 ergscan
 Serve it over HTTPS in production: browsers only allow the camera, offline
 mode and installing the app on secure origins.
 
+The build downloads the text recognition models (about 6 MB) from Hugging
+Face, so it needs network access. The app then serves them itself.
+
 ## With private sync
 
 Sync needs the app built with `VITE_ERGSCAN_SYNC=true` and the sync server in
