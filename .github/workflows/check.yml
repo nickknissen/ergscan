@@ -1,0 +1,30 @@
+# Each pull request and main: the images build as Coolify builds them, and the checks pass.
+# The images catch what the tests can't, such as a lockfile npm ci can't install without git
+# (node:24-slim has none): the m3-vue bump in #66 broke two deploys that way.
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build the images, as Coolify does
+        run: docker compose build
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run check
