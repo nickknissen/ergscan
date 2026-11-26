@@ -4,7 +4,7 @@ import { contextMenuPoint } from 'm3-vue/ui/menu';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { entryDateLabel } from '../core/dates';
-import type { HistoryEntry } from '../core/history';
+import { isConflictCopy, type HistoryEntry } from '../core/history';
 import { formatTime } from '../core/time';
 import { FEELING_ICONS } from '../ui/icons';
 import { keepExisting, nextSelection, type Selection } from '../ui/selection';
@@ -123,7 +123,7 @@ function entrySummary(entry: HistoryEntry): string {
           <span class="row-label">
             {{ entrySummary(entry) }}
             <span class="row-detail">{{ entryDetail(entry) }}</span>
-            <span v-if="entry.id.includes('~')" class="row-detail">{{ t('sync.conflict') }}</span>
+            <span v-if="isConflictCopy(entry.id)" class="row-detail">{{ t('sync.conflict') }}</span>
           </span>
           <span
             v-if="entry.workout.feeling !== null"

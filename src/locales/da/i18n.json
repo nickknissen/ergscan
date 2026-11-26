@@ -148,6 +148,16 @@
     "z5": { "name": "TR", "description": "Transport, intervaller i kaproningstempo på 28–32 tag i minuttet" },
     "z6": { "name": "AN", "description": "Anaerob, helt ud i højt tempo, kun til korte indsatser" }
   },
+  "matched": {
+    "title": "Tilsvarende træninger",
+    "thisWorkout": "Denne træning",
+    "best": "{date} · Bedst",
+    "meters": "{meters} m",
+    "faster": "{seconds} s hurtigere",
+    "slower": "{seconds} s langsommere",
+    "samePace": "Samme tempo",
+    "showAll": "Vis alle ({count})"
+  },
   "tabs": {
     "scan": "Scan"
   },

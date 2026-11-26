@@ -25,6 +25,11 @@ export function entryDateLabel(start: Date, locale: string): string {
   return start.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
+/** The day alone, where workouts are told apart by their results rather than by the hour. */
+export function entryDayLabel(start: Date, locale: string): string {
+  return start.toLocaleDateString(locale, { dateStyle: 'medium' });
+}
+
 export function fitFileName(start: Date): string {
   return `ergscan-${start.getFullYear()}${pad(start.getMonth() + 1)}${pad(start.getDate())}-${pad(start.getHours())}${pad(start.getMinutes())}.fit`;
 }

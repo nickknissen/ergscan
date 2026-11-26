@@ -1249,6 +1249,25 @@ tr.rest .cell {
   font-variant-numeric: tabular-nums;
 }
 
+.matched .row-detail,
+.matched-difference {
+  font-variant-numeric: tabular-nums;
+}
+
+.matched-part {
+  white-space: nowrap;
+}
+
+.matched-difference {
+  flex: none;
+  text-align: right;
+}
+
+.matched .group-row.matched-open {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
 .settings-number {
   width: 6ch;
   flex: none;
@@ -1444,6 +1463,7 @@ tr.rest .cell {
   .review-panel,
   .review-hint,
   .editor-splits > .group:last-child,
+  .matched-show-all,
   td:has(> .icon),
   thead th:last-child {
     display: none;

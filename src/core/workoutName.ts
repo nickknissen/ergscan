@@ -5,28 +5,61 @@ import type { Workout, WorkoutRow } from './workout';
 const WHOLE_MINUTE_DS = 600;
 const ROUND_DISTANCE_M = 100;
 
-/** A short name from the workout's structure, like "2000m", "30:00" or "8x500m/3:30r". */
+/** A distance piece is measured by its time, a time piece by its metres, intervals by their pace alone. */
+export type StructureKind = 'distance' | 'time' | 'intervals';
+
+/** Matched workouts have equal structures: the same `key`, and so the same `kind`. */
+export interface Structure {
+  kind: StructureKind;
+  key: string;
+}
+
+/** How a workout's rows read: as what kind of piece, under which name, and whether evenly enough to have a structure. */
+interface Reading {
+  kind: StructureKind;
+  name: string;
+  /** False for uneven intervals, such as a pyramid or a misread rest: they get a name but no structure. */
+  even: boolean;
+}
+
+/**
+ * A short name for the workout, like "2000m", "30:00" or "8x500m/3:30r": its structure without
+ * the machine. Uneven intervals are named by their total.
+ */
 export function suggestName(workout: Workout): string | null {
+  return readRows(workout)?.name ?? null;
+}
+
+/** The workout's structure, which includes the machine by its split distance; null when it has none. */
+export function structureOf(workout: Workout): Structure | null {
+  const reading = readRows(workout);
+  return reading?.even ? { kind: reading.kind, key: `${reading.name} /${workout.splitDistance}m` } : null;
+}
+
+function readRows(workout: Workout): Reading | null {
   const { summary, rows } = workout;
   const work = rows.filter((r) => !r.isRest);
   const rests = rows.filter((r) => r.isRest);
+  const intervals = rests.length > 0 && work.length > 1;
 
-  if (rests.length > 0 && work.length > 1) {
+  if (intervals) {
     const piece = allSame(work, 'distanceM') ? `${work[0]!.distanceM}m` : allSame(work, 'durationDs') ? clock(work[0]!.durationDs!) : null;
     if (piece) {
       const restDs = allSame(rests, 'durationDs') ? rests[0]!.durationDs : null;
-      return `${work.length}x${piece}${restDs ? `/${clock(restDs)}r` : ''}`;
+      return { kind: 'intervals', name: `${work.length}x${piece}${restDs ? `/${clock(restDs)}r` : ''}`, even: restDs !== null };
     }
   }
 
+  // Rows with rests that aren't even intervals fall through to here, named by their total.
+  const even = !intervals;
   const { durationDs: time, distanceM: distance } = summary;
   const timed =
     work.length >= 3
       ? allSame(work.slice(0, -1), 'durationDs') && !allSame(work, 'distanceM')
       : time !== null && time % WHOLE_MINUTE_DS === 0 && (distance === null || distance % ROUND_DISTANCE_M !== 0);
-  if (timed && time) return clock(time);
-  if (distance) return `${distance}m`;
-  return time ? clock(time) : null;
+  if (timed && time) return { kind: 'time', name: clock(time), even };
+  if (distance) return { kind: 'distance', name: `${distance}m`, even };
+  return time ? { kind: 'time', name: clock(time), even } : null;
 }
 
 function allSame(rows: WorkoutRow[], key: 'durationDs' | 'distanceM'): boolean {

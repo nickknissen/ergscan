@@ -1,4 +1,4 @@
-import type { HistoryEntry } from './history';
+import { isConflictCopy, originalId, type HistoryEntry } from './history';
 import { formatTime } from './time';
 import { spans } from './watchHeartRate';
 import { splitFor, wattsForSplit, type WorkoutRow } from './workout';
@@ -37,7 +37,6 @@ export function listWorkouts(entries: readonly HistoryEntry[], filter: WorkoutFi
 export function workoutSummary(entry: HistoryEntry, timeZone: string): Report {
   const { workout } = entry;
   const series = workout.heartRates ?? [];
-  const copy = entry.id.indexOf('~');
   return compact({
     id: entry.id,
     start: localIso(workout.startTime, timeZone),
@@ -50,7 +49,7 @@ export function workoutSummary(entry: HistoryEntry, timeZone: string): Report {
     feeling: workout.feeling,
     notes: workout.notes || null,
     watchHeartRate: series.some((value) => value !== null),
-    conflictCopyOf: copy > 0 ? entry.id.slice(0, copy) : null,
+    conflictCopyOf: isConflictCopy(entry.id) ? originalId(entry.id) : null,
   });
 }
 

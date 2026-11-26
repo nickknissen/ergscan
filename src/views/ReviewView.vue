@@ -2,15 +2,20 @@
 import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { useI18n } from 'vue-i18n';
 import HeartRateZones from '../components/HeartRateZones.vue';
+import MatchedWorkouts from '../components/MatchedWorkouts.vue';
 import WorkoutEditor from '../components/WorkoutEditor.vue';
 import type { WatchMessage } from '../composables/useWatchHeartRate';
+import type { HistoryEntry } from '../core/history';
 import type { ExtraColumn, Workout } from '../core/workout';
 
 const workout = defineModel<Workout>('workout', { required: true });
 const extraColumn = defineModel<ExtraColumn | null>('extraColumn', { required: true });
 const invalidCells = defineModel<number>('invalidCells', { required: true });
 
-/** `sourcePanel`: show the photos and recognized text beside the editor instead of below it. */
+/**
+ * `sourcePanel`: show the photos and recognized text beside the editor instead of below it.
+ * `historyId`: the open workout's id in `history`, null while it isn't saved.
+ */
 defineProps<{
   notice: string;
   computedSummary: boolean;
@@ -25,8 +30,10 @@ defineProps<{
   sourcePanel: boolean;
   watchMessage: WatchMessage | null;
   readingWatch: boolean;
+  history: readonly HistoryEntry[];
+  historyId: string | null;
 }>();
-const emit = defineEmits<{ scanMoreRows: [] }>();
+const emit = defineEmits<{ scanMoreRows: []; openEntry: [entry: HistoryEntry] }>();
 const { t } = useI18n();
 </script>
 
@@ -54,6 +61,7 @@ const { t } = useI18n();
       <p v-else-if="savedAs" class="review-hint">{{ t('export.savedAs', { name: savedAs }) }}</p>
 
       <HeartRateZones :workout="workout" :max-hr="maxHr" />
+      <MatchedWorkouts :workout="workout" :open-id="historyId" :entries="history" @open="emit('openEntry', $event)" />
 
       <details v-if="!sourcePanel && (photoUrls.length || rawText)" class="group disclosure">
         <summary class="group-row tappable">

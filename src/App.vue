@@ -368,7 +368,10 @@ const originTitle = computed(() => (reviewOrigin.value === 'history' ? t('histor
             :source-panel="reviewPanel"
             :watch-message="watchMessage"
             :reading-watch="readingWatch"
+            :history="history"
+            :history-id="historyId"
             @scan-more-rows="scanMoreRows"
+            @open-entry="selectEntry"
           />
         </Transition>
       </MdListDetail>
