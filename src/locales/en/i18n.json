@@ -148,6 +148,16 @@
     "z5": { "name": "TR", "description": "Transport, race-pace intervals at 28–32 strokes a minute" },
     "z6": { "name": "AN", "description": "Anaerobic, all out at a high rate, only for short efforts" }
   },
+  "matched": {
+    "title": "Matched workouts",
+    "thisWorkout": "This workout",
+    "best": "{date} · Best",
+    "meters": "{meters} m",
+    "faster": "{seconds} s faster",
+    "slower": "{seconds} s slower",
+    "samePace": "Same pace",
+    "showAll": "Show all ({count})"
+  },
   "tabs": {
     "scan": "Scan"
   },
