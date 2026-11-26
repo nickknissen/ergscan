@@ -154,12 +154,15 @@ const multiSum = (key: keyof WorkoutScore) => multiResults.reduce((a, r) => a + 
 const totals = {
   ocrCells: pct(sum('cells'), sum('cellsTotal')),
   ocrRows: pct(sum('rows'), sum('rowsTotal')),
+  ocrDigitRows: pct(sum('digitRows'), sum('rowsTotal')),
   fields: pct(sum('fields'), sum('fieldsTotal')),
   exactLapCounts: `${results.filter((r) => r.laps === r.lapsExpected).length}/${results.length}`,
   multiFields: pct(multiSum('fields'), multiSum('fieldsTotal')),
   multiExactLapCounts: `${multiResults.filter((r) => r.laps === r.lapsExpected).length}/${multiResults.length}`,
 };
-console.log(`\nTOTAL  ocr cells ${totals.ocrCells}  ocr rows ${totals.ocrRows}  workout fields ${totals.fields}  lap counts ${totals.exactLapCounts}`);
+console.log(
+  `\nTOTAL  ocr cells ${totals.ocrCells}  ocr rows ${totals.ocrRows} (digits right ${totals.ocrDigitRows})  workout fields ${totals.fields}  lap counts ${totals.exactLapCounts}`,
+);
 console.log(`MULTI  workout fields ${totals.multiFields}  lap counts ${totals.multiExactLapCounts}`);
 
 const outDir = join(root, 'eval-results');

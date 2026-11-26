@@ -31,11 +31,23 @@ export interface ScreenRead {
 }
 
 type Token = { text: string; rest: boolean };
-type ParsedLine = { row: WorkoutRow; extra: number | null; restShaped: boolean; restDurationDs: number | null };
+type ParsedLine = {
+  row: WorkoutRow;
+  extra: number | null;
+  restShaped: boolean;
+  restDurationDs: number | null;
+  /** Every reading of the time and pace cells when OCR left them ambiguous; the first is in the row. */
+  times: number[];
+  splits: number[];
+  /** The time without a leading 1, which may be a rest's r. */
+  restWithoutOne: number | null;
+};
 
 const OCR_DIGIT_FIXES: Record<string, string> = { O: '0', o: '0', D: '0', I: '1', l: '1', L: '1', S: '5', B: '8' };
 const MIN_SPLIT_DS = 500;
 const MAX_SPLIT_DS = 12000;
+const MIN_HEART_RATE = 40;
+const MAX_HEART_RATE = 230;
 
 export function parsePm5Text(text: string): ParsedScan | null {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -69,7 +81,8 @@ export function parsePm5Text(text: string): ParsedScan | null {
 
   if (parsed.length === 0) return null;
 
-  markShapedRests(parsed);
+  resolveReadings(parsed, splitDistance);
+  markShapedRests(parsed, titleRestDs);
   const extraColumn: ExtraColumn | null = parsed.some((p) => p.extra !== null) ? 'heartRate' : null;
   for (const p of parsed) {
     if (p.extra !== null) p.row.heartRate = p.extra;
@@ -216,6 +229,8 @@ function readHeader(line: string): { splitDistance: 500 | 1000; paceUnit: PaceUn
 
 function tokenize(line: string): Token[] {
   return line
+    .replace(/[ãõóòöøÓÒÖØü]/g, 'o')
+    .replace(/(\d)±(\d)/g, '$1:$2')
     .replace(/[|[\]{}()!©®“”‘’"`~<>_—–]/g, ' ')
     .replace(/(\d),(\d)(?!\d)/g, '$1.$2')
     .replace(/(\d+:\d{2})\.\s+(\d)\b/g, '$1.$2')
@@ -270,6 +285,27 @@ function asTime(text: string, allowWholeSeconds: boolean): number | null {
   }
 }
 
+/**
+ * Readings of a time whose colon OCR saw as a 1: `147.5` may be `:47.5`, `6149.1` may be `6:49.1` and `1128:05.1`
+ * may be `1:28:05.1`.
+ */
+function colonReadAsOne(text: string): number[] {
+  const readings = [
+    /^(\d{0,2})1(\d{2}\.\d)$/.exec(text),
+    /^(\d)1(\d{2}:\d{2}\.\d)$/.exec(text),
+    /^(\d:\d{2})1(\d{2}\.\d)$/.exec(text),
+  ].map((m) => (m ? parseTime(`${m[1]}:${m[2]}`) : null));
+  return readings.filter((v): v is number => v !== null);
+}
+
+/** Every distinct reading of a time cell, the plain one first. */
+function timeReadings(text: string, allowWholeSeconds: boolean): number[] {
+  const all = [asTime(text, allowWholeSeconds), ...colonReadAsOne(text)].filter((v): v is number => v !== null);
+  return [...new Set(all)];
+}
+
+const isSplit = (ds: number) => ds >= MIN_SPLIT_DS && ds <= MAX_SPLIT_DS;
+
 function readRow(tokens: Token[], paceUnit: PaceUnit): ParsedLine | null {
   const [first, ...others] = tokens;
   if (!first) return null;
@@ -278,9 +314,11 @@ function readRow(tokens: Token[], paceUnit: PaceUnit): ParsedLine | null {
 
   if (first.rest && asInt(first.text) !== null && others.length === 0) {
     row.distanceM = asInt(first.text);
-    return { row, extra: null, restShaped: false, restDurationDs: null };
+    return { row, extra: null, restShaped: false, restDurationDs: null, times: [], splits: [], restWithoutOne: null };
   }
-  row.durationDs = asTime(first.text, true);
+  const times = timeReadings(first.text, true);
+  let splits: number[] = [];
+  row.durationDs = times[0] ?? null;
   const unreadableTime = /[:.%]/.test(first.text) && others.length >= 2;
   if (row.durationDs === null && !unreadableTime) return null;
 
@@ -288,6 +326,15 @@ function readRow(tokens: Token[], paceUnit: PaceUnit): ParsedLine | null {
   let stage = 1;
   for (const t of others) {
     const int = asInt(t.text);
+    // Meters run into the pace: `100002:06.4`.
+    const joined = stage <= 1 && paceUnit === 'split' ? /^(\d{2,6})(\d:\d{2}\.\d)$/.exec(t.text) : null;
+    const joinedSplit = joined ? parseTime(joined[2]!) : null;
+    if (joinedSplit !== null && isSplit(joinedSplit)) {
+      row.distanceM = Number(joined![1]);
+      row.splitDs = joinedSplit;
+      stage = 3;
+      continue;
+    }
     if (stage <= 1 && int !== null) {
       row.distanceM = int;
       stage = 2;
@@ -298,9 +345,10 @@ function readRow(tokens: Token[], paceUnit: PaceUnit): ParsedLine | null {
       stage = 3;
       continue;
     }
-    const split = stage <= 2 && paceUnit === 'split' ? asTime(t.text, false) : null;
-    if (split !== null && split >= MIN_SPLIT_DS && split <= MAX_SPLIT_DS) {
-      row.splitDs = split;
+    const readings = stage <= 2 && paceUnit === 'split' ? timeReadings(t.text, false).filter(isSplit) : [];
+    if (readings.length) {
+      row.splitDs = readings[0]!;
+      splits = readings;
       stage = 3;
     } else if (stage <= 3 && int !== null && int >= 10 && int <= 70) {
       row.rate = int;
@@ -311,7 +359,8 @@ function readRow(tokens: Token[], paceUnit: PaceUnit): ParsedLine | null {
       extra = merged.extra;
       stage = 5;
     } else if (stage >= 2 && stage <= 4 && int !== null) {
-      extra = int >= 1000 && int < 10000 ? Math.floor(int / 10) : int;
+      const heartRate = int >= 1000 && int < 10000 ? Math.floor(int / 10) : int;
+      if (heartRate >= MIN_HEART_RATE && heartRate <= MAX_HEART_RATE) extra = heartRate;
       stage = 5;
     }
   }
@@ -326,18 +375,53 @@ function readRow(tokens: Token[], paceUnit: PaceUnit): ParsedLine | null {
 
   const restShaped = !row.isRest && others.length === 1 && row.distanceM !== null;
   const stripped = /^[7fFtT]\d/.test(first.text) ? asTime(first.text.slice(1), true) : null;
-  return { row, extra, restShaped, restDurationDs: stripped ?? row.durationDs };
+  const restWithoutOne = /^1\d/.test(first.text) ? asTime(first.text.slice(1), true) : null;
+  return { row, extra, restShaped, restDurationDs: stripped ?? row.durationDs, times, splits, restWithoutOne };
 }
 
-function markShapedRests(lines: ParsedLine[]): void {
+/**
+ * Where OCR left a time or pace with more than one reading, keeps the one that pace = time / distance supports.
+ * Meters and times may be cumulative on the screen, so the step from the row above counts too.
+ */
+function resolveReadings(lines: ParsedLine[], splitDistance: number): void {
+  let above: WorkoutRow | null = null;
+  for (const { row, times, splits } of lines) {
+    if (row.isRest) continue;
+    if (times.length > 1 || splits.length > 1) {
+      const fits = (time: number | null, split: number | null) => time !== null && split !== null && agrees(time, split, row, above, splitDistance);
+      if (!fits(row.durationDs, row.splitDs)) {
+        const candidates = (times.length ? times : [row.durationDs]).flatMap((time) => (splits.length ? splits : [row.splitDs]).map((split) => [time, split] as const));
+        const pair = candidates.find(([time, split]) => fits(time, split));
+        if (pair) [row.durationDs, row.splitDs] = pair;
+      }
+    }
+    above = row;
+  }
+}
+
+function agrees(time: number, split: number, row: WorkoutRow, above: WorkoutRow | null, splitDistance: number): boolean {
+  const times = [time];
+  if (above?.durationDs != null && time > above.durationDs) times.push(time - above.durationDs);
+  const meters = row.distanceM ? [row.distanceM] : [];
+  if (row.distanceM && above?.distanceM != null && row.distanceM > above.distanceM) meters.push(row.distanceM - above.distanceM);
+  return times.some((t) => meters.some((m) => Math.abs(splitFor(t, m, splitDistance) - split) <= Math.max(5, split * 0.02)));
+}
+
+/**
+ * Marks rows shaped like a rest (a time and a few meters) as rests. A rest's r read as a 1 (`12:00.0` for
+ * `r2:00.0`) is dropped when the time without it is the rest time the title or another rest row shows.
+ */
+function markShapedRests(lines: ParsedLine[], titleRestDs: number | null): void {
   const work = lines.filter((l) => !l.restShaped && !l.row.isRest && l.row.splitDs !== null && l.row.distanceM !== null);
   if (work.length === 0) return;
   const distances = work.map((l) => l.row.distanceM!).sort((a, b) => a - b);
   const median = distances[Math.floor(distances.length / 2)]!;
+  const knownRests = new Set([titleRestDs, ...lines.filter((l) => l.row.isRest).map((l) => l.row.durationDs)]);
   for (const line of lines) {
     if (!line.restShaped || line.row.distanceM! >= median * 0.3) continue;
     line.row.isRest = true;
-    line.row.durationDs = line.restDurationDs;
+    const withoutOne = line.restWithoutOne !== null && knownRests.has(line.restWithoutOne) && !knownRests.has(line.restDurationDs);
+    line.row.durationDs = withoutOne ? line.restWithoutOne : line.restDurationDs;
   }
 }
 

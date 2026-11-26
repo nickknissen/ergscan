@@ -32,7 +32,17 @@ describe('scoreOcr', () => {
       ['2:00.0', '500', '2:00.0', '25'],
     ];
     const score = scoreOcr('| 2:00.0  500 2:00.0 24]\n2:00.0 5OO 2:00.0 25', screen);
-    expect(score).toEqual({ cells: 7, cellsTotal: 8, rows: 1, rowsTotal: 2 });
+    expect(score).toEqual({ cells: 7, cellsTotal: 8, rows: 1, rowsTotal: 2, digitRows: 1 });
+  });
+
+  it('counts rows with every digit right when colons, points and spacing are forgiven', () => {
+    const screen = [
+      ['2:05.2', '500', '2:05.2', '24'],
+      [':47.5', '250', '1:35.0', '34'],
+      ['2:00.0', '500', '2:00.0', '25'],
+    ];
+    const score = scoreOcr('2105.2 5002:05,2 24\n147.5 250 1:350 34\n2:00.0 500 2:00.0 26', screen);
+    expect(score).toMatchObject({ rows: 0, digitRows: 2 });
   });
 });
 

@@ -338,6 +338,61 @@ describe('parsePm5Text', () => {
     expect(scan!.rows[0]!.distanceM).toBe(7500);
   });
 
+  it("reads a colon that OCR saw as a 1, taking the reading the row's pace and distance agree with", () => {
+    // PM4, 2000 m in 250 m splits: the meter column is cumulative and each split takes under a minute.
+    const scan = parsePm5Text(['time meter /500m', '6149,1 2000 1:42.2 30', '147.5 250 1:35.0 34', '150.3 500 1:40,6 30', ':51.8 750 1:43.6 28'].join('\n'));
+    expect(scan!.summary.durationDs).toBe(4091);
+    expect(scan!.rows.map((r) => r.durationDs)).toEqual([475, 503, 518]);
+  });
+
+  it('keeps a time with a dropped colon when the arithmetic agrees with it', () => {
+    expect(parsePm5Text('time meter /500m s/m\n117.1 500 1:17.1 36')!.summary.durationDs).toBe(771);
+  });
+
+  it('reads a time and a pace that both had their colon read as a 1', () => {
+    const scan = parsePm5Text('time meter /500m s/m\n1:25.8 500 1:25.8 37\n117.1 100 1125.5 35\n:17.3 200 1:26.5 38');
+    expect(scan!.rows.map((r) => r.durationDs)).toEqual([171, 173]);
+    expect(scan!.rows[0]!.splitDs).toBe(855);
+  });
+
+  it('separates meters that OCR ran into the pace', () => {
+    const scan = parsePm5Text(['time meter /500m', '42:09.6 100002:06,4 20', '8:25.7 20002:06.4 20', '8:26.0 40002:06.5 20', '8:26.8 60002:06,7 20'].join('\n'));
+    expect(scan!.summary).toMatchObject({ distanceM: 10000, splitDs: 1264, rate: 20 });
+    expect(scan!.rows.map((r) => [r.distanceM, r.splitDs, r.rate])).toEqual([
+      [2000, 1264, 20],
+      [2000, 1265, 20],
+      [2000, 1267, 20],
+    ]);
+  });
+
+  it('reads zeros that OCR saw as accented letters and a colon it saw as ±', () => {
+    const scan = parsePm5Text('time meter /500m s/m\n15:09.1 40ã0 1:53.6 30\n1:54.9 5ã0 1:54.9 31\n1±54.4 50ó 1:54.4 29');
+    expect(scan!.summary.distanceM).toBe(4000);
+    expect(scan!.rows.map((r) => [r.durationDs, r.distanceM])).toEqual([
+      [1149, 500],
+      [1144, 500],
+    ]);
+  });
+
+  it("reads a rest whose r OCR saw as a 1 when another rest on the screen has the time it would have", () => {
+    const scan = parsePm5Text(['time meter /500m s/m', '14:49.3 4000 1:51.1 27', '1:48.7 500 1:48.7 28', '12:00.0 19', '1:49.4 500 1:49.4 29', 'r2:00.0 15'].join('\n'));
+    expect(scan!.rows.map((r) => [r.durationDs, r.isRest])).toEqual([
+      [1087, false],
+      [1200, true],
+      [1094, false],
+      [1200, true],
+    ]);
+  });
+
+  it('keeps a rest that really starts with a 1 when nothing says otherwise', () => {
+    const scan = parsePm5Text(['time meter /500m s/m', '14:49.3 4000 1:51.1 27', '1:48.7 500 1:48.7 28', '12:00.0 19', '1:49.4 500 1:49.4 29'].join('\n'));
+    expect(scan!.rows[1]).toMatchObject({ durationDs: 7200, isRest: true });
+  });
+
+  it('does not take a stray number after the rate for a heart rate', () => {
+    expect(parsePm5Text('time meter /500m s/m\n8:26.8 6000 2:06.7 20 000')!.extraColumn).toBeNull();
+  });
+
   it('returns null when no data rows are found', () => {
     expect(parsePm5Text('Concept2\nMain Menu\nJust Row')).toBeNull();
   });

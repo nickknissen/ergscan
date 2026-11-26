@@ -8,6 +8,19 @@ export interface OcrScore {
   cellsTotal: number;
   rows: number;
   rowsTotal: number;
+  /**
+   * Rows whose digits are all there, in order, on one line, when a colon may be read as 1, ;, ±, a point or
+   * nothing, a point as a comma, a colon or nothing, and the spacing may differ: what a parser that knows the
+   * column formats could still recover.
+   */
+  digitRows: number;
+}
+
+const escapeRegExp = (c: string) => c.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+
+function forgivingRow(row: string[]): RegExp {
+  const cell = (text: string) => [...text].map((c) => (c === ':' ? '\\s?[:;1i±.]?\\s?' : c === '.' ? '\\s?[.,:]?\\s?' : escapeRegExp(c))).join('');
+  return new RegExp(`(^|[^\\d])${row.map(cell).join('\\s*')}([^\\d]|$)`);
 }
 
 export interface WorkoutScore {
@@ -30,7 +43,8 @@ export function scoreOcr(text: string, screenRows: string[][]): OcrScore {
   }
   const lines = text.split('\n').map((l) => ` ${l.replace(/[|[\]{}]/g, ' ').replace(/\s+/g, ' ').trim()} `);
   const rows = screenRows.filter((r) => lines.some((l) => l.includes(` ${r.join(' ')} `))).length;
-  return { cells, cellsTotal: screenRows.flat().length, rows, rowsTotal: screenRows.length };
+  const digitRows = screenRows.filter((r) => lines.some((l) => forgivingRow(r).test(l))).length;
+  return { cells, cellsTotal: screenRows.flat().length, rows, rowsTotal: screenRows.length, digitRows };
 }
 
 export function scoreWorkout(scan: Pick<ParsedScan, 'date' | 'summary' | 'rows'> | null, workout: Facts['workout']): WorkoutScore {
