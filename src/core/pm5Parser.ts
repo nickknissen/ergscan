@@ -109,13 +109,39 @@ export function parsePm5Text(text: string): ParsedScan | null {
 export function scanFromScreen(screen: ScreenRead): ParsedScan {
   const { date, dragFactor, splitDistance, extraColumn, titleRestDs } = screen;
   const rows = screen.rows.map((r) => ({ ...r }));
+  keepFinalSplit(rows, screen.summary?.durationDs ?? null);
   decumulate(rows, 'durationDs', 10, screen.summary?.durationDs ?? null, splitDistance);
   decumulate(rows, 'distanceM', 5, screen.summary?.distanceM ?? null, splitDistance);
+  fillMissingMeters(rows, screen.summary?.distanceM ?? null, splitDistance);
   const summary = screen.summary ? { ...screen.summary } : sumRows(rows, splitDistance);
   if (screen.summary) repairSummaryTime(summary, rows, splitDistance);
   for (const row of [summary, ...rows]) fillSplit(row, splitDistance);
   const withRest = titleRestDs && !rows.some((r) => r.isRest) ? interleaveRest(rows, titleRestDs) : rows;
   return { date, dragFactor, splitDistance, extraColumn, summary, summaryFromScreen: screen.summary !== null, rows: withRest, screen };
+}
+
+/**
+ * A last row shaped like a rest (a time and a few meters) whose time is the workout's total is the short last split
+ * of a running time column whose pace and rate OCR lost: no rest lasts the whole workout.
+ */
+function keepFinalSplit(rows: WorkoutRow[], totalDs: number | null): void {
+  const last = rows.at(-1);
+  if (!last?.isRest || last.durationDs === null || totalDs === null || rows.every((r) => r.isRest)) return;
+  if (Math.abs(last.durationDs - totalDs) <= 10) last.isRest = false;
+}
+
+/**
+ * Where OCR lost one lap's meters, the total less the other laps gives them, if the lap's own time and pace agree:
+ * otherwise the rest of the total may belong to a row OCR lost altogether.
+ */
+function fillMissingMeters(rows: WorkoutRow[], totalM: number | null, splitDistance: number): void {
+  const work = rows.filter((r) => !r.isRest);
+  const missing = work.filter((r) => r.distanceM === null);
+  if (totalM === null || missing.length !== 1) return;
+  const row = missing[0]!;
+  const meters = totalM - work.reduce((a, r) => a + (r.distanceM ?? 0), 0);
+  if (meters <= 0 || row.durationDs === null || row.splitDs === null) return;
+  if (Math.abs(splitFor(row.durationDs, meters, splitDistance) - row.splitDs) <= Math.max(5, row.splitDs * 0.02)) row.distanceM = meters;
 }
 
 function repairSummaryTime(summary: WorkoutRow, rows: WorkoutRow[], splitDistance: number): void {
@@ -223,11 +249,15 @@ function decumulate(rows: WorkoutRow[], key: 'durationDs' | 'distanceM', minTole
   if (!fit) return;
   const { step, offset } = fit;
   const tolerance = Math.max(minTolerance, step * 0.02);
-  const lastValue = work[lastIndex]![key];
-  const remainder = lastValue === null ? null : lastValue - step * (lastIndex + offset);
+  // The last split ends where the last row says, or, where OCR lost or misread that, at the total.
+  const lastSplit = (end: number | null) => {
+    const remainder = end === null ? null : end - step * (lastIndex + offset);
+    return remainder !== null && remainder > 0 && remainder <= step + tolerance ? remainder : null;
+  };
+  const remainder = lastSplit(work[lastIndex]![key]) ?? lastSplit(total);
   const laps = work.map((row, i) => {
     if (i < lastIndex) return step;
-    return remainder !== null && remainder > 0 && remainder <= step + tolerance ? remainder : row[key] === null ? null : step;
+    return remainder ?? (row[key] === null ? null : step);
   });
   // Two rows are the least evidence (OCR may have lost the rows between them): where the rows show a pace,
   // the laps must agree with it.
