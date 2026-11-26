@@ -47,6 +47,8 @@ describe('matchedWorkouts', () => {
     const shownIds = (open: Workout) => matchedWorkouts(open, null, history)!.shown.map((row) => row.id ?? 'open');
 
     expect(shownIds(piece(day(20), 4600, 2000))).toEqual(['open', 'd19', 'd18', 'd17', 'd16', 'd15', 'd2']);
+    const all = matchedWorkouts(piece(day(20), 4600, 2000), null, history)!.rows.map((row) => row.id ?? 'open');
+    expect(all).toEqual(['open', 'd19', 'd18', 'd17', 'd16', 'd15', 'd14', 'd3', 'd2']);
     expect(shownIds(piece(day(1), 4600, 2000))).toEqual(['d19', 'd18', 'd17', 'd16', 'd15', 'd2', 'open']);
     expect(matchedWorkouts(piece(day(20), 4600, 2000), null, history.slice(0, 3))!.shown).toHaveLength(4);
   });
@@ -84,7 +86,7 @@ describe('matchedWorkouts', () => {
     expect(matchedWorkouts(pyramid(20), null, [entry('a', pyramid(3))])).toBeNull();
   });
 
-  it('never counts a sync conflict copy, which is another version of the same workout', () => {
+  it('never counts a sync conflict copy, which is a second version of a saved workout', () => {
     const open = piece(day(20), 4500, 2000);
     const history = [entry('open', open), entry('open~phone', open), entry('a', piece(day(3), 4560, 2000)), entry('a~phone', piece(day(3), 4570, 2000))];
     expect(matchedWorkouts(open, 'open', history)?.rows.map((row) => row.id)).toEqual(['open', 'a']);

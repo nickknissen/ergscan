@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { entryDateLabel, fitFileName, fromLocalInput, startTimeFor, toLocalInput } from './dates';
+import { entryDateLabel, entryDayLabel, fitFileName, fromLocalInput, startTimeFor, toLocalInput } from './dates';
 
 describe('local datetime input', () => {
   it('round-trips a local date to the input format', () => {
@@ -27,6 +27,12 @@ describe('startTimeFor', () => {
 
   it('falls back to the photo time when the date was not read', () => {
     expect(startTimeFor(null, photo, 600)).toEqual(new Date(2026, 10, 16, 7, 39));
+  });
+});
+
+describe('entryDayLabel', () => {
+  it('shows the day without the time', () => {
+    expect(entryDayLabel(new Date(2026, 10, 16, 7, 5), 'en-US')).toBe('Nov 16, 2026');
   });
 });
 

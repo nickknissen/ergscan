@@ -2,6 +2,7 @@
 import MdIcon from 'm3-vue/components/MdIcon.vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { entryDayLabel } from '../core/dates';
 import type { HistoryEntry } from '../core/history';
 import { matchedWorkouts, type MatchedRow } from '../core/matchedWorkouts';
 import { formatTime } from '../core/time';
@@ -20,7 +21,7 @@ const rows = computed(() => (showAll.value ? matched.value?.rows : matched.value
 const hiddenCount = computed(() => (matched.value ? matched.value.rows.length - matched.value.shown.length : 0));
 
 function date(row: MatchedRow): string {
-  return row.startTime.toLocaleDateString(locale.value, { dateStyle: 'medium' });
+  return entryDayLabel(row.startTime, locale.value);
 }
 
 /** Result, pace and rate, each kept whole when the row wraps, with the separator ending the line. */
@@ -35,7 +36,7 @@ function detailParts(row: MatchedRow): string[] {
   if (result?.kind === 'time') parts.push(formatTime(result.ds));
   if (result?.kind === 'distance') parts.push(t('matched.meters', { meters: result.m }));
   parts.push(paceDs === null ? '—' : formatTime(paceDs) + t('columns.split', { distance: props.workout.splitDistance }));
-  parts.push(`${rate ?? '—'} ${t('columns.rate')}`);
+  parts.push(rate === null ? '—' : `${rate} ${t('columns.rate')}`);
   return parts;
 }
 

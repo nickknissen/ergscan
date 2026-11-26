@@ -77,3 +77,13 @@ export function draftKey(workout: Workout, extraColumn: ExtraColumn | null): str
 export function hasUnsavedChanges(workout: Workout, extraColumn: ExtraColumn | null, savedKey: string | null): boolean {
   return savedKey === null ? !isBlank(workout) : draftKey(workout, extraColumn) !== savedKey;
 }
+
+/** Sync keeps both versions of a workout edited on two devices, the second as `<id>~<revision>`. */
+export function isConflictCopy(id: string): boolean {
+  return id.indexOf('~') > 0;
+}
+
+/** The id of the workout a conflict copy was made from; an original's own id. */
+export function originalId(id: string): string {
+  return isConflictCopy(id) ? id.slice(0, id.indexOf('~')) : id;
+}

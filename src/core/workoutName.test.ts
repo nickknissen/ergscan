@@ -63,6 +63,8 @@ describe('structureOf', () => {
   it('gives a pyramid no structure, so it never matches a continuous piece of the same total', () => {
     const pyramid = workout(work(4700, 2250), [work(520, 250), rest(600), work(1080, 500), rest(600), work(1650, 750), rest(600), work(1060, 500), rest(600), work(500, 250)]);
     expect(structureOf(pyramid)).toBeNull();
+    expect(structureOf(workout(work(4700, 2250)))).not.toBeNull();
+    expect(structureOf(pyramid)).not.toEqual(structureOf(workout(work(4700, 2250))));
     expect(suggestName(pyramid)).toBe('2250m');
   });
 
@@ -90,6 +92,8 @@ describe('structureOf', () => {
   });
 
   it('guesses the structure of a workout with only a total the way its name is guessed', () => {
+    expect(structureOf(workout(work(18000, 7512)))?.kind).toBe('time');
+    expect(structureOf(workout(work(12135, 5000)))?.kind).toBe('distance');
     expectMatched(workout(work(18000, 7512)), workout(work(18000, 7433)));
     expect(structureOf(workout(work(18000, 7512)))).not.toEqual(structureOf(workout(work(18000, 7500))));
     expectMatched(workout(work(12135, 5000)), workout(work(12300, 5000)));

@@ -1,9 +1,9 @@
-import type { HistoryEntry } from './history';
+import { isConflictCopy, originalId, type HistoryEntry } from './history';
 import { splitFor, type Workout } from './workout';
 import { structureOf, type Structure } from './workoutName';
 
 /** What a workout of the structure is measured by: the time of a distance piece, the metres of a time piece. */
-export type Result = { kind: 'time'; ds: number } | { kind: 'distance'; m: number };
+export type WorkoutResult = { kind: 'time'; ds: number } | { kind: 'distance'; m: number };
 
 export interface MatchedRow {
   /** The history entry's id; null for an open workout that isn't saved yet. */
@@ -11,7 +11,7 @@ export interface MatchedRow {
   isOpen: boolean;
   startTime: Date;
   /** Null for intervals, which are measured by their pace alone. */
-  result: Result | null;
+  result: WorkoutResult | null;
   /** The average pace in tenths of a second per the split distance; for intervals, over the work. */
   paceDs: number | null;
   rate: number | null;
@@ -37,6 +37,7 @@ const SHOWN_NEWEST = 5;
 export function matchedWorkouts(open: Workout, openId: string | null, entries: readonly HistoryEntry[]): MatchedWorkouts | null {
   const structure = structureOf(open);
   if (!structure) return null;
+  // Conflict copies are versions of one workout, so neither they nor the open workout's original count.
   const openOriginal = openId && originalId(openId);
   const matched = entries.filter(
     (entry) => !isConflictCopy(entry.id) && entry.id !== openOriginal && structureOf(entry.workout)?.key === structure.key,
@@ -71,21 +72,12 @@ export function matchedWorkouts(open: Workout, openId: string | null, entries: r
   return { structure, rows, shown };
 }
 
-/** Sync keeps both versions of a workout edited on two devices, the second as `<id>~<revision>`. */
-function isConflictCopy(id: string): boolean {
-  return id.includes('~');
-}
-
-function originalId(id: string): string {
-  return id.split('~')[0]!;
-}
-
 function paceOf({ summary, splitDistance }: Workout): number | null {
   if (summary.splitDs !== null) return summary.splitDs;
   return summary.durationDs && summary.distanceM ? splitFor(summary.durationDs, summary.distanceM, splitDistance) : null;
 }
 
-function resultOf({ summary }: Workout, { kind }: Structure): Result | null {
+function resultOf({ summary }: Workout, { kind }: Structure): WorkoutResult | null {
   if (kind === 'distance' && summary.durationDs !== null) return { kind: 'time', ds: summary.durationDs };
   if (kind === 'time' && summary.distanceM !== null) return { kind: 'distance', m: summary.distanceM };
   return null;

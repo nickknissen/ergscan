@@ -14,25 +14,29 @@ export interface Structure {
   key: string;
 }
 
-interface Shape {
+/** How a workout's rows read: as what kind of piece, under which name, and whether evenly enough to have a structure. */
+interface Reading {
   kind: StructureKind;
   name: string;
   /** False for uneven intervals, such as a pyramid or a misread rest: they get a name but no structure. */
   even: boolean;
 }
 
-/** A short name from the workout's structure, like "2000m", "30:00" or "8x500m/3:30r". */
+/**
+ * A short name for the workout, like "2000m", "30:00" or "8x500m/3:30r": its structure without
+ * the machine. Uneven intervals are named by their total.
+ */
 export function suggestName(workout: Workout): string | null {
-  return shapeOf(workout)?.name ?? null;
+  return readRows(workout)?.name ?? null;
 }
 
 /** The workout's structure, which includes the machine by its split distance; null when it has none. */
 export function structureOf(workout: Workout): Structure | null {
-  const shape = shapeOf(workout);
-  return shape?.even ? { kind: shape.kind, key: `${shape.name} /${workout.splitDistance}m` } : null;
+  const reading = readRows(workout);
+  return reading?.even ? { kind: reading.kind, key: `${reading.name} /${workout.splitDistance}m` } : null;
 }
 
-function shapeOf(workout: Workout): Shape | null {
+function readRows(workout: Workout): Reading | null {
   const { summary, rows } = workout;
   const work = rows.filter((r) => !r.isRest);
   const rests = rows.filter((r) => r.isRest);
@@ -46,6 +50,7 @@ function shapeOf(workout: Workout): Shape | null {
     }
   }
 
+  // Rows with rests that aren't even intervals fall through to here, named by their total.
   const even = !intervals;
   const { durationDs: time, distanceM: distance } = summary;
   const timed =
