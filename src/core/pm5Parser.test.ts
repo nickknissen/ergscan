@@ -283,6 +283,34 @@ describe('parsePm5Text', () => {
     ]);
   });
 
+  // A PM4 Just Row with 9 minute splits: the time column runs 9:00, 18:00, …, and the last split is short.
+  const JUST_ROW = ['time meter /500m s/m', '40:08.9 7469 2:41.2 21', '9:00.0 1838 2:26.8 25', '18:00.0 1788 2:31.0 24', '27:00.0 1779 2:31.7 22', '36:00.0 1558 2:53.2 21'];
+  const laps = (text: string[]) => parsePm5Text(text.join('\n'))!.rows.map((r) => [r.durationDs, r.distanceM, r.isRest]);
+
+  it('works out the short last split from the total when OCR lost the last time', () => {
+    expect(laps([...JUST_ROW, '506 4:05.9 13'])).toEqual([
+      [5400, 1838, false],
+      [5400, 1788, false],
+      [5400, 1779, false],
+      [5400, 1558, false],
+      [2489, 506, false],
+    ]);
+  });
+
+  it('works out the short last split from the total when OCR misread the last time', () => {
+    expect(laps([...JUST_ROW, '48:08.9 506 4:05.9 13']).at(-1)).toEqual([2489, 506, false]);
+  });
+
+  it('keeps the short last split when OCR lost its pace and rate, though it looks like a rest', () => {
+    expect(laps([...JUST_ROW, '40:08.9 506']).at(-1)).toEqual([2489, 506, false]);
+  });
+
+  it('does not fill in meters that disagree with the row pace', () => {
+    // OCR lost the row between, so the meters left over from the total are two splits' worth.
+    const scan = parsePm5Text(['time meter /500m s/m', '8:00.0 2000 2:00.0 24', '2:00.0 500 2:00.0 24', '2:00.0 500 2:00.0 24', '2:00.0 2:00.0 24'].join('\n'));
+    expect(scan!.rows.map((r) => r.distanceM)).toEqual([500, 500, null]);
+  });
+
   it('does not take two rows for two splits when their paces say OCR lost the rows between them', () => {
     const scan = parsePm5Text(['time meter /500m', '6:29.9 2000 1:37.4 36', '1:38.2 1009 1:38.2 35', '1:37.6 2000 1:37.6 38'].join('\n'));
     expect(scan!.rows.map((r) => r.distanceM)).toEqual([1009, 2000]);
