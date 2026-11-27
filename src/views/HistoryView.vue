@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MdIcon from 'm3-vue/components/MdIcon.vue';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
 import { useI18n } from 'vue-i18n';
 import HistoryList from '../components/HistoryList.vue';
 import type { HistoryEntry } from '../core/history';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MdIcon from 'm3-vue/components/MdIcon.vue';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { captureRect, guideRectInView, type Size } from '../ocr/guide';

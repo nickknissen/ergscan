@@ -11,7 +11,7 @@ const proxy = { '/api/sync': process.env.ERGSCAN_SYNC_ORIGIN ?? 'http://127.0.0.
 
 export default defineConfig({
   // m3-vue ships its source (.vue, .ts, ?raw icons), so Vite compiles it like the app's own.
-  optimizeDeps: { exclude: ['m3-vue'] },
+  optimizeDeps: { exclude: ['@nickknissen/m3-vue'] },
   server: { allowedHosts: ['.ts.net'], proxy },
   preview: { allowedHosts: ['.ts.net'], proxy },
   define: {
@@ -73,6 +73,6 @@ export default defineConfig({
   ],
   test: {
     environment: 'node',
-    server: { deps: { inline: ['@material/material-color-utilities', 'm3-vue'] } },
+    server: { deps: { inline: ['@material/material-color-utilities', '@nickknissen/m3-vue'] } },
   },
 });

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import MdIcon from 'm3-vue/components/MdIcon.vue';
-import type { Point } from 'm3-vue/ui/menu';
-import { usePopoverMenu } from 'm3-vue/ui/popoverMenu';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
+import type { Point } from '@nickknissen/m3-vue/ui/menu';
+import { usePopoverMenu } from '@nickknissen/m3-vue/ui/popoverMenu';
 import { shallowRef, useTemplateRef } from 'vue';
 import type { IconName } from '../ui/icons';
 

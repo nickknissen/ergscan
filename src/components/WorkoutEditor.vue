@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import MdIcon from 'm3-vue/components/MdIcon.vue';
-import MdSelect from 'm3-vue/components/MdSelect.vue';
-import { handleCellKeydown } from 'm3-vue/ui/keyboardNav';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
+import MdSelect from '@nickknissen/m3-vue/components/MdSelect.vue';
+import { handleCellKeydown } from '@nickknissen/m3-vue/ui/keyboardNav';
 import { computed, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fromLocalInput, toLocalInput } from '../core/dates';

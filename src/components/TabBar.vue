@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MdIcon from 'm3-vue/components/MdIcon.vue';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { TabStage } from '../core/route';

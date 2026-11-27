@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import MdIcon from 'm3-vue/components/MdIcon.vue';
-import { handleRadioKeydown } from 'm3-vue/ui/keyboardNav';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
+import { handleRadioKeydown } from '@nickknissen/m3-vue/ui/keyboardNav';
 import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SyncSettings from '../components/SyncSettings.vue';
-import { ACCENTS, accentSwatch, type Accent } from 'm3-vue/ui/palette';
+import { ACCENTS, accentSwatch, type Accent } from '@nickknissen/m3-vue/ui/palette';
 import { estimatedMaxHeartRate, parseWholeNumber, THEMES, type HeartRateSettings, type Theme } from '../core/settings';
 import type { Device, HistoryStore } from '../sync/store';
 
