@@ -1,9 +1,9 @@
-import { loadListPane as loadPane, saveListPane as savePane, type ListPane, type ListWidth } from 'm3-vue/ui/listPane';
-import * as theme from 'm3-vue/ui/theme';
-import type { Accent, Theme } from 'm3-vue/ui/theme';
+import { loadListPane as loadPane, saveListPane as savePane, type ListPane, type ListWidth } from '@nickknissen/m3-vue/ui/listPane';
+import * as theme from '@nickknissen/m3-vue/ui/theme';
+import type { Accent, Theme } from '@nickknissen/m3-vue/ui/theme';
 
 export type { Accent, ListPane, Theme };
-export { applyTheme, THEMES } from 'm3-vue/ui/theme';
+export { applyTheme, THEMES } from '@nickknissen/m3-vue/ui/theme';
 
 export const THEME_KEY = 'ergscan.theme';
 export const ACCENT_KEY = 'ergscan.accent';

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import MdDialog from 'm3-vue/components/MdDialog.vue';
-import MdIcon from 'm3-vue/components/MdIcon.vue';
-import MdListDetail from 'm3-vue/components/MdListDetail.vue';
-import MdSnackbar from 'm3-vue/components/MdSnackbar.vue';
-import { createConfirm } from 'm3-vue/ui/confirm';
-import { useMediaQuery } from 'm3-vue/ui/mediaQuery';
+import MdDialog from '@nickknissen/m3-vue/components/MdDialog.vue';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
+import MdListDetail from '@nickknissen/m3-vue/components/MdListDetail.vue';
+import MdSnackbar from '@nickknissen/m3-vue/components/MdSnackbar.vue';
+import { createConfirm } from '@nickknissen/m3-vue/ui/confirm';
+import { useMediaQuery } from '@nickknissen/m3-vue/ui/mediaQuery';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppBar from './components/AppBar.vue';

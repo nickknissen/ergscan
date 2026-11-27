@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue';
-import type { Accent } from 'm3-vue/ui/palette';
+import type { Accent } from '@nickknissen/m3-vue/ui/palette';
 import {
   applyTheme,
   LIST_WIDTH,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import MdIcon from 'm3-vue/components/MdIcon.vue';
-import { contextMenuPoint } from 'm3-vue/ui/menu';
+import MdIcon from '@nickknissen/m3-vue/components/MdIcon.vue';
+import { contextMenuPoint } from '@nickknissen/m3-vue/ui/menu';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { entryDateLabel } from '../core/dates';

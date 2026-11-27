@@ -1,4 +1,4 @@
-import { icon, type IconName } from 'm3-vue/icons';
+import { icon, type IconName } from '@nickknissen/m3-vue/icons';
 import type { Feeling } from '../core/feeling';
 import add from '@material-symbols/svg-400/rounded/add.svg?raw';
 import arrowBack from '@material-symbols/svg-400/rounded/arrow_back.svg?raw';
@@ -116,7 +116,7 @@ export const ICONS = {
 
 type AppIcons = typeof ICONS;
 
-declare module 'm3-vue/icons' {
+declare module '@nickknissen/m3-vue/icons' {
   interface Icons extends AppIcons {}
 }
 
